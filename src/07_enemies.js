@@ -209,7 +209,7 @@ function updateEBullets() {
       continue;
     }
     if (!P.dead && hitsKanata(b.x, b.y, b.x + b.w, b.y + b.h)) {
-      if (b.kind !== 'firepatch' || P.onGround) { if (hurtPlayer(b.dmg, b.x + b.w / 2, b.kind) && !PERSIST_BULLETS.has(b.kind)) b.dead = true; }
+      if ((b.kind !== 'firepatch' && b.kind !== 'puddle') || P.onGround) { if (hurtPlayer(b.dmg, b.x + b.w / 2, b.kind) && !PERSIST_BULLETS.has(b.kind)) b.dead = true; }
     }
   }
   for (let i = ebullets.length - 1; i >= 0; i--) if (ebullets[i].dead) ebullets.splice(i, 1);

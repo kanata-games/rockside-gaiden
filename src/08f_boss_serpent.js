@@ -28,7 +28,7 @@ BOSS_DEFS.serpent = { jp: '大浴場の主 ユブネ', en: 'BATHWATER SERPENT', 
         if (b.t === warn) { sfx('spit');
           for (const tx of b.marks) { const tf = 50, gg = 0.14, vx = (tx - b.hx) / tf, vy = (FLOOR_Y - 8 - b.hy - 0.5 * gg * tf * tf) / tf;
             ebullets.push({ kind: 'hotwater', x: b.hx - 6, y: b.hy - 6, w: 12, h: 12, vx, vy, g: gg, dmg: C.arcDamage, life: 200, tx,
-              onLand: q => { sfx('splash'); ebullets.push({ kind: 'puddle', x: q.x + 6 - 18, y: FLOOR_Y - 6, w: 36, h: 6, vx: 0, vy: 0, dmg: C.puddleDamage, life: C.puddle, static: 1 }); } }); }
+              onLand: q => { sfx('splash'); ebullets.push({ kind: 'puddle', x: q.x + 6 - 14, y: FLOOR_Y - 6, w: 28, h: 6, vx: 0, vy: 0, dmg: C.puddleDamage, life: C.puddle, static: 1 }); } }); }
           b.marks = []; }
         if (b.t >= warn + 70) { b.state = 'idle'; b.t = 0; } break; }
       case 'sweep': {

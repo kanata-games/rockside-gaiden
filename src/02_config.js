@@ -115,10 +115,10 @@ const CONFIG = {
     seeds: 4, seedsRage: 6, seedDamage: 1, petalWarn: 36, petalWarnRage: 30, petalSpeed: 3.4, petalDamage: 1, bloom: 110, bloomRage: 90, burnBonus: 2,
     rootWarn: 30, rootSpeed: 3.0, rootDamage: 2, gardenWarn: 36, contactDamage: 2, coreCap: 20, specialEvery: 4 },
   // ---- v0.3 boss: 呪いのパイプオルガン CURSED PIPE ORGAN (chapel) ----
-  organ: { hp: 200, idle: 54, idleRage: 40, noteWarn: 30, notes: 5, notesRage: 7, noteSpeed: 1.4, noteDamage: 1, pipeWarn: 44, pipeWarnRage: 36, pipes: 3, pipesRage: 4, pipeDamage: 2,
-    chordWarn: 46, chordWarnRage: 38, chordSpeed: 2.6, chordDamage: 1, books: 0, booksRage: 1, stun: 160, stunRage: 130, contactDamage: 1 },
+  organ: { hp: 260, idle: 36, idleRage: 26, noteWarn: 26, notes: 6, notesRage: 8, noteSpeed: 1.6, noteDamage: 1, pipeWarn: 38, pipeWarnRage: 32, pipes: 4, pipesRage: 5, pipeDamage: 2,
+    chordWarn: 40, chordWarnRage: 34, chordSpeed: 3.0, chordDamage: 1, books: 0, booksRage: 1, stun: 120, stunRage: 100, contactDamage: 1, coreCap: 20, specialEvery: 4 },
   // ---- v0.3 boss: 大浴場の主 ユブネ BATHWATER SERPENT (grand bath) ----
-  serpent: { hp: 210, idle: 50, idleRage: 38, arcWarn: 36, arcs: 3, arcsRage: 4, arcDamage: 1, puddle: 120, puddleDamage: 1, sweepWarn: 44, sweepWarnRage: 36, sweepSpeed: 3.0, sweepDamage: 2,
+  serpent: { hp: 210, idle: 50, idleRage: 38, arcWarn: 36, arcs: 3, arcsRage: 4, arcDamage: 1, puddle: 80, puddleDamage: 1, sweepWarn: 44, sweepWarnRage: 36, sweepSpeed: 3.0, sweepDamage: 2,
     rainWarn: 40, rainWarnRage: 32, drops: 4, dropsRage: 6, dropDamage: 1, geyserWarn: 40, dizzy: 160, dizzyRage: 130, contactDamage: 1 },
   // ---- boss 4: 大時計の番人 グランドファーザー・チクタク GRANDFATHER TICKTOCK (clock tower) ----
   // v0.3b: the final boss, hardest by a clear margin - 3 phases (rage at 50%, OVERDRIVE at 25%), hand barrages,

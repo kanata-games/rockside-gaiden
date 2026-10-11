@@ -181,10 +181,10 @@ const CONFIG = {
     seeds: 4, seedsRage: 6, seedDamage: 1, petalWarn: 36, petalWarnRage: 30, petalSpeed: 3.4, petalDamage: 1, bloom: 110, bloomRage: 90, burnBonus: 2,
     rootWarn: 30, rootSpeed: 3.0, rootDamage: 2, gardenWarn: 36, contactDamage: 2, coreCap: 20, specialEvery: 4 },
   // ---- v0.3 boss: 呪いのパイプオルガン CURSED PIPE ORGAN (chapel) ----
-  organ: { hp: 200, idle: 54, idleRage: 40, noteWarn: 30, notes: 5, notesRage: 7, noteSpeed: 1.4, noteDamage: 1, pipeWarn: 44, pipeWarnRage: 36, pipes: 3, pipesRage: 4, pipeDamage: 2,
-    chordWarn: 46, chordWarnRage: 38, chordSpeed: 2.6, chordDamage: 1, books: 0, booksRage: 1, stun: 160, stunRage: 130, contactDamage: 1 },
+  organ: { hp: 260, idle: 36, idleRage: 26, noteWarn: 26, notes: 6, notesRage: 8, noteSpeed: 1.6, noteDamage: 1, pipeWarn: 38, pipeWarnRage: 32, pipes: 4, pipesRage: 5, pipeDamage: 2,
+    chordWarn: 40, chordWarnRage: 34, chordSpeed: 3.0, chordDamage: 1, books: 0, booksRage: 1, stun: 120, stunRage: 100, contactDamage: 1, coreCap: 20, specialEvery: 4 },
   // ---- v0.3 boss: 大浴場の主 ユブネ BATHWATER SERPENT (grand bath) ----
-  serpent: { hp: 210, idle: 50, idleRage: 38, arcWarn: 36, arcs: 3, arcsRage: 4, arcDamage: 1, puddle: 120, puddleDamage: 1, sweepWarn: 44, sweepWarnRage: 36, sweepSpeed: 3.0, sweepDamage: 2,
+  serpent: { hp: 210, idle: 50, idleRage: 38, arcWarn: 36, arcs: 3, arcsRage: 4, arcDamage: 1, puddle: 80, puddleDamage: 1, sweepWarn: 44, sweepWarnRage: 36, sweepSpeed: 3.0, sweepDamage: 2,
     rainWarn: 40, rainWarnRage: 32, drops: 4, dropsRage: 6, dropDamage: 1, geyserWarn: 40, dizzy: 160, dizzyRage: 130, contactDamage: 1 },
   // ---- boss 4: 大時計の番人 グランドファーザー・チクタク GRANDFATHER TICKTOCK (clock tower) ----
   // v0.3b: the final boss, hardest by a clear margin - 3 phases (rage at 50%, OVERDRIVE at 25%), hand barrages,
@@ -1875,7 +1875,7 @@ function updateEBullets() {
       continue;
     }
     if (!P.dead && hitsKanata(b.x, b.y, b.x + b.w, b.y + b.h)) {
-      if (b.kind !== 'firepatch' || P.onGround) { if (hurtPlayer(b.dmg, b.x + b.w / 2, b.kind) && !PERSIST_BULLETS.has(b.kind)) b.dead = true; }
+      if ((b.kind !== 'firepatch' && b.kind !== 'puddle') || P.onGround) { if (hurtPlayer(b.dmg, b.x + b.w / 2, b.kind) && !PERSIST_BULLETS.has(b.kind)) b.dead = true; }
     }
   }
   for (let i = ebullets.length - 1; i >= 0; i--) if (ebullets[i].dead) ebullets.splice(i, 1);
@@ -2763,7 +2763,7 @@ BOSS_DEFS.organ = { jp: '呪いのパイプオルガン', en: 'CURSED PIPE ORGAN
   update(b) {
     const C = CONFIG.organ;
     switch (b.state) {
-      case 'idle': if (b.t >= bossP('idle')) chooseAttack(b, ['notes', 'pipes', 'chord'], 'fortissimo'); break;
+      case 'idle': if (b.t >= bossP('idle')) chooseAttack(b, b.rage ? ['notes', 'pipes', 'chord', 'requiem'] : ['notes', 'pipes', 'chord'], 'fortissimo'); break;
       case 'notes': {
         const n = bossP('notes'), t0 = C.noteWarn;
         if (b.t === 1) { sfx('warn'); const books = ents.filter(e => e.type === 'cursedbook' && !e.dead).length;
@@ -2774,11 +2774,20 @@ BOSS_DEFS.organ = { jp: '呪いのパイプオルガン', en: 'CURSED PIPE ORGAN
         if (b.t >= t0 + n * 12 + 40) { b.state = 'idle'; b.t = 0; } break; }
       case 'pipes': {
         const warn = bossP('pipeWarn');
-        if (b.t === 1) { const n = bossP('pipes'), px = pcx(); b.marks = []; const xs = [px]; for (let k = 1; xs.length < n; k++) { xs.push(px + k * 70); if (xs.length < n) xs.push(px - k * 70); }
+        if (b.t === 1) b.wave = 0;
+        if (b.t === 1 || b.t === b.retgt) { const n = bossP('pipes'), px = pcx(); b.marks = []; const xs = [px]; for (let k = 1; xs.length < n; k++) { xs.push(px + k * 70); if (xs.length < n) xs.push(px - k * 70); }
           for (const x of xs) b.marks.push(clamp(x, 20, b.x - 70)); sfx('warn'); }
         if (b.t < warn && b.t % 10 === 0) sfx('tick');
         if (b.t === warn) { for (const mx of b.marks) ebullets.push({ kind: 'blast', x: mx - 11, y: 2 * TS, w: 22, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: C.pipeDamage, life: 30, static: 1 }); b.marks = []; sfx('whoosh'); cam.shake = 5; }
-        if (b.t >= warn + 44) { b.state = 'idle'; b.t = 0; } break; }
+        if (b.t >= warn + 34) { if (b.wave < (b.rage ? 2 : 1)) { b.wave++; b.t = b.retgt = 4; } else { b.state = b.rage ? 'chord' : 'idle'; b.t = 0; b.retgt = -1; } } break; }
+      case 'requiem': { // v0.3b phase 2: blasts over the whole floor except one "rest" gap - run to it (twice)
+        const warn = 50, T2 = warn + 40;
+        if (b.t === 1 || b.t === T2) { const slots = []; for (let x = 20; x < b.x - 70; x += 36) slots.push(x);
+          let gi = Math.floor(Math.random() * (slots.length - 1)); if (b.t > 1 && Math.abs(slots[gi] - pcx()) < 60) gi = (gi + 3) % (slots.length - 1);
+          b.gap = (slots[gi] + slots[gi + 1]) / 2; b.marks = slots.filter((x, i) => i !== gi && i !== gi + 1); b.rT = b.t; sfx('bell'); tip('requiem', 'レクイエム！ 印のない「休符」に逃げこめ'); }
+        if (b.t === b.rT + warn) { for (const mx of b.marks) ebullets.push({ kind: 'blast', x: mx - 11, y: 2 * TS, w: 22, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: C.pipeDamage, life: 30, static: 1 }); b.marks = []; sfx('whoosh'); cam.shake = 7; }
+        if (b.t >= T2 + warn + 36) { b.state = 'idle'; b.t = 0; }
+        break; }
       case 'chord': {
         const warn = bossP('chordWarn');
         if (b.t === 1) { b.petalHigh = Math.random() < 0.45; sfx('warn'); }
@@ -2790,10 +2799,10 @@ BOSS_DEFS.organ = { jp: '呪いのパイプオルガン', en: 'CURSED PIPE ORGAN
       case 'fortissimo': {
         if (b.t === 1) { sfx('warn'); tip('organFF', 'オルガンが息を吸い込んでいる… 床の衝撃波はジャンプでかわせ！（呪いの本も呼ぶぞ）'); }
         if (b.t < 56) { if (b.t % 8 === 0) sfx('warn'); break; }
-        if (b.t === 56 || b.t === 116 || (b.rage && b.t === 176)) { sfx('boom'); cam.shake = 9; hitStop = 2;
+        if (b.t === 56 || b.t === 116 || b.t === 176) { sfx('boom'); cam.shake = 9; hitStop = 2;
           for (const d of [-1]) ebullets.push({ kind: 'wave', x: b.x - 70, y: FLOOR_Y - 14, w: 16, h: 14, vx: d * 2.4, vy: 0, dmg: 1, life: 200 });
           for (let i = 0; i < 14; i++) parts.push({ x: b.x - 40 + rnd(-30, 30), y: FLOOR_Y - 100 + rnd(-20, 20), vx: rnd(-2, 1), vy: rnd(-2, 1), life: 30, col: '#d8b8ff', size: 2, glow: 1 }); }
-        if (b.t === (b.rage ? 236 : 176)) { b.state = 'stunned'; b.t = 0; b.winLen = bossP('stun'); sfx('crash'); cam.shake = 8;
+        if (b.t === 236) { b.state = 'stunned'; b.t = 0; b.winLen = bossP('stun'); sfx('crash'); cam.shake = 8;
           b.core = makeCore(b, b.x - 90, FLOOR_Y - 34, () => ({ x: boss.x - 40, y: FLOOR_Y - 60 }), 'ocore');
           tip('ocore', 'オルガンが息切れした！ 出てきたオルガン弾きのゴーストを VAC で吸い込め！', true); }
         break; }
@@ -2805,7 +2814,9 @@ BOSS_DEFS.organ = { jp: '呪いのパイプオルガン', en: 'CURSED PIPE ORGAN
   onDefeat(b) { bossReward(b, b.x - 80); say('……しずかになった。……耳が、きーんってする', 200); tip('organDown', '呪いのパイプオルガンをやっつけた！ 祭壇に新しい力が…', true); },
   draw(b, lights) {
     const x = Math.round(b.x - cam.x), y = Math.round(FLOOR_Y - cam.y);
-    if (b.state === 'pipes' && b.marks.length) { const k = b.t / bossP('pipeWarn'); for (const mx of b.marks) { drawFloorMark(mx, k, 'rgba(200,140,255,0.8)');
+    if (b.state === 'requiem' && b.marks.length) { const k = Math.min(1, (b.t - b.rT) / 50); for (const mx of b.marks) { drawFloorMark(mx, k, 'rgba(200,140,255,0.85)'); g.fillStyle = 'rgba(200,160,255,' + (0.06 + k * 0.16) + ')'; g.fillRect(Math.round(mx - 11 - cam.x), Math.round(2 * TS - cam.y), 22, FLOOR_Y - 2 * TS); }
+      if (frame & 8) drawTextShadow('REST', Math.round(b.gap - cam.x), Math.round(FLOOR_Y - cam.y - 40), 'y', 1, 'c'); }
+    if (b.state === 'pipes' && b.marks.length) { const k = Math.min(1, (b.t - (b.wave ? 4 : 0)) / bossP('pipeWarn')); for (const mx of b.marks) { drawFloorMark(mx, k, 'rgba(200,140,255,0.8)');
       g.fillStyle = 'rgba(200,160,255,' + (0.08 + k * 0.18) + ')'; g.fillRect(Math.round(mx - 11 - cam.x), Math.round(2 * TS - cam.y), 22, FLOOR_Y - 2 * TS); } }
     if (b.state === 'chord' && b.t < bossP('chordWarn') + (b.rage ? 46 : 0)) { const yy = Math.round((b.petalHigh ? FLOOR_Y - 67 : FLOOR_Y - 13) - cam.y); g.fillStyle = (frame & 4) ? 'rgba(220,170,255,0.9)' : 'rgba(255,255,255,0.6)';
       for (let xx = 0; xx < x - 60; xx += 8) g.fillRect(xx, yy, 4, 2); drawTextShadow(b.petalHigh ? 'HIGH' : 'LOW', 20, yy - 12, 'p', 1); }
@@ -2850,7 +2861,7 @@ BOSS_DEFS.serpent = { jp: '大浴場の主 ユブネ', en: 'BATHWATER SERPENT', 
         if (b.t === warn) { sfx('spit');
           for (const tx of b.marks) { const tf = 50, gg = 0.14, vx = (tx - b.hx) / tf, vy = (FLOOR_Y - 8 - b.hy - 0.5 * gg * tf * tf) / tf;
             ebullets.push({ kind: 'hotwater', x: b.hx - 6, y: b.hy - 6, w: 12, h: 12, vx, vy, g: gg, dmg: C.arcDamage, life: 200, tx,
-              onLand: q => { sfx('splash'); ebullets.push({ kind: 'puddle', x: q.x + 6 - 18, y: FLOOR_Y - 6, w: 36, h: 6, vx: 0, vy: 0, dmg: C.puddleDamage, life: C.puddle, static: 1 }); } }); }
+              onLand: q => { sfx('splash'); ebullets.push({ kind: 'puddle', x: q.x + 6 - 14, y: FLOOR_Y - 6, w: 28, h: 6, vx: 0, vy: 0, dmg: C.puddleDamage, life: C.puddle, static: 1 }); } }); }
           b.marks = []; }
         if (b.t >= warn + 70) { b.state = 'idle'; b.t = 0; } break; }
       case 'sweep': {
