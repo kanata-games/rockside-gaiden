@@ -193,7 +193,7 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       ok('boss 1 (chandelier) core tug-of-war', await waitFor(page, () => GAIDEN.P.tug && GAIDEN.P.tug.boss, 60000));
       ok('boss 1 defeated -> floor opens', await waitFor(page, () => GAIDEN.progress.bosses.has('chandelier') && GAIDEN.progress.perm.has('ballroom:gate:floor'), 90000));
       await E(page, () => { window.__bot = null; window.__speed = 0; for (const k in GAIDEN._test.keys) GAIDEN._test.keys[k] = false; });
-      await E(page, () => { const a = GAIDEN.ents.find(e => e.type === 'ability'); GAIDEN.placePlayer(a.x, 15 * 16, 1); });
+      await E(page, () => { if (!GAIDEN.ents.find(e => e.type === 'ability')) GAIDEN.loadRoom('ballroom'); /* the bot may have dropped through the opened floor */ const a = GAIDEN.ents.find(e => e.type === 'ability'); GAIDEN.placePlayer(a.x, 15 * 16, 1); });
       ok('float ability collected from pedestal', await waitFor(page, () => GAIDEN.hasAbil('float'), 5000));
       await sleep(2500); for (let i = 0; i < 4; i++) { await page.keyboard.press('Enter'); await sleep(200); }
       await E(page, () => { GAIDEN.P.tank = ['chair']; GAIDEN.placePlayer(9 * 16, 15 * 16, 1); });
