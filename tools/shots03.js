@@ -49,11 +49,11 @@ const only = process.argv[2];
   // ---- buffed bosses: phase-2 moves
   for (const [kind, roomId, abil, st] of [['golem', 'washroom', 'float,turbo', 'leap'], ['rose', 'rosebed', 'float,turbo,djump', 'garden'], ['clock', 'clockroom', ALL, 'midnight']]) {
     const name = 'v03_boss_' + kind + '_' + st + '.png'; if (!want(name)) continue;
-    const { ctx, page } = await open(`?room=${roomId}&x=2&y=16&god=1&abil=${abil}`);
-    await E(page, BOT); await E(page, () => { window.__speed = 4; });
+    const { ctx, page } = await open(`?room=${roomId}&x=2&y=16&god=1&abil=${abil}&bossatk=${st}`);
+    await E(page, BOT); await E(page, () => { window.__speed = 2; });
     await page.waitForFunction(() => GAIDEN.boss && GAIDEN.boss.state !== 'sleep' && GAIDEN.boss.state !== 'intro', null, { timeout: 20000 });
     await E(page, () => { const b = GAIDEN.boss; b.hp = Math.floor(b.maxHp * 0.45); b.damage(0); });
-    await page.waitForFunction(s => GAIDEN.boss && GAIDEN.boss.state === s && GAIDEN.boss.t > 22, st, { timeout: 120000, polling: 'raf' }).catch(e => console.log('wait', kind, st, e.message));
+    await page.waitForFunction(s => GAIDEN.boss && GAIDEN.boss.state === s && GAIDEN.boss.t > (s === 'midnight' ? 70 : s === 'leap' ? 40 : 30), st, { timeout: 120000, polling: 'raf' }).catch(e => console.log('wait', kind, st, e.message));
     await E(page, () => { window.__speed = 0; }); await sleep(150); await snap(page, name); await ctx.close(); }
   console.log('errors:', errs.length ? errs : 'none');
   await browser.close(); srv.close(); process.exit(0);
