@@ -29,7 +29,7 @@ ROOM_DEFS.push(
     decor: [['glasspane', 6, 10], ['glasspane', 18, 10], ['fern', 13, 15], ['rosebush', 4, 15], ['vine_hang', 10, 2, { top: 1 }], ['gardenlamp', 15, 15, { light: 1 }]] },
 
   { id: 'courtyard', jp: '噴水の中庭', en: 'FOUNTAIN COURTYARD', area: 'garden', theme: 'courtyard', tiles: 'g', cx: -6, cy: 1, cw: 2, ch: 1, dark: 0.32,
-    build(R) { R.box(); R.open('R', 0, 11, 14); R.open('B', 0, 6, 9); R.plat(14, 20, 11); R.plat(24, 30, 7); R.plat(34, 40, 11); },
+    build(R) { R.box(); R.open('R', 0, 11, 14); R.open('L', 0, 11, 14); R.open('B', 0, 6, 9); R.plat(14, 20, 11); R.plat(24, 30, 7); R.plat(34, 40, 11); },
     ents: [['save', 42, 15], ['puppet', 30, 15], ['gargoyle', 20, 5], ['flowerpot', 12, 15], ['flowerpot', 16, 11], ['candle', 27, 7], ['seed', 36, 11],
       ['bottle', 3, 15], ['chair', 33, 15], ['dust', 22, 15, { drop: ['coin', 'coin', 'coin'] }]],
     decor: [['fountain', 24, 15], ['statue', 4, 15], ['statue', 44, 15], ['hedge', 13, 15], ['hedge', 36, 15], ['gardenlamp', 10, 15, { light: 1 }],

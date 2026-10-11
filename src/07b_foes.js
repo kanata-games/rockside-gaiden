@@ -7,9 +7,9 @@
 //  Shared: hp, hit flash + knockback, burn damage over time, coin drops, "the vacuum doesn't work" feedback.
 //  Positions: x = centre, y = bottom (feet), like every non-ghost entity.
 // =====================================================================
-const FOE_SIZE = { bat: [14, 10], rat: [18, 10], gargoyle: [26, 26], puppet: [16, 30], skeleton: [18, 40], cursedbook: [16, 14] };
-const FOE_JP = { bat: 'コウモリ', rat: 'ネズミ', gargoyle: 'ガーゴイル', puppet: 'あやつり人形', skeleton: '骸骨の給仕', cursedbook: '呪いの本' };
-const EDIBLE = { rat: 1, bat: 1 };
+const FOE_SIZE = { bat: [14, 10], rat: [18, 10], gargoyle: [26, 26], puppet: [16, 30], skeleton: [18, 40], cursedbook: [16, 14], skullwisp: [16, 18], crab: [20, 12] };
+const FOE_JP = { bat: 'コウモリ', rat: 'ネズミ', gargoyle: 'ガーゴイル', puppet: 'あやつり人形', skeleton: '骸骨の給仕', cursedbook: '呪いの本', skullwisp: 'どくろ火', crab: 'おふろガニ' };
+const EDIBLE = { rat: 1, bat: 1, crab: 1 };  // tiny critters: the mimic vacuum eats them
 function makeFoe(kind, x, y, opt) {
   const C = CONFIG.foes[kind], [w, h] = FOE_SIZE[kind];
   const e = { type: kind, foe: true, x, y, w, h, hp: C.hp, maxHp: C.hp, state: 'idle', t: 0, face: -1, flash: 0, burnT: 0, burnTick: 0, vx: 0, vy: 0,
@@ -19,10 +19,10 @@ function makeFoe(kind, x, y, opt) {
       if (frame % 9 === 0) { sfx('tink'); parts.push({ x: this.x + rnd(-6, 6), y: this.y - this.h / 2 + rnd(-6, 6), vx: rnd(-1, 1), vy: rnd(-1, 0), life: 10, col: '#ffffff', size: 1 }); }
       this.tinkT = 30; tip('foe', FOE_JP[this.type] + 'は生き物（？）だから掃除機が効かない！ 吸い込んだ物をぶつけよう（SPIT）'); },
     hitBy(s) { return foeHit(this, s); } };
-  if (kind === 'rat' || kind === 'puppet' || kind === 'skeleton') { e.body = { x: x - w / 2, y: y - h, w, h, vx: 0, vy: 0 }; e.state = 'walk'; e.face = Math.random() < 0.5 ? -1 : 1; }
+  if (kind === 'rat' || kind === 'puppet' || kind === 'skeleton' || kind === 'crab') { e.body = { x: x - w / 2, y: y - h, w, h, vx: 0, vy: 0 }; e.state = 'walk'; e.face = Math.random() < 0.5 ? -1 : 1; }
   if (kind === 'bat') { e.state = 'hang'; e.y = Math.max(y, 2 * TS + h + 2); }
   if (kind === 'gargoyle') { e.state = 'perch'; }
-  if (kind === 'cursedbook') { e.state = 'float'; }
+  if (kind === 'cursedbook' || kind === 'skullwisp') { e.state = 'float'; }
   return Object.assign(e, opt || {});
 }
 function foeHit(e, s) {
@@ -39,11 +39,12 @@ function foeHit(e, s) {
 }
 function killFoe(e) {
   e.dead = true; stats.foeKills++; sfx('foedie'); cam.shake = Math.max(cam.shake, e.type === 'gargoyle' ? 6 : 2);
-  const col = { bat: '#5a3a6a', rat: '#8a7a8a', gargoyle: '#8a8a96', puppet: '#e8c8a0', skeleton: '#e8e4d8', cursedbook: '#7a2030' }[e.type];
+  const col = { bat: '#5a3a6a', rat: '#8a7a8a', gargoyle: '#8a8a96', puppet: '#e8c8a0', skeleton: '#e8e4d8', cursedbook: '#7a2030', skullwisp: '#7ae8ff', crab: '#e8603a' }[e.type];
   for (let i = 0; i < 14; i++) parts.push({ x: e.x + rnd(-e.w / 2, e.w / 2), y: e.y - e.h / 2 + rnd(-e.h / 2, e.h / 2), vx: rnd(-2, 2), vy: rnd(-2.6, 0.4), life: 26, col: i % 3 ? col : '#ffffff', size: 2, grav: 1 });
   const C = CONFIG.foes[e.type], list = []; for (let i = 0; i < C.coins; i++) list.push('coin'); if (Math.random() < 0.22) list.push('heart');
   if (e.type === 'cursedbook') list.push('book');
   if (e.type === 'skeleton') list.push('plate');
+  if (e.type === 'skullwisp') list.push('bone');
   if (e.type === 'gargoyle') list.push('heart');
   popItems(list, e.x, e.y - e.h / 2);
 }
@@ -115,6 +116,26 @@ function updateFoe(e) {
       } else if (e.state === 'dash') { e.x += e.vx; e.y += e.vy; if (e.t > 30) { e.state = 'float'; e.t = 0; e.cd = C.every + Math.random() * 60; e.vx *= 0.2; e.vy *= 0.2; } }
       e.x = clamp(e.x, CONFIG.foeEdge, room.W - CONFIG.foeEdge); e.y = clamp(e.y, 2 * TS + e.h + 4, room.H - 3 * TS);
       if (e.state === 'dash' || e.state === 'float') foeTouch(e, C.damage); break; }
+    case 'skullwisp': { // floats on a slow sine, keeps its distance, spits a bone (suckable = BONE ammo)
+      if (e.state === 'float') {
+        const tx = px - Math.sign(dx || 1) * 90, ty = P.y - 10 + Math.sin(e.t * 0.04 + e.seed) * 24;
+        e.vx += clamp((tx - e.x) * 0.003, -0.05, 0.05); e.vy += clamp((ty - (e.y - e.h / 2)) * 0.004, -0.05, 0.05);
+        e.vx = clamp(e.vx, -C.speed, C.speed); e.vy = clamp(e.vy, -C.speed, C.speed); e.x += e.vx; e.y += e.vy; e.face = Math.sign(dx) || e.face;
+        if (--e.cd <= 0 && dist < 200) { e.state = 'warn'; e.t = 0; sfx('warn'); }
+      } else if (e.state === 'warn') {
+        if (e.t >= C.warn) { const d = Math.hypot(dx, dy) || 1; sfx('spit');
+          ebullets.push({ kind: 'bone', x: e.x - 8, y: e.y - e.h / 2 - 4, w: 16, h: 8, vx: dx / d * C.bone, vy: dy / d * C.bone, g: 0, dmg: C.damage, life: 180, suckable: true, ammo: 'bone', nofloor: 1, spin: 0 });
+          e.state = 'float'; e.t = 0; e.cd = C.every + Math.random() * 60; }
+      }
+      e.x = clamp(e.x, CONFIG.foeEdge, room.W - CONFIG.foeEdge); e.y = clamp(e.y, 2 * TS + e.h + 4, room.H - 3 * TS);
+      foeTouch(e, C.damage); break; }
+    case 'crab': { // scuttles sideways; when Kanata is close it raises its claws and lunges
+      const b = e.body;
+      if (e.state === 'walk') { if (e.recoil > 0) e.face = -(Math.sign(dx) || 1); b.vx = e.face * C.speed;
+        if (!e.recoil && Math.abs(dx) < 70 && Math.abs(P.y + P.h - e.y) < 30 && e.t > 40) { e.state = 'warn'; e.t = 0; b.vx = 0; e.face = Math.sign(dx) || e.face; sfx('warn'); } }
+      else if (e.state === 'warn') { b.vx = 0; if (e.t >= C.snapWarn) { e.state = 'snap'; e.t = 0; } }
+      else if (e.state === 'snap') { b.vx = e.face * C.snap * Math.max(0, 1 - e.t / 26); if (e.t > 30) { e.state = 'walk'; e.t = 0; } }
+      walkFoe(e); foeTouch(e, C.damage); break; }
     case 'gargoyle': {
       if (e.state === 'perch') { if (Math.abs(dx) < C.wake && py > e.y - 30) { e.state = 'warn'; e.t = 0; sfx('warn'); } break; }
       if (e.state === 'warn') { if (e.t === 1) { e.tx = pcx(); e.ty = P.y + P.h - 6; } if (e.t >= C.warn) { const d = Math.hypot(e.tx - e.x, e.ty - e.y) || 1; e.vx = (e.tx - e.x) / d * C.dive; e.vy = (e.ty - e.y) / d * C.dive; e.state = 'dive'; e.t = 0; sfx('flap'); } break; }
@@ -192,7 +213,8 @@ function updateAbility(e) {
 function gainAbility(e) {
   e.has = true; progress.abil[e.abil] = true; stats.abilities.push(e.abil); sfx('get'); cam.shake = 4; hitStop = 10; P.hp = progress.maxHP;
   for (let i = 0; i < 30; i++) { const a = i / 30 * 6.28; parts.push({ x: e.x, y: e.y - 44, vx: Math.cos(a) * 2.5, vy: Math.sin(a) * 2.5, life: 34, col: ABIL_INFO[e.abil].col, size: 2, glow: 1 }); }
-  abilityGet.t = 300; abilityGet.abil = e.abil;
+  abilityGet.t = 300; abilityGet.abil = e.abil; syncAbilities();
+  if (e.abil === 'phase') openSpiritGates();
   tip('abil_' + e.abil, ABIL_INFO[e.abil].text, true);
 }
 const abilityGet = { t: 0, abil: null };

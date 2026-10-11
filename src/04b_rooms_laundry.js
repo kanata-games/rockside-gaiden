@@ -36,7 +36,7 @@ ROOM_DEFS.push(
       ['lamp_wall', 12, 8, { light: 1 }], ['lamp_wall', 30, 4, { light: 1 }], ['lamp_wall', 40, 7, { light: 1 }], ['basket', 3, 15], ['basket', 45, 9], ['cobweb', 1, 2, { top: 1 }]] },
 
   { id: 'boiler', jp: 'ボイラー室', en: 'BOILER ROOM', area: 'laundry', theme: 'boiler', tiles: 't', cx: 4, cy: 4, cw: 1, ch: 1, dark: 0.55,
-    build(R) { R.box(); R.open('T', 0, 4, 7); R.open('R', 0, 11, 14); R.plat(10, 16, 11); R.plat(3, 9, 7); },
+    build(R) { R.box(); R.open('T', 0, 4, 7); R.open('R', 0, 11, 14); R.open('L', 0, 11, 14); R.plat(10, 16, 11); R.plat(3, 9, 7); },
     ents: [['rat', 8, 15], ['skeleton', 15, 15], ['pot', 4, 15], ['pot', 20, 11], ['pan', 12, 11], ['pan', 6, 7], ['bottle', 21, 15],
       ['hint', 5, 15, { need: 'turbo', text: '鉄なべは重くて吸い込めない…' }]],
     decor: [['boiler', 12, 15], ['pipes', 2, 15], ['pipes', 20, 15], ['pipes', 22, 7], ['lamp_wall', 8, 10, { light: 1 }], ['lamp_wall', 17, 8, { light: 1 }]] },

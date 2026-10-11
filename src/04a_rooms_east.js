@@ -13,10 +13,12 @@
 //  Map: x = cell column (west < 0 < east), y = cell row (attic/tower < 0, basement > 2). Areas are only a theme/music group.
 // =====================================================================
 const AREAS = {
-  east:    { jp: '幽霊屋敷 東棟', en: 'EAST WING', music: 'mansion', col: '#2a3a7a' },
-  laundry: { jp: '地下 洗濯場と厨房', en: 'UNDERGROUND LAUNDRY & KITCHEN', music: 'laundry', col: '#1f5a66' },
-  garden:  { jp: '月下の温室庭園', en: 'MOONLIT GREENHOUSE', music: 'garden', col: '#2a6a3a' },
-  clock:   { jp: '屋根裏と時計塔', en: 'ATTIC & CLOCK TOWER', music: 'clock', col: '#6a4a24' },
+  east:    { jp: '幽霊屋敷 東棟', short: '東棟', en: 'EAST WING', music: 'mansion', col: '#2a3a7a' },
+  laundry: { jp: '地下 洗濯場と厨房', short: '洗濯場', en: 'UNDERGROUND LAUNDRY & KITCHEN', music: 'laundry', col: '#1f5a66' },
+  garden:  { jp: '月下の温室庭園', short: '温室庭園', en: 'MOONLIT GREENHOUSE', music: 'garden', col: '#2a6a3a' },
+  clock:   { jp: '屋根裏と時計塔', short: '時計塔', en: 'ATTIC & CLOCK TOWER', music: 'clock', col: '#6a4a24' },
+  crypt:   { jp: '礼拝堂と地下墓所', short: '地下墓所', en: 'CHAPEL & CRYPT', music: 'chapel', col: '#4a2a6a' },
+  bath:    { jp: '大浴場と貯水槽', short: '大浴場', en: 'GRAND BATH & CISTERN', music: 'bath', col: '#1e6a7a' },
 };
 const ROOM_DEFS = [
   { id: 'foyer', jp: '玄関ホール', en: 'GRAND FOYER', area: 'east', theme: 'foyer', cx: 0, cy: 1, cw: 2, ch: 1, dark: 0.42,
@@ -63,7 +65,7 @@ const ROOM_DEFS = [
     decor: [['pedestal', 12, 15], ['portrait_big', 12, 9], ['candelabra', 5, 11, { light: 1 }], ['candelabra', 18, 11, { light: 1 }], ['cobweb', 22.75, 2, { top: 1, flip: 1 }]] },
 
   { id: 'cellar', jp: '地下ワイン蔵', en: 'WINE CELLAR', area: 'east', theme: 'cellar', cx: 5, cy: 2, cw: 2, ch: 1, dark: 0.6, tiles: 'c',
-    build(R) { R.box(); R.open('T', 0, 11, 13); R.open('R', 0, 11, 14); R.open('B', 0, 4, 7); R.gate(4, 15, 7, 17, 'grate'); R.plat(10, 14, 7); R.plat(3, 8, 11); R.plat(20, 26, 11); R.plat(36, 42, 11); R.plat(29, 33, 7); },
+    build(R) { R.box(); R.open('T', 0, 11, 13); R.open('R', 0, 11, 14); R.open('L', 0, 11, 14); R.open('B', 0, 4, 7); R.gate(4, 15, 7, 17, 'grate'); R.plat(10, 14, 7); R.plat(3, 8, 11); R.plat(20, 26, 11); R.plat(36, 42, 11); R.plat(29, 33, 7); },
     ents: [['puff', 22, 8], ['armor', 30, 15], ['puff', 40, 8], ['candle', 5, 11], ['candle', 23, 11], ['candle', 39, 11], ['dust', 16, 15, { drop: ['coin', 'coin'] }],
       ['dust', 44, 15, { drop: ['heart'] }], ['coin', 30, 7], ['coin', 32, 7], ['vase', 27, 15, { drop: ['coin', 'coin', 'coin'] }], ['bottle', 3, 15], ['bottle', 9, 15], ['rat', 34, 15], ['barrel', 44, 11]],
     decor: [['winerack', 6, 15], ['winerack', 14, 15], ['barrel', 24, 15], ['barrel', 34, 15], ['barrel', 36.6, 15], ['winerack', 42, 15],

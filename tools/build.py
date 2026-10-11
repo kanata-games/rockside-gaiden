@@ -9,7 +9,7 @@ EDIT src/*, NEVER index.html directly - it is overwritten by this script.
 """
 import glob, json, os, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PARTS = ['01_head.html', '02_config.js', '03_core.js', '04a_rooms_east.js', '04b_rooms_laundry.js', '04c_rooms_garden.js', '04d_rooms_clock.js', '04z_rooms_index.js', '05_world.js', '06_player.js', '07_enemies.js', '07b_foes.js', '08_boss.js', '08b_boss_golem.js', '08c_boss_rose.js', '08d_boss_clock.js', '09_music.js', '10_render.js']
+PARTS = ['01_head.html', '02_config.js', '03_core.js', '04a_rooms_east.js', '04b_rooms_laundry.js', '04c_rooms_garden.js', '04d_rooms_clock.js', '04e_rooms_crypt.js', '04f_rooms_bath.js', '04g_rooms_warp.js', '04z_rooms_index.js', '05_world.js', '06_player.js', '07_enemies.js', '07b_foes.js', '07c_warp.js', '08_boss.js', '08b_boss_golem.js', '08c_boss_rose.js', '08d_boss_clock.js', '08e_boss_organ.js', '08f_boss_serpent.js', '09_music.js', '10_render.js']
 OUT = os.path.join(ROOT, 'index.html')
 if '--out' in sys.argv: OUT = os.path.abspath(sys.argv[sys.argv.index('--out') + 1])
 meta = {}

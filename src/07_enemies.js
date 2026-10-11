@@ -15,7 +15,8 @@ function spawnRoomEntities() {
       case 'save': ents.push({ type: 'save', x, y, w: 28, h: 40, used: false }); room.save = { x, y }; break;
       case 'coin': case 'heart': spawnItem(type, x, y, { perm: id }); break;
       case 'bats': for (let k = 0; k < (opt.n || 2); k++) ents.push(makeFoe('bat', x + (k - 0.5) * 18, y + (k & 1) * 6)); break;
-      case 'rat': case 'gargoyle': case 'puppet': case 'skeleton': case 'cursedbook': ents.push(makeFoe(type, x, y, opt.foe)); break;
+      case 'rat': case 'gargoyle': case 'puppet': case 'skeleton': case 'cursedbook': case 'skullwisp': case 'crab': ents.push(makeFoe(type, x, y, opt.foe)); break;
+      case 'warp': ents.push(makeWarp(x, y, opt, id)); break;
       case 'sheet': ents.push(makeGhost('sheet', x, y)); break;
       case 'lever': ents.push(makeLever(x, y, opt, id)); break;
       case 'heavy': ents.push(makeHeavy(x, y, opt, id)); break;
@@ -224,6 +225,7 @@ function updateEnts() {
     else if (e.type === 'vines') updateVines(e);
     else if (e.type === 'ability') updateAbility(e);
     else if (e.type === 'hint') updateHint(e);
+    else if (e.type === 'warp') updateWarp(e);
     else updateInteractables(e);
   }
   for (let i = ents.length - 1; i >= 0; i--) if (ents[i].dead && ents[i] !== P.tug) ents.splice(i, 1);

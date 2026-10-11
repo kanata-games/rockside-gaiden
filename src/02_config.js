@@ -1,5 +1,5 @@
 // Version label (title screen + footer). Bump on every release.
-const GAME_VERSION = '0.2.0';
+const GAME_VERSION = '0.3.0';
 // =====================================================================
 //  ROCKSIDE外伝 清掃員カナタ  -  haunted-mansion exploration + vacuum action (prototype)
 //  All gameplay tuning lives in CONFIG. Units: pixels and frames @60Hz.
@@ -22,6 +22,7 @@ const CONFIG = {
   entryGrace: 50, entrySafe: 112,     // after entering a room: no damage for N frames; enemies kept this far (px) from the entry point
   // v0.3: the mimic vacuum EATS tiny critters (rat, bat): +heal and +1 GABU gauge; a full gauge powers up the next SPIT
   eat: { heal: 1, max: 3, pullMax: 40, biteDmg: 3, biteRange: 96, shotMul: 2 },
+  warpArm: 24,          // px Kanata must step off a warp pad before it can open the menu again
   maxHP: 10, invFrames: 100, knockFrames: 16, knockVx: 1.6, knockVy: 2.6,
 
   // ---- vacuum (Luigi's Mansion style) ----
@@ -65,6 +66,9 @@ const CONFIG = {
     seed:      { dmg: 2, w: 10, h: 10, burn: 1 },
     pot:       { dmg: 5, w: 16, h: 14, heavy: 1, pierce: 1 },
     barrel:    { dmg: 6, w: 16, h: 18, heavy: 1, pierce: 1 },
+    bone:      { dmg: 2, w: 16, h: 8, pierce: 1 },          // v0.3 crypt: skull wisps spit bones
+    duck:      { dmg: 2, w: 14, h: 13, bounce: 3 },         // v0.3 bath: rubber ducks bounce around
+    note:      { dmg: 2, w: 12, h: 12, pierce: 1 },          // v0.3 chapel: the organ's music notes
   },
   bossMul: 2,
 
@@ -77,6 +81,8 @@ const CONFIG = {
   // ---- normal (non-ghost) enemies: the vacuum can't hold them - hit them with objects ----
   foes: {
     bat:      { hp: 1, speed: 1.2, wake: 130, damage: 1, coins: 1 },
+    skullwisp: { hp: 3, speed: 0.7, every: 150, warn: 30, bone: 2.2, damage: 1, coins: 3 },  // v0.3 crypt: floating skull, spits bones (ammo)
+    crab:     { hp: 2, speed: 0.55, snapWarn: 22, snap: 2.6, damage: 1, coins: 2 },          // v0.3 bath: tiny critter (edible)
     rat:      { hp: 1, speed: 1.35, damage: 1, coins: 1 },
     gargoyle: { hp: 6, wake: 150, warn: 34, dive: 3.2, rest: 110, damage: 2, coins: 4 },
     puppet:   { hp: 3, speed: 0.35, every: 150, warn: 30, needle: 2.4, damage: 1, coins: 2 },
@@ -104,6 +110,12 @@ const CONFIG = {
   // ---- boss 3: 夜咲きの女王 マダム・ローズ MADAME ROSE (greenhouse) ----
   rose: { hp: 200, idle: 52, idleRage: 38, thornWarn: 42, thornWarnRage: 34, thorns: 4, thornsRage: 5, thornGap: 44, thornDamage: 2,
     seeds: 4, seedsRage: 6, seedDamage: 1, petalWarn: 44, petalWarnRage: 36, petalSpeed: 2.6, petalDamage: 1, bloom: 170, bloomRage: 140, burnBonus: 3, contactDamage: 1 },
+  // ---- v0.3 boss: 呪いのパイプオルガン CURSED PIPE ORGAN (chapel) ----
+  organ: { hp: 200, idle: 54, idleRage: 40, noteWarn: 30, notes: 5, notesRage: 7, noteSpeed: 1.4, noteDamage: 1, pipeWarn: 44, pipeWarnRage: 36, pipes: 3, pipesRage: 4, pipeDamage: 2,
+    chordWarn: 46, chordWarnRage: 38, chordSpeed: 2.6, chordDamage: 1, books: 2, booksRage: 3, stun: 160, stunRage: 130, contactDamage: 1 },
+  // ---- v0.3 boss: 大浴場の主 ユブネ BATHWATER SERPENT (grand bath) ----
+  serpent: { hp: 210, idle: 50, idleRage: 38, arcWarn: 36, arcs: 3, arcsRage: 4, arcDamage: 1, puddle: 120, puddleDamage: 1, sweepWarn: 44, sweepWarnRage: 36, sweepSpeed: 3.0, sweepDamage: 2,
+    rainWarn: 40, rainWarnRage: 32, drops: 4, dropsRage: 6, dropDamage: 1, geyserWarn: 40, dizzy: 160, dizzyRage: 130, contactDamage: 1 },
   // ---- boss 4: 大時計の番人 グランドファーザー・チクタク GRANDFATHER TICKTOCK (clock tower) ----
   clock: { hp: 220, spitMul: 1.2, idle: 46, idleRage: 34, handWarn: 34, handWarnRage: 28, hands: 4, handsRage: 6, handDamage: 2,
     gears: 5, gearsRage: 7, gearSpeed: 2.8, gearDamage: 1, pendWarn: 42, pendWarnRage: 34, pendDamage: 2, chime: 160, chimeRage: 130, contactDamage: 2 },

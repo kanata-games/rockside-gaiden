@@ -39,6 +39,7 @@ function update() {
   if (state === 'loading') { if (assetsReady()) { setState('title'); if (QS.get('room')) debugStart(); } }
   else if (state === 'title') updateTitle();
   else if (state === 'play') updatePlay();
+  else if (state === 'warp') updateWarpMenu();
   else if (state === 'map') { if (inp.mapPressed || inp.startPressed || inp.jumpPressed) { setState('play'); sfx('cursor'); } }
   else if (state === 'clear') { clearT++; if (clearT > 240 && (inp.startPressed || inp.jumpPressed)) { setState('title'); sfx('start'); } }
   musicTick();
@@ -60,7 +61,7 @@ function updatePlay() {
   else updatePlayer();
   if (state !== 'play') return;
   if (P.dead) { if (P.deadT > 170) respawn(); updateParts(); return; }
-  updateEnts(); updateItems(); updateFloats(); updateShots(); updateEBullets(); updateBoss();
+  updateEnts(); updateItems(); updateFloats(); updateShots(); updateEBullets(); updateBoss(); updateSpirit();
   if (abilityGet.t > 0) abilityGet.t--;
   if (boss && boss.core && boss.core.state === 'swallow') { const c = boss.core, n = nozzle(); c.t++; c.x += (n.x - c.x) * 0.2; c.y += (n.y - c.y) * 0.2; if (c.t > 18) boss.core = null; }
   updateParts(); checkLockedDoor(); updateTips(); updateCamera();
@@ -232,7 +233,9 @@ function drawEnt(e) {
     case 'ability': { if (e.hidden) break; sprBC('props', 'abil_pedestal', x, y);
       if (!e.has) { const oy = y - 44 + Math.sin(e.t * 0.06) * 3; g.globalCompositeOperation = 'lighter'; g.fillStyle = 'rgba(255,255,255,0.18)'; g.beginPath(); g.arc(x, oy, 14 + Math.sin(frame * 0.1) * 2, 0, 7); g.fill(); g.globalCompositeOperation = 'source-over';
         spr('items', 'orb_' + e.abil, Math.round(x - 8), Math.round(oy - 8)); } break; }
-    case 'bat': case 'rat': case 'gargoyle': case 'puppet': case 'skeleton': case 'cursedbook': drawFoe(e, x, y); break;
+    case 'bat': case 'rat': case 'gargoyle': case 'puppet': case 'skeleton': case 'cursedbook': case 'skullwisp': case 'crab': drawFoe(e, x, y); break;
+    case 'warp': { sprBC('props', 'warp_pad', x, y + 3); g.globalCompositeOperation = 'lighter'; const a = 0.18 + 0.1 * Math.sin(frame * 0.08);
+      const gr = g.createLinearGradient(0, y - 60, 0, y); gr.addColorStop(0, 'rgba(160,120,255,0)'); gr.addColorStop(1, 'rgba(160,200,255,' + a + ')'); g.fillStyle = gr; g.fillRect(Math.round(x - 20), Math.round(y - 60), 40, 60); g.globalCompositeOperation = 'source-over'; break; }
     case 'armor': {
       const k = e.state === 'walk' ? 'armor' + ((e.t >> 4) & 1) : 'armor0', r = rectOf('enemies', k);
       const sx = x - r.w / 2 + (e.state === 'windup' ? ((frame & 2) ? 1 : -1) : 0), sy = y - r.h;
@@ -250,6 +253,8 @@ function foeSprite(e) {
     case 'puppet': return e.state === 'warn' ? 'puppet_throw' : 'puppet' + ((e.t >> 4) & 1);
     case 'skeleton': return e.state === 'warn' ? 'skel_throw' : 'skel' + ((e.t >> 4) & 1);
     case 'cursedbook': return e.state === 'warn' || e.state === 'dash' ? 'cbook_bite' : 'cbook' + ((e.t >> 3) & 1);
+    case 'skullwisp': return 'skullwisp' + ((e.t >> 3) & 1);
+    case 'crab': return e.state === 'warn' || e.state === 'snap' ? 'crab_snap' : 'crab' + ((e.t >> 3) & 1);
   }
 }
 function drawFoe(e, x, y) {
@@ -300,6 +305,14 @@ function drawEBullet(b) {
   else if (b.kind === 'bubble') { spr('items', 'bubble', x, y + Math.sin((frame + b.life) * 0.15)); }
   else if (b.kind === 'dropbottle') spr('items', 'bottle', x, y);
   else if (b.kind === 'seedpod') spr('items', 'seed', x, y);
+  else if (b.kind === 'bone') { g.save(); g.translate(Math.round(x + 8), Math.round(y + 4)); g.rotate(frame * 0.3); const r = rectOf('items', 'bone'); g.drawImage(IMG.items, r.x, r.y, r.w, r.h, -8, -4, r.w, r.h); g.restore(); }
+  else if (b.kind === 'note') spr('boss', 'note', x, y);
+  else if (b.kind === 'blast') { const k = b.life / 30; g.fillStyle = 'rgba(230,210,255,' + (0.35 + 0.3 * k) + ')'; g.fillRect(Math.round(x + 3), y, b.w - 6, b.h); g.fillStyle = 'rgba(255,255,255,0.7)'; for (let yy = (frame * 6) % 20; yy < b.h; yy += 20) g.fillRect(Math.round(x + 6 + ((yy >> 2) % 8)), Math.round(y + yy), 2, 10); }
+  else if (b.kind === 'chord') { g.fillStyle = 'rgba(210,170,255,0.75)'; for (let i = 0; i < 3; i++) { g.beginPath(); g.ellipse(x + 9 + i * 5, y + b.h / 2, 3, b.h / 2, 0, 0, 7); g.fill(); } g.fillStyle = '#ffffff'; g.fillRect(Math.round(x + 7), y + 2, 2, b.h - 4); }
+  else if (b.kind === 'hotwater') { g.fillStyle = '#5ac8e0'; g.beginPath(); g.arc(x + 6, y + 6, 6, 0, 7); g.fill(); g.fillStyle = '#ffffff'; g.fillRect(Math.round(x + 3), Math.round(y + 3), 3, 2); if (frame % 3 === 0) parts.push({ x: b.x + 6, y: b.y, vx: 0, vy: -0.6, life: 14, col: 'rgba(230,250,255,0.5)', size: 2 }); }
+  else if (b.kind === 'puddle') { g.fillStyle = (frame & 8) ? 'rgba(90,200,240,0.75)' : 'rgba(140,220,255,0.75)'; g.beginPath(); g.ellipse(x + b.w / 2, y + 4, b.w / 2, 3, 0, 0, 7); g.fill(); if (frame % 8 === 0) parts.push({ x: b.x + rnd(0, b.w), y: b.y, vx: 0, vy: -0.5, life: 20, col: 'rgba(230,250,255,0.5)', size: 2 }); }
+  else if (b.kind === 'drop') { g.fillStyle = '#8ad8f0'; g.beginPath(); g.moveTo(x + 4, y); g.lineTo(x + 8, y + 7); g.arc(x + 4, y + 7, 4, 0, 3.15); g.fill(); }
+  else if (b.kind === 'geyser') { const k = b.life / 24; g.fillStyle = 'rgba(160,230,255,' + (0.4 + 0.4 * k) + ')'; g.fillRect(Math.round(x), y, b.w, b.h); g.fillStyle = 'rgba(255,255,255,0.8)'; for (let yy = (frame * 7) % 16; yy < b.h; yy += 16) g.fillRect(Math.round(x + 4 + ((yy >> 1) % 14)), Math.round(y + yy), 4, 8); }
   else if (b.kind === 'sock') { g.fillStyle = '#d8ecff'; g.fillRect(x + 2, y, 5, 8); g.fillRect(x + 2, y + 7, 8, 4); g.fillStyle = '#5a9ad8'; g.fillRect(x + 2, y, 5, 2); g.fillRect(x + 2, y + 4, 5, 1); g.fillStyle = '#9ad0ff'; g.fillRect(x + 3, y + 12, 1, 2); g.fillRect(x + 7, y + 12, 1, 2); }
   else if (b.kind === 'rgear') { const r = rectOf('items', 'gear'); g.save(); g.translate(Math.round(x + 7), Math.round(y + 7)); g.rotate(frame * 0.2 * Math.sign(b.vx)); g.drawImage(IMG.items, r.x, r.y, r.w, r.h, -r.w / 2, -r.h / 2, r.w, r.h); g.restore(); }
   else if (b.kind === 'petal') spr('items', 'petal', x, y + Math.sin((frame + b.life) * 0.3) * 2, b.vx > 0);
@@ -350,6 +363,7 @@ function drawMapGrid(ox, oy, cw, chh, mini, win) {
     if (!mini) {
       if (rd.ents.some(e => e[0] === 'save')) { g.fillStyle = '#8ad0ff'; g.fillRect(x0 + 2, y0 + 2, 3, 3); }
       if (rd.boss) drawText(progress.bosses.has(rd.boss) ? 'X' : 'B', x0 + w - 7, y0 + 2, progress.bosses.has(rd.boss) ? 'b' : 'r', 1);
+      if (rd.warp && progress.warps.has(rd.id)) { g.fillStyle = (frame >> 4) & 1 ? '#c8a0ff' : '#8a6ad8'; g.fillRect(x0 + 1, y0 + 1, w - 2, h - 2); drawText('W', x0 + w / 2, y0 + h / 2 - 3, 'w', 1, 'c'); }
       if (rd.ents.some(e => e[0] === 'ability' && !hasAbil(e[3].abil))) { g.fillStyle = (frame >> 3) & 1 ? '#ffffff' : '#ffe080'; g.fillRect(x0 + w / 2 - 1, y0 + h / 2 - 1, 3, 3); }
     }
   }
@@ -381,13 +395,13 @@ function drawHUD() {
     const x = 34 + i * 15, y = 18; g.fillStyle = '#16122a'; g.fillRect(x, y, 13, 13); rectLine(x, y, 13, 13, i < P.tank.length ? (i === 0 ? '#ffe080' : '#8fe8ff') : '#3e3866');
     if (i < P.tank.length) { const r = rectOf('items', P.tank[i]); const sc = Math.min(1, 11 / Math.max(r.w, r.h)); g.drawImage(IMG.items, r.x, r.y, r.w, r.h, Math.round(x + 6.5 - r.w * sc / 2), Math.round(y + 6.5 - r.h * sc / 2), Math.round(r.w * sc), Math.round(r.h * sc)); }
   }
-  spr('items', 'coin0', 82, 20); drawTextShadow(String(progress.coins), 94, 22, 'y', 1);
+  const cx0 = 82 + (CONFIG.vac.tankMax - 3) * 15; spr('items', 'coin0', cx0, 20); drawTextShadow(String(progress.coins), cx0 + 12, 22, 'y', 1);
   { // GABU gauge (critters eaten -> powered SPIT)
     const E = CONFIG.eat, full = P.gabu >= E.max; g.fillStyle = 'rgba(8,6,20,0.72)'; g.fillRect(4, 35, 18 + E.max * 9, 11); rectLine(4, 35, 18 + E.max * 9, 11, full && (frame & 8) ? '#ff8aa8' : '#4e4876');
     drawText('GABU', 6, 37, full ? 'r' : 'b', 1);
     for (let i = 0; i < E.max; i++) { const x = 25 + i * 9; g.fillStyle = i < P.gabu ? (full ? ((frame & 4) ? '#ffffff' : '#ff8aa8') : '#ff8aa8') : '#2a2440';
       g.beginPath(); g.moveTo(x, 38); g.lineTo(x + 6, 38); g.lineTo(x + 3, 44); g.fill(); } }
-  let ax = 112; for (const k of ['float', 'turbo', 'djump']) if (hasAbil(k)) { drawAbilIcon(k, ax, 20, true); ax += 11; }
+  let ax = 112 + (CONFIG.vac.tankMax - 3) * 15; for (const k in ABIL_INFO) if (hasAbil(k)) { drawAbilIcon(k, ax, 20, true); ax += 11; }
   if (progress.hasKey) spr('items', 'key', 46 + hearts * 9 - 2, 6);
   // mini-map: 7 x 5 cells around the current room
   const cw = 8, chh = 6, cols = 7, rows = 5, mw = cols * cw + 4, mh = rows * chh + 4, mx = VW - mw - 4;
@@ -450,28 +464,28 @@ function renderPlay() {
   if (abilityGet.t > 0) { const a = Math.min(1, abilityGet.t / 20, (300 - abilityGet.t) / 15), I = ABIL_INFO[abilityGet.abil]; drawHiText('NEW POWER', VW / 2, 96, 8, '#ffffff', '#140a20', 'center', a); drawHiText(I.jp, VW / 2, 110, 18, I.col, '#140a20', 'center', a); }
   if (P.dead && P.deadT > 40) drawHiText('やられちゃった…', VW / 2, VH / 2 - 10, 16, '#ffd0e0', '#200818', 'center', Math.min(1, (P.deadT - 40) / 20));
 }
-const MAP_LAY = { cw: 20, chh: 14 };
+function mapLayout() { const cw = Math.min(20, Math.floor(368 / WORLD.cols)); return { cw, chh: Math.min(14, Math.round(cw * 0.75)) }; }
 function renderMap() {
   renderPlayBase();
   g.fillStyle = 'rgba(6,4,16,0.92)'; g.fillRect(0, 0, VW, VH);
-  const { cw, chh } = MAP_LAY, mw = WORLD.cols * cw, mh = WORLD.rows * chh, ox = Math.round((VW - mw) / 2), oy = 50;
+  const { cw, chh } = mapLayout(), mw = WORLD.cols * cw, mh = WORLD.rows * chh, ox = Math.round((VW - mw) / 2), oy = 50;
   g.fillStyle = 'rgba(30,24,60,0.5)'; g.fillRect(ox - 4, oy - 4, mw + 8, mh + 8); rectLine(ox - 5, oy - 5, mw + 10, mh + 10, '#4e4876');
   drawMapGrid(ox, oy, cw, chh, false);
   const by = oy + mh + 10;
   drawText('MAP ' + mapPercent() + '%', 14, by, 'w', 1);
   drawText('COIN ' + progress.coins, 90, by, 'y', 1);
   const tsec = Math.floor(progress.time / 60); drawText('TIME ' + Math.floor(tsec / 60) + ':' + String(tsec % 60).padStart(2, '0'), 160, by, 'b', 1);
-  drawText('BOSS ' + progress.bosses.size + '/4', 240, by, 'r', 1);
+  drawText('BOSS ' + progress.bosses.size + '/' + BOSS_TOTAL, 240, by, 'r', 1);
   drawText('GHOST ' + progress.captures, 306, by, 'c', 1);
-  let ax = 14; for (const k of ['float', 'turbo', 'djump']) { drawAbilIcon(k, ax, by + 12, hasAbil(k)); ax += 84; }
+  let ax = 14; for (const k in ABIL_INFO) { drawAbilIcon(k, ax, by + 12, hasAbil(k)); ax += 74; }
   // area legend
-  let lx = 14; for (const k in AREAS) { g.fillStyle = AREAS[k].col; g.fillRect(lx, by + 40, 8, 8); rectLine(lx, by + 40, 8, 8, '#a8b8e8'); lx += 92; }
+  let lx = 14; for (const k in AREAS) { g.fillStyle = AREAS[k].col; g.fillRect(lx, by + 40, 8, 8); rectLine(lx, by + 40, 8, 8, '#a8b8e8'); lx += 62; }
   drawText('TAP / MAP: BACK', VW / 2, VH - 10, 'b', 1, 'c');
   blit();
   drawHiText((AREAS[room.def.area] || AREAS.east).jp + '　' + room.def.jp, VW / 2, 12, 10, '#fff4e0', '#1a0e28');
-  ax = 14; for (const k of ['float', 'turbo', 'djump']) { drawHiText(hasAbil(k) ? ABIL_INFO[k].jp : '？？？', ax + 13, by + 11, 6.5, hasAbil(k) ? ABIL_INFO[k].col : '#5a5488', null, 'left'); ax += 84; }
-  lx = 14; for (const k in AREAS) { drawHiText(AREAS[k].jp.replace('幽霊屋敷 ', ''), lx + 11, by + 39, 6, '#c8c0f0', null, 'left'); lx += 92; }
-  drawHiText('■セーブ  B＝ボス  ・光＝新しい力  黄色＝とびら' + (progress.hasKey ? '  舞踏会場の鍵あり' : ''), VW / 2, by + 54, 6.5, '#a8a0d8', null);
+  ax = 14; for (const k in ABIL_INFO) { drawHiText(hasAbil(k) ? ABIL_INFO[k].jp : '？？？', ax + 13, by + 11, 6.5, hasAbil(k) ? ABIL_INFO[k].col : '#5a5488', null, 'left'); ax += 74; }
+  lx = 14; for (const k in AREAS) { drawHiText(AREAS[k].short, lx + 11, by + 39, 6, '#c8c0f0', null, 'left'); lx += 62; }
+  drawHiText('■セーブ  B＝ボス  W＝ワープの間  ・光＝新しい力  黄色＝とびら' + (progress.hasKey ? '  舞踏会場の鍵あり' : ''), VW / 2, by + 54, 6.5, '#a8a0d8', null);
 }
 function renderPlayBase() { g.fillStyle = '#000'; g.fillRect(0, 0, VW, VH); g.drawImage(room.canvas, clamp(Math.round(cam.x), 0, room.W - VW), clamp(Math.round(cam.y), 0, room.H - VH), VW, VH, 0, 0, VW, VH); }
 const TITLE_MENU = [{ x: 108, y: 246, w: 76, h: 18 }, { x: 200, y: 246, w: 76, h: 18 }];
@@ -489,7 +503,7 @@ function renderTitle() {
   const hasSave = assetsReady() && !!loadSave();
   if (hasSave) { TITLE_MENU.forEach((m, i) => { const on = i === titleSel; g.fillStyle = on ? 'rgba(90,76,192,0.85)' : 'rgba(20,16,40,0.8)'; g.fillRect(m.x, m.y, m.w, m.h); rectLine(m.x, m.y, m.w, m.h, on ? '#e0d8ff' : '#5a5488'); }); }
   else drawTextShadow('TAP / PRESS ENTER', VW / 2 - 50, 254, ((stateT >> 5) & 1) ? 'w' : 'b', 1, 'c');
-  drawText('v' + GAME_VERSION + '  PROTOTYPE', 6, VH - 9, 'd', 1);
+  drawText('v' + GAME_VERSION, 6, VH - 9, 'd', 1);
   blit();
   drawHiText('清掃員カナタ', 104, 62, 30, '#f4f0ff', '#2a1648');
   drawHiText('〜幽霊屋敷のおそうじ〜', 104, 102, 10, '#bfe0ff', '#1a0e28');
@@ -503,7 +517,7 @@ function renderClear() {
   if (clearT > 40) {
     const tsec = Math.floor(progress.time / 60);
     const secrets = ROOM_DEFS.filter(d => d.secret), found = secrets.filter(roomSeen).length;
-    const rows = [['TIME', Math.floor(tsec / 60) + ':' + String(tsec % 60).padStart(2, '0')], ['COINS', String(progress.coins)], ['MAP', mapPercent() + '%'], ['GHOSTS', String(progress.captures)], ['BOSSES', progress.bosses.size + '/4'], ['SECRET ROOMS', found + '/' + secrets.length]];
+    const rows = [['TIME', Math.floor(tsec / 60) + ':' + String(tsec % 60).padStart(2, '0')], ['COINS', String(progress.coins)], ['MAP', mapPercent() + '%'], ['GHOSTS', String(progress.captures)], ['BOSSES', progress.bosses.size + '/' + BOSS_TOTAL], ['SECRET ROOMS', found + '/' + secrets.length]];
     rows.forEach((r, i) => { if (clearT > 60 + i * 12) { drawText(r[0], 112, 104 + i * 13, 'b', 1); drawText(r[1], 272, 104 + i * 13, 'w', 1, 'r'); } });
     if (clearT > 240 && (clearT >> 5) & 1) drawTextShadow('TAP TO TITLE', VW / 2, 252, 'w', 1, 'c');
   }
@@ -526,7 +540,7 @@ function blit() {
 let msgShown = '';
 function updateMsgPanel() {
   let html;
-  if (state === 'play' || state === 'map') {
+  if (state === 'play' || state === 'map' || state === 'warp') {
     if (tipBox.t > 0) html = '<span class="tip">' + tipBox.text + '</span>';
     else { const a = AREAS[room.def.area] || AREAS.east; html = '<span class="area" style="color:' + '#c8c0f0' + '">' + a.jp + '</span><span class="room">' + room.def.jp + '</span>'; }
   } else html = '<span class="area">ROCKSIDE外伝 清掃員カナタ</span><span class="room">v' + GAME_VERSION + '</span>';
@@ -538,6 +552,7 @@ function render() {
   else if (state === 'title') renderTitle();
   else if (state === 'play') renderPlay();
   else if (state === 'map') renderMap();
+  else if (state === 'warp') renderWarpMenu();
   else if (state === 'clear') renderClear();
 }
 function screenTap(gx, gy) {
@@ -545,6 +560,7 @@ function screenTap(gx, gy) {
     for (let i = 0; i < TITLE_MENU.length; i++) { const m = TITLE_MENU[i]; if (gx >= m.x && gx < m.x + m.w && gy >= m.y && gy < m.y + m.h) { titleSel = i; inp.startPressed = true; return true; } }
   }
   if (state === 'map') { inp.mapPressed = true; return true; }
+  if (state === 'warp') return warpTap(gx, gy);
   return false;
 }
 

@@ -65,7 +65,7 @@ body.land #hint{display:none;}
 <script>
 'use strict';
 // Version label (title screen + footer). Bump on every release.
-const GAME_VERSION = '0.2.0';
+const GAME_VERSION = '0.3.0';
 // =====================================================================
 //  ROCKSIDE外伝 清掃員カナタ  -  haunted-mansion exploration + vacuum action (prototype)
 //  All gameplay tuning lives in CONFIG. Units: pixels and frames @60Hz.
@@ -88,6 +88,7 @@ const CONFIG = {
   entryGrace: 50, entrySafe: 112,     // after entering a room: no damage for N frames; enemies kept this far (px) from the entry point
   // v0.3: the mimic vacuum EATS tiny critters (rat, bat): +heal and +1 GABU gauge; a full gauge powers up the next SPIT
   eat: { heal: 1, max: 3, pullMax: 40, biteDmg: 3, biteRange: 96, shotMul: 2 },
+  warpArm: 24,          // px Kanata must step off a warp pad before it can open the menu again
   maxHP: 10, invFrames: 100, knockFrames: 16, knockVx: 1.6, knockVy: 2.6,
 
   // ---- vacuum (Luigi's Mansion style) ----
@@ -131,6 +132,9 @@ const CONFIG = {
     seed:      { dmg: 2, w: 10, h: 10, burn: 1 },
     pot:       { dmg: 5, w: 16, h: 14, heavy: 1, pierce: 1 },
     barrel:    { dmg: 6, w: 16, h: 18, heavy: 1, pierce: 1 },
+    bone:      { dmg: 2, w: 16, h: 8, pierce: 1 },          // v0.3 crypt: skull wisps spit bones
+    duck:      { dmg: 2, w: 14, h: 13, bounce: 3 },         // v0.3 bath: rubber ducks bounce around
+    note:      { dmg: 2, w: 12, h: 12, pierce: 1 },          // v0.3 chapel: the organ's music notes
   },
   bossMul: 2,
 
@@ -143,6 +147,8 @@ const CONFIG = {
   // ---- normal (non-ghost) enemies: the vacuum can't hold them - hit them with objects ----
   foes: {
     bat:      { hp: 1, speed: 1.2, wake: 130, damage: 1, coins: 1 },
+    skullwisp: { hp: 3, speed: 0.7, every: 150, warn: 30, bone: 2.2, damage: 1, coins: 3 },  // v0.3 crypt: floating skull, spits bones (ammo)
+    crab:     { hp: 2, speed: 0.55, snapWarn: 22, snap: 2.6, damage: 1, coins: 2 },          // v0.3 bath: tiny critter (edible)
     rat:      { hp: 1, speed: 1.35, damage: 1, coins: 1 },
     gargoyle: { hp: 6, wake: 150, warn: 34, dive: 3.2, rest: 110, damage: 2, coins: 4 },
     puppet:   { hp: 3, speed: 0.35, every: 150, warn: 30, needle: 2.4, damage: 1, coins: 2 },
@@ -170,13 +176,19 @@ const CONFIG = {
   // ---- boss 3: 夜咲きの女王 マダム・ローズ MADAME ROSE (greenhouse) ----
   rose: { hp: 200, idle: 52, idleRage: 38, thornWarn: 42, thornWarnRage: 34, thorns: 4, thornsRage: 5, thornGap: 44, thornDamage: 2,
     seeds: 4, seedsRage: 6, seedDamage: 1, petalWarn: 44, petalWarnRage: 36, petalSpeed: 2.6, petalDamage: 1, bloom: 170, bloomRage: 140, burnBonus: 3, contactDamage: 1 },
+  // ---- v0.3 boss: 呪いのパイプオルガン CURSED PIPE ORGAN (chapel) ----
+  organ: { hp: 200, idle: 54, idleRage: 40, noteWarn: 30, notes: 5, notesRage: 7, noteSpeed: 1.4, noteDamage: 1, pipeWarn: 44, pipeWarnRage: 36, pipes: 3, pipesRage: 4, pipeDamage: 2,
+    chordWarn: 46, chordWarnRage: 38, chordSpeed: 2.6, chordDamage: 1, books: 2, booksRage: 3, stun: 160, stunRage: 130, contactDamage: 1 },
+  // ---- v0.3 boss: 大浴場の主 ユブネ BATHWATER SERPENT (grand bath) ----
+  serpent: { hp: 210, idle: 50, idleRage: 38, arcWarn: 36, arcs: 3, arcsRage: 4, arcDamage: 1, puddle: 120, puddleDamage: 1, sweepWarn: 44, sweepWarnRage: 36, sweepSpeed: 3.0, sweepDamage: 2,
+    rainWarn: 40, rainWarnRage: 32, drops: 4, dropsRage: 6, dropDamage: 1, geyserWarn: 40, dizzy: 160, dizzyRage: 130, contactDamage: 1 },
   // ---- boss 4: 大時計の番人 グランドファーザー・チクタク GRANDFATHER TICKTOCK (clock tower) ----
   clock: { hp: 220, spitMul: 1.2, idle: 46, idleRage: 34, handWarn: 34, handWarnRage: 28, hands: 4, handsRage: 6, handDamage: 2,
     gears: 5, gearsRage: 7, gearSpeed: 2.8, gearDamage: 1, pendWarn: 42, pendWarnRage: 34, pendDamage: 2, chime: 160, chimeRage: 130, contactDamage: 2 },
 };
 
 // ---- sprite metadata embedded at build time (tools/build.py) ----
-const EMBEDDED_META = {"bg":{"wall_foyer":{"x":0,"y":0,"w":32,"h":32},"wain_foyer":{"x":33,"y":0,"w":32,"h":24},"pillar_foyer":{"x":66,"y":0,"w":16,"h":32},"mold_foyer":{"x":83,"y":0,"w":32,"h":10},"wall_gallery":{"x":116,"y":0,"w":32,"h":32},"wain_gallery":{"x":149,"y":0,"w":32,"h":24},"pillar_gallery":{"x":182,"y":0,"w":16,"h":32},"mold_gallery":{"x":199,"y":0,"w":32,"h":10},"wall_library":{"x":232,"y":0,"w":32,"h":32},"wain_library":{"x":265,"y":0,"w":32,"h":24},"pillar_library":{"x":298,"y":0,"w":16,"h":32},"mold_library":{"x":315,"y":0,"w":32,"h":10},"wall_dining":{"x":348,"y":0,"w":32,"h":32},"wain_dining":{"x":381,"y":0,"w":32,"h":24},"pillar_dining":{"x":414,"y":0,"w":16,"h":32},"mold_dining":{"x":431,"y":0,"w":32,"h":10},"wall_cellar":{"x":464,"y":0,"w":32,"h":32},"wain_cellar":{"x":0,"y":33,"w":32,"h":24},"pillar_cellar":{"x":33,"y":33,"w":16,"h":32},"mold_cellar":{"x":50,"y":33,"w":32,"h":10},"wall_vault":{"x":83,"y":33,"w":32,"h":32},"wain_vault":{"x":116,"y":33,"w":32,"h":24},"pillar_vault":{"x":149,"y":33,"w":16,"h":32},"mold_vault":{"x":166,"y":33,"w":32,"h":10},"wall_ballroom":{"x":199,"y":33,"w":32,"h":32},"wain_ballroom":{"x":232,"y":33,"w":32,"h":24},"pillar_ballroom":{"x":265,"y":33,"w":16,"h":32},"mold_ballroom":{"x":282,"y":33,"w":32,"h":10},"wall_laundry":{"x":315,"y":33,"w":32,"h":32},"wain_laundry":{"x":348,"y":33,"w":32,"h":24},"pillar_laundry":{"x":381,"y":33,"w":16,"h":32},"mold_laundry":{"x":398,"y":33,"w":32,"h":10},"wall_kitchen":{"x":431,"y":33,"w":32,"h":32},"wain_kitchen":{"x":464,"y":33,"w":32,"h":24},"pillar_kitchen":{"x":0,"y":66,"w":16,"h":32},"mold_kitchen":{"x":17,"y":66,"w":32,"h":10},"wall_boiler":{"x":50,"y":66,"w":32,"h":32},"wain_boiler":{"x":83,"y":66,"w":32,"h":24},"pillar_boiler":{"x":116,"y":66,"w":16,"h":32},"mold_boiler":{"x":133,"y":66,"w":32,"h":10},"wall_garden":{"x":166,"y":66,"w":32,"h":32},"wain_garden":{"x":199,"y":66,"w":32,"h":24},"pillar_garden":{"x":232,"y":66,"w":16,"h":32},"mold_garden":{"x":249,"y":66,"w":32,"h":10},"wall_courtyard":{"x":282,"y":66,"w":32,"h":32},"wain_courtyard":{"x":315,"y":66,"w":32,"h":24},"pillar_courtyard":{"x":348,"y":66,"w":16,"h":32},"mold_courtyard":{"x":365,"y":66,"w":32,"h":10},"wall_thorn":{"x":398,"y":66,"w":32,"h":32},"wain_thorn":{"x":431,"y":66,"w":32,"h":24},"pillar_thorn":{"x":464,"y":66,"w":16,"h":32},"mold_thorn":{"x":0,"y":99,"w":32,"h":10},"wall_shed":{"x":33,"y":99,"w":32,"h":32},"wain_shed":{"x":66,"y":99,"w":32,"h":24},"pillar_shed":{"x":99,"y":99,"w":16,"h":32},"mold_shed":{"x":116,"y":99,"w":32,"h":10},"wall_attic":{"x":149,"y":99,"w":32,"h":32},"wain_attic":{"x":182,"y":99,"w":32,"h":24},"pillar_attic":{"x":215,"y":99,"w":16,"h":32},"mold_attic":{"x":232,"y":99,"w":32,"h":10},"wall_gears":{"x":265,"y":99,"w":32,"h":32},"wain_gears":{"x":298,"y":99,"w":32,"h":24},"pillar_gears":{"x":331,"y":99,"w":16,"h":32},"mold_gears":{"x":348,"y":99,"w":32,"h":10},"wall_tower":{"x":381,"y":99,"w":32,"h":32},"wain_tower":{"x":414,"y":99,"w":32,"h":24},"pillar_tower":{"x":447,"y":99,"w":16,"h":32},"mold_tower":{"x":464,"y":99,"w":32,"h":10}},"boss":{"chandelier":{"x":0,"y":0,"w":128,"h":84,"ax":64,"ay":0},"chandelier_cracked":{"x":129,"y":0,"w":128,"h":84,"ax":64,"ay":0},"core_normal":{"x":258,"y":0,"w":30,"h":30},"core_angry":{"x":289,"y":0,"w":30,"h":30},"core_tug":{"x":320,"y":0,"w":30,"h":30},"core_dizzy":{"x":351,"y":0,"w":30,"h":30},"chain":{"x":382,"y":0,"w":6,"h":10},"gcore_tug":{"x":389,"y":0,"w":30,"h":30},"gcore_dizzy":{"x":420,"y":0,"w":30,"h":30},"rcore_tug":{"x":451,"y":0,"w":30,"h":30},"rcore_dizzy":{"x":482,"y":0,"w":30,"h":30},"ccore_tug":{"x":0,"y":85,"w":30,"h":30},"ccore_dizzy":{"x":31,"y":85,"w":30,"h":30},"golem_idle0":{"x":62,"y":85,"w":72,"h":84},"golem_idle1":{"x":135,"y":85,"w":72,"h":84},"golem_raise":{"x":208,"y":85,"w":72,"h":84},"golem_slam":{"x":281,"y":85,"w":72,"h":84},"golem_puff":{"x":354,"y":85,"w":72,"h":84},"golem_dizzy":{"x":427,"y":85,"w":72,"h":84},"golem_ball0":{"x":0,"y":170,"w":46,"h":46},"golem_ball1":{"x":47,"y":170,"w":46,"h":46},"golem_ball2":{"x":94,"y":170,"w":46,"h":46},"golem_ball3":{"x":141,"y":170,"w":46,"h":46},"rose_stem":{"x":188,"y":170,"w":60,"h":112},"rose_head":{"x":249,"y":170,"w":64,"h":58},"rose_rage":{"x":314,"y":170,"w":64,"h":58},"rose_bloom":{"x":379,"y":170,"w":64,"h":58},"rose_wilt":{"x":444,"y":170,"w":64,"h":58},"rose_mound":{"x":0,"y":283,"w":40,"h":12},"clock_body":{"x":41,"y":283,"w":76,"h":156},"clock_rage":{"x":118,"y":283,"w":76,"h":156},"clock_stop":{"x":195,"y":283,"w":76,"h":156},"pend_bob":{"x":272,"y":283,"w":32,"h":32}},"enemies":{"puff0":{"x":0,"y":0,"w":32,"h":32},"puff1":{"x":33,"y":0,"w":32,"h":32},"puff2":{"x":66,"y":0,"w":32,"h":32},"puff3":{"x":99,"y":0,"w":32,"h":32},"puff_tug":{"x":132,"y":0,"w":32,"h":32},"puff_angry":{"x":165,"y":0,"w":32,"h":32},"dish0":{"x":198,"y":0,"w":36,"h":36},"dish1":{"x":235,"y":0,"w":36,"h":36},"dish2":{"x":272,"y":0,"w":36,"h":36},"dish_throw":{"x":309,"y":0,"w":36,"h":36},"dish_tug":{"x":346,"y":0,"w":36,"h":36},"armor0":{"x":383,"y":0,"w":28,"h":52},"armor1":{"x":412,"y":0,"w":28,"h":52},"armor_shell":{"x":441,"y":0,"w":28,"h":52},"helmet":{"x":470,"y":0,"w":12,"h":12},"firewisp0":{"x":483,"y":0,"w":16,"h":18},"firewisp1":{"x":0,"y":53,"w":16,"h":18},"firewisp2":{"x":17,"y":53,"w":16,"h":18},"bat0":{"x":34,"y":53,"w":20,"h":12},"bat1":{"x":55,"y":53,"w":20,"h":12},"bat_hang":{"x":76,"y":53,"w":12,"h":14},"rat0":{"x":89,"y":53,"w":22,"h":12},"rat1":{"x":112,"y":53,"w":22,"h":12},"garg_stone":{"x":135,"y":53,"w":30,"h":28},"garg_fly0":{"x":166,"y":53,"w":30,"h":28},"garg_fly1":{"x":197,"y":53,"w":30,"h":28},"garg_dive":{"x":228,"y":53,"w":30,"h":28},"puppet0":{"x":259,"y":53,"w":20,"h":34},"puppet1":{"x":280,"y":53,"w":20,"h":34},"puppet_throw":{"x":301,"y":53,"w":20,"h":34},"skel0":{"x":322,"y":53,"w":24,"h":42},"skel1":{"x":347,"y":53,"w":24,"h":42},"skel_throw":{"x":372,"y":53,"w":24,"h":42},"cbook0":{"x":397,"y":53,"w":22,"h":18},"cbook1":{"x":420,"y":53,"w":22,"h":18},"cbook_bite":{"x":443,"y":53,"w":22,"h":18},"sheet0":{"x":466,"y":53,"w":34,"h":34},"sheet1":{"x":0,"y":96,"w":34,"h":34},"sheet_angry":{"x":35,"y":96,"w":34,"h":34},"sheet_tug":{"x":70,"y":96,"w":34,"h":34}},"items":{"coin0":{"x":0,"y":0,"w":10,"h":10},"coin1":{"x":11,"y":0,"w":10,"h":10},"coin2":{"x":22,"y":0,"w":10,"h":10},"coin3":{"x":33,"y":0,"w":10,"h":10},"heart":{"x":44,"y":0,"w":11,"h":10},"heartbig":{"x":56,"y":0,"w":18,"h":16},"plate":{"x":75,"y":0,"w":14,"h":6},"book":{"x":90,"y":0,"w":12,"h":10},"candle":{"x":103,"y":0,"w":6,"h":12},"dustball":{"x":110,"y":0,"w":10,"h":8},"crystal":{"x":121,"y":0,"w":12,"h":12},"spark":{"x":134,"y":0,"w":10,"h":10},"key":{"x":145,"y":0,"w":14,"h":10},"fireball":{"x":160,"y":0,"w":12,"h":12},"bottle":{"x":173,"y":0,"w":8,"h":14},"chair":{"x":182,"y":0,"w":14,"h":16},"pan":{"x":197,"y":0,"w":16,"h":8},"gear":{"x":214,"y":0,"w":12,"h":12},"flowerpot":{"x":227,"y":0,"w":12,"h":12},"soap":{"x":240,"y":0,"w":12,"h":12},"seed":{"x":0,"y":17,"w":10,"h":10},"pot":{"x":11,"y":17,"w":16,"h":14},"barrel":{"x":28,"y":17,"w":16,"h":18},"shard":{"x":45,"y":17,"w":6,"h":6},"bubble":{"x":52,"y":17,"w":16,"h":16},"petal":{"x":69,"y":17,"w":12,"h":8},"orb_float":{"x":82,"y":17,"w":16,"h":16},"orb_turbo":{"x":99,"y":17,"w":16,"h":16},"orb_djump":{"x":116,"y":17,"w":16,"h":16}},"kanata":{"frameWidth":106,"frameHeight":70,"anchorX":46,"anchorY":69,"targetHeight":68,"frames":[{"i":0,"sheet":"a","pose":"idle"},{"i":1,"sheet":"a","pose":"blink"},{"i":2,"sheet":"a","pose":"move1"},{"i":3,"sheet":"a","pose":"move2"},{"i":4,"sheet":"a","pose":"suck"},{"i":5,"sheet":"a","pose":"spit"},{"i":6,"sheet":"a","pose":"hurt"},{"i":7,"sheet":"a","pose":"down"},{"i":8,"sheet":"b","pose":"idle"},{"i":9,"sheet":"b","pose":"blink"},{"i":10,"sheet":"b","pose":"move1"},{"i":11,"sheet":"b","pose":"move2"},{"i":12,"sheet":"b","pose":"suck"},{"i":13,"sheet":"b","pose":"spit"},{"i":14,"sheet":"b","pose":"hurt"},{"i":15,"sheet":"b","pose":"down"}],"poses":{"idle":[0,8],"blink":[1,9],"move1":[2,10],"move2":[3,11],"suck":[4,12],"spit":[5,13],"hurt":[6,14],"down":[7,15]}},"props":{"window":{"x":0,"y":0,"w":40,"h":76},"window_wide":{"x":41,"y":0,"w":56,"h":84},"portrait_lord":{"x":98,"y":0,"w":28,"h":36},"portrait_lady":{"x":127,"y":0,"w":28,"h":36},"portrait_land":{"x":156,"y":0,"w":44,"h":32},"portrait_big":{"x":201,"y":0,"w":44,"h":56},"sconce":{"x":246,"y":0,"w":12,"h":22},"flame0":{"x":259,"y":0,"w":6,"h":8},"flame1":{"x":266,"y":0,"w":6,"h":8},"flame2":{"x":273,"y":0,"w":6,"h":8},"flame3":{"x":280,"y":0,"w":6,"h":8},"bflame0":{"x":287,"y":0,"w":8,"h":10},"bflame1":{"x":296,"y":0,"w":8,"h":10},"bflame2":{"x":305,"y":0,"w":8,"h":10},"bflame3":{"x":314,"y":0,"w":8,"h":10},"curtain":{"x":323,"y":0,"w":32,"h":72},"curtain_rod":{"x":356,"y":0,"w":32,"h":4},"dust0":{"x":389,"y":0,"w":20,"h":10},"dust1":{"x":410,"y":0,"w":20,"h":10},"dust2":{"x":431,"y":0,"w":20,"h":10},"cobweb":{"x":452,"y":0,"w":20,"h":20},"vase":{"x":473,"y":0,"w":14,"h":22},"table":{"x":0,"y":85,"w":80,"h":30},"chair":{"x":81,"y":85,"w":16,"h":30},"candelabra":{"x":98,"y":85,"w":24,"h":18},"bookshelf":{"x":123,"y":85,"w":40,"h":72},"clock":{"x":164,"y":85,"w":22,"h":64},"save":{"x":187,"y":85,"w":28,"h":40},"doorframe":{"x":216,"y":85,"w":20,"h":64},"door":{"x":237,"y":85,"w":10,"h":48},"chandelier_deco":{"x":248,"y":85,"w":48,"h":30},"rail":{"x":297,"y":85,"w":16,"h":24},"rug":{"x":314,"y":85,"w":96,"h":4},"winerack":{"x":411,"y":85,"w":40,"h":40},"pedestal":{"x":452,"y":85,"w":28,"h":34},"linenshelf":{"x":0,"y":158,"w":36,"h":52},"pipes":{"x":37,"y":158,"w":20,"h":80},"lamp_wall":{"x":58,"y":158,"w":12,"h":18},"sheetline":{"x":71,"y":158,"w":90,"h":40},"basket":{"x":162,"y":158,"w":24,"h":16},"washtub":{"x":187,"y":158,"w":32,"h":22},"boiler":{"x":220,"y":158,"w":40,"h":64},"stove":{"x":261,"y":158,"w":44,"h":34},"potshelf":{"x":306,"y":158,"w":40,"h":40},"hangpans":{"x":347,"y":158,"w":56,"h":30},"sack":{"x":404,"y":158,"w":22,"h":24},"barrel":{"x":427,"y":158,"w":26,"h":30},"crate":{"x":454,"y":158,"w":24,"h":22},"trunk":{"x":0,"y":239,"w":34,"h":22},"dollshelf":{"x":35,"y":239,"w":40,"h":48},"gear_big":{"x":76,"y":239,"w":50,"h":50},"gear_med":{"x":127,"y":239,"w":32,"h":32},"clockface":{"x":160,"y":239,"w":46,"h":46},"bell":{"x":207,"y":239,"w":40,"h":46},"round_window":{"x":248,"y":239,"w":36,"h":36},"glasspane":{"x":285,"y":239,"w":44,"h":72},"fern":{"x":330,"y":239,"w":30,"h":26},"rosebush":{"x":361,"y":239,"w":36,"h":26},"hedge":{"x":398,"y":239,"w":40,"h":36},"fountain":{"x":439,"y":239,"w":72,"h":52},"statue":{"x":0,"y":312,"w":24,"h":56},"vine_hang":{"x":25,"y":312,"w":20,"h":60},"gardenlamp":{"x":46,"y":312,"w":14,"h":60},"wardrobe":{"x":61,"y":312,"w":32,"h":66},"lever_up":{"x":94,"y":312,"w":18,"h":26},"lever_mid":{"x":113,"y":312,"w":18,"h":26},"lever_down":{"x":132,"y":312,"w":18,"h":26},"abil_pedestal":{"x":151,"y":312,"w":30,"h":30},"sheet":{"x":182,"y":312,"w":32,"h":72},"ivy":{"x":215,"y":312,"w":32,"h":72},"vine0":{"x":248,"y":312,"w":16,"h":16},"vine1":{"x":265,"y":312,"w":16,"h":16},"floatpad":{"x":282,"y":312,"w":26,"h":8},"thornspike":{"x":309,"y":312,"w":16,"h":44}},"tiles":{"brick0":{"x":0,"y":0,"w":16,"h":16},"brick1":{"x":17,"y":0,"w":16,"h":16},"top0":{"x":34,"y":0,"w":16,"h":16},"top1":{"x":51,"y":0,"w":16,"h":16},"secret":{"x":68,"y":0,"w":16,"h":16},"csecret":{"x":85,"y":0,"w":16,"h":16},"tbrick0":{"x":102,"y":0,"w":16,"h":16},"tbrick1":{"x":119,"y":0,"w":16,"h":16},"ttop0":{"x":136,"y":0,"w":16,"h":16},"ttop1":{"x":153,"y":0,"w":16,"h":16},"tsecret":{"x":170,"y":0,"w":16,"h":16},"gbrick0":{"x":187,"y":0,"w":16,"h":16},"gbrick1":{"x":204,"y":0,"w":16,"h":16},"gtop0":{"x":221,"y":0,"w":16,"h":16},"gtop1":{"x":238,"y":0,"w":16,"h":16},"gsecret":{"x":0,"y":17,"w":16,"h":16},"wbrick0":{"x":17,"y":17,"w":16,"h":16},"wbrick1":{"x":34,"y":17,"w":16,"h":16},"wtop0":{"x":51,"y":17,"w":16,"h":16},"wtop1":{"x":68,"y":17,"w":16,"h":16},"wsecret":{"x":85,"y":17,"w":16,"h":16},"bars":{"x":102,"y":17,"w":16,"h":16},"grate":{"x":119,"y":17,"w":16,"h":16},"cbrick0":{"x":136,"y":17,"w":16,"h":16},"cbrick1":{"x":153,"y":17,"w":16,"h":16},"ctop0":{"x":170,"y":17,"w":16,"h":16},"ctop1":{"x":187,"y":17,"w":16,"h":16},"platL":{"x":204,"y":17,"w":16,"h":16},"platM":{"x":221,"y":17,"w":16,"h":16},"platR":{"x":238,"y":17,"w":16,"h":16},"shelf":{"x":0,"y":34,"w":16,"h":16}}};
+const EMBEDDED_META = {"bg":{"wall_foyer":{"x":0,"y":0,"w":32,"h":32},"wain_foyer":{"x":33,"y":0,"w":32,"h":24},"pillar_foyer":{"x":66,"y":0,"w":16,"h":32},"mold_foyer":{"x":83,"y":0,"w":32,"h":10},"wall_gallery":{"x":116,"y":0,"w":32,"h":32},"wain_gallery":{"x":149,"y":0,"w":32,"h":24},"pillar_gallery":{"x":182,"y":0,"w":16,"h":32},"mold_gallery":{"x":199,"y":0,"w":32,"h":10},"wall_library":{"x":232,"y":0,"w":32,"h":32},"wain_library":{"x":265,"y":0,"w":32,"h":24},"pillar_library":{"x":298,"y":0,"w":16,"h":32},"mold_library":{"x":315,"y":0,"w":32,"h":10},"wall_dining":{"x":348,"y":0,"w":32,"h":32},"wain_dining":{"x":381,"y":0,"w":32,"h":24},"pillar_dining":{"x":414,"y":0,"w":16,"h":32},"mold_dining":{"x":431,"y":0,"w":32,"h":10},"wall_cellar":{"x":464,"y":0,"w":32,"h":32},"wain_cellar":{"x":0,"y":33,"w":32,"h":24},"pillar_cellar":{"x":33,"y":33,"w":16,"h":32},"mold_cellar":{"x":50,"y":33,"w":32,"h":10},"wall_vault":{"x":83,"y":33,"w":32,"h":32},"wain_vault":{"x":116,"y":33,"w":32,"h":24},"pillar_vault":{"x":149,"y":33,"w":16,"h":32},"mold_vault":{"x":166,"y":33,"w":32,"h":10},"wall_ballroom":{"x":199,"y":33,"w":32,"h":32},"wain_ballroom":{"x":232,"y":33,"w":32,"h":24},"pillar_ballroom":{"x":265,"y":33,"w":16,"h":32},"mold_ballroom":{"x":282,"y":33,"w":32,"h":10},"wall_laundry":{"x":315,"y":33,"w":32,"h":32},"wain_laundry":{"x":348,"y":33,"w":32,"h":24},"pillar_laundry":{"x":381,"y":33,"w":16,"h":32},"mold_laundry":{"x":398,"y":33,"w":32,"h":10},"wall_kitchen":{"x":431,"y":33,"w":32,"h":32},"wain_kitchen":{"x":464,"y":33,"w":32,"h":24},"pillar_kitchen":{"x":0,"y":66,"w":16,"h":32},"mold_kitchen":{"x":17,"y":66,"w":32,"h":10},"wall_boiler":{"x":50,"y":66,"w":32,"h":32},"wain_boiler":{"x":83,"y":66,"w":32,"h":24},"pillar_boiler":{"x":116,"y":66,"w":16,"h":32},"mold_boiler":{"x":133,"y":66,"w":32,"h":10},"wall_garden":{"x":166,"y":66,"w":32,"h":32},"wain_garden":{"x":199,"y":66,"w":32,"h":24},"pillar_garden":{"x":232,"y":66,"w":16,"h":32},"mold_garden":{"x":249,"y":66,"w":32,"h":10},"wall_courtyard":{"x":282,"y":66,"w":32,"h":32},"wain_courtyard":{"x":315,"y":66,"w":32,"h":24},"pillar_courtyard":{"x":348,"y":66,"w":16,"h":32},"mold_courtyard":{"x":365,"y":66,"w":32,"h":10},"wall_thorn":{"x":398,"y":66,"w":32,"h":32},"wain_thorn":{"x":431,"y":66,"w":32,"h":24},"pillar_thorn":{"x":464,"y":66,"w":16,"h":32},"mold_thorn":{"x":0,"y":99,"w":32,"h":10},"wall_shed":{"x":33,"y":99,"w":32,"h":32},"wain_shed":{"x":66,"y":99,"w":32,"h":24},"pillar_shed":{"x":99,"y":99,"w":16,"h":32},"mold_shed":{"x":116,"y":99,"w":32,"h":10},"wall_attic":{"x":149,"y":99,"w":32,"h":32},"wain_attic":{"x":182,"y":99,"w":32,"h":24},"pillar_attic":{"x":215,"y":99,"w":16,"h":32},"mold_attic":{"x":232,"y":99,"w":32,"h":10},"wall_gears":{"x":265,"y":99,"w":32,"h":32},"wain_gears":{"x":298,"y":99,"w":32,"h":24},"pillar_gears":{"x":331,"y":99,"w":16,"h":32},"mold_gears":{"x":348,"y":99,"w":32,"h":10},"wall_tower":{"x":381,"y":99,"w":32,"h":32},"wain_tower":{"x":414,"y":99,"w":32,"h":24},"pillar_tower":{"x":447,"y":99,"w":16,"h":32},"mold_tower":{"x":464,"y":99,"w":32,"h":10},"wall_chapel":{"x":0,"y":132,"w":32,"h":32},"wain_chapel":{"x":33,"y":132,"w":32,"h":24},"pillar_chapel":{"x":66,"y":132,"w":16,"h":32},"mold_chapel":{"x":83,"y":132,"w":32,"h":10},"wall_crypt":{"x":116,"y":132,"w":32,"h":32},"wain_crypt":{"x":149,"y":132,"w":32,"h":24},"pillar_crypt":{"x":182,"y":132,"w":16,"h":32},"mold_crypt":{"x":199,"y":132,"w":32,"h":10},"wall_bath":{"x":232,"y":132,"w":32,"h":32},"wain_bath":{"x":265,"y":132,"w":32,"h":24},"pillar_bath":{"x":298,"y":132,"w":16,"h":32},"mold_bath":{"x":315,"y":132,"w":32,"h":10},"wall_cistern":{"x":348,"y":132,"w":32,"h":32},"wain_cistern":{"x":381,"y":132,"w":32,"h":24},"pillar_cistern":{"x":414,"y":132,"w":16,"h":32},"mold_cistern":{"x":431,"y":132,"w":32,"h":10}},"boss":{"chandelier":{"x":0,"y":0,"w":128,"h":84,"ax":64,"ay":0},"chandelier_cracked":{"x":129,"y":0,"w":128,"h":84,"ax":64,"ay":0},"core_normal":{"x":258,"y":0,"w":30,"h":30},"core_angry":{"x":289,"y":0,"w":30,"h":30},"core_tug":{"x":320,"y":0,"w":30,"h":30},"core_dizzy":{"x":351,"y":0,"w":30,"h":30},"chain":{"x":382,"y":0,"w":6,"h":10},"gcore_tug":{"x":389,"y":0,"w":30,"h":30},"gcore_dizzy":{"x":420,"y":0,"w":30,"h":30},"rcore_tug":{"x":451,"y":0,"w":30,"h":30},"rcore_dizzy":{"x":482,"y":0,"w":30,"h":30},"ccore_tug":{"x":0,"y":85,"w":30,"h":30},"ccore_dizzy":{"x":31,"y":85,"w":30,"h":30},"golem_idle0":{"x":62,"y":85,"w":72,"h":84},"golem_idle1":{"x":135,"y":85,"w":72,"h":84},"golem_raise":{"x":208,"y":85,"w":72,"h":84},"golem_slam":{"x":281,"y":85,"w":72,"h":84},"golem_puff":{"x":354,"y":85,"w":72,"h":84},"golem_dizzy":{"x":427,"y":85,"w":72,"h":84},"golem_ball0":{"x":0,"y":170,"w":46,"h":46},"golem_ball1":{"x":47,"y":170,"w":46,"h":46},"golem_ball2":{"x":94,"y":170,"w":46,"h":46},"golem_ball3":{"x":141,"y":170,"w":46,"h":46},"rose_stem":{"x":188,"y":170,"w":60,"h":112},"rose_head":{"x":249,"y":170,"w":64,"h":58},"rose_rage":{"x":314,"y":170,"w":64,"h":58},"rose_bloom":{"x":379,"y":170,"w":64,"h":58},"rose_wilt":{"x":444,"y":170,"w":64,"h":58},"rose_mound":{"x":0,"y":283,"w":40,"h":12},"clock_body":{"x":41,"y":283,"w":76,"h":156},"clock_rage":{"x":118,"y":283,"w":76,"h":156},"clock_stop":{"x":195,"y":283,"w":76,"h":156},"pend_bob":{"x":272,"y":283,"w":32,"h":32},"ocore_tug":{"x":305,"y":283,"w":30,"h":30},"ocore_dizzy":{"x":336,"y":283,"w":30,"h":30},"dcore_tug":{"x":367,"y":283,"w":30,"h":30},"dcore_dizzy":{"x":398,"y":283,"w":30,"h":30},"organ_idle":{"x":0,"y":440,"w":132,"h":128},"organ_sing":{"x":133,"y":440,"w":132,"h":128},"organ_rage":{"x":266,"y":440,"w":132,"h":128},"organ_stop":{"x":0,"y":569,"w":132,"h":128},"note":{"x":133,"y":569,"w":12,"h":12},"serp_head":{"x":146,"y":569,"w":56,"h":48},"serp_spit":{"x":203,"y":569,"w":56,"h":48},"serp_rage":{"x":260,"y":569,"w":56,"h":48},"serp_dizzy":{"x":317,"y":569,"w":56,"h":48},"serp_seg":{"x":374,"y":569,"w":30,"h":30},"serp_seg_r":{"x":405,"y":569,"w":30,"h":30},"splashring":{"x":436,"y":569,"w":44,"h":12}},"enemies":{"puff0":{"x":0,"y":0,"w":32,"h":32},"puff1":{"x":33,"y":0,"w":32,"h":32},"puff2":{"x":66,"y":0,"w":32,"h":32},"puff3":{"x":99,"y":0,"w":32,"h":32},"puff_tug":{"x":132,"y":0,"w":32,"h":32},"puff_angry":{"x":165,"y":0,"w":32,"h":32},"dish0":{"x":198,"y":0,"w":36,"h":36},"dish1":{"x":235,"y":0,"w":36,"h":36},"dish2":{"x":272,"y":0,"w":36,"h":36},"dish_throw":{"x":309,"y":0,"w":36,"h":36},"dish_tug":{"x":346,"y":0,"w":36,"h":36},"armor0":{"x":383,"y":0,"w":28,"h":52},"armor1":{"x":412,"y":0,"w":28,"h":52},"armor_shell":{"x":441,"y":0,"w":28,"h":52},"helmet":{"x":470,"y":0,"w":12,"h":12},"firewisp0":{"x":483,"y":0,"w":16,"h":18},"firewisp1":{"x":0,"y":53,"w":16,"h":18},"firewisp2":{"x":17,"y":53,"w":16,"h":18},"bat0":{"x":34,"y":53,"w":20,"h":12},"bat1":{"x":55,"y":53,"w":20,"h":12},"bat_hang":{"x":76,"y":53,"w":12,"h":14},"rat0":{"x":89,"y":53,"w":22,"h":12},"rat1":{"x":112,"y":53,"w":22,"h":12},"garg_stone":{"x":135,"y":53,"w":30,"h":28},"garg_fly0":{"x":166,"y":53,"w":30,"h":28},"garg_fly1":{"x":197,"y":53,"w":30,"h":28},"garg_dive":{"x":228,"y":53,"w":30,"h":28},"puppet0":{"x":259,"y":53,"w":20,"h":34},"puppet1":{"x":280,"y":53,"w":20,"h":34},"puppet_throw":{"x":301,"y":53,"w":20,"h":34},"skel0":{"x":322,"y":53,"w":24,"h":42},"skel1":{"x":347,"y":53,"w":24,"h":42},"skel_throw":{"x":372,"y":53,"w":24,"h":42},"cbook0":{"x":397,"y":53,"w":22,"h":18},"cbook1":{"x":420,"y":53,"w":22,"h":18},"cbook_bite":{"x":443,"y":53,"w":22,"h":18},"sheet0":{"x":466,"y":53,"w":34,"h":34},"sheet1":{"x":0,"y":96,"w":34,"h":34},"sheet_angry":{"x":35,"y":96,"w":34,"h":34},"sheet_tug":{"x":70,"y":96,"w":34,"h":34},"skullwisp0":{"x":105,"y":96,"w":20,"h":22},"skullwisp1":{"x":126,"y":96,"w":20,"h":22},"crab0":{"x":147,"y":96,"w":24,"h":16},"crab1":{"x":172,"y":96,"w":24,"h":16},"crab_snap":{"x":197,"y":96,"w":24,"h":16}},"items":{"coin0":{"x":0,"y":0,"w":10,"h":10},"coin1":{"x":11,"y":0,"w":10,"h":10},"coin2":{"x":22,"y":0,"w":10,"h":10},"coin3":{"x":33,"y":0,"w":10,"h":10},"heart":{"x":44,"y":0,"w":11,"h":10},"heartbig":{"x":56,"y":0,"w":18,"h":16},"plate":{"x":75,"y":0,"w":14,"h":6},"book":{"x":90,"y":0,"w":12,"h":10},"candle":{"x":103,"y":0,"w":6,"h":12},"dustball":{"x":110,"y":0,"w":10,"h":8},"crystal":{"x":121,"y":0,"w":12,"h":12},"spark":{"x":134,"y":0,"w":10,"h":10},"key":{"x":145,"y":0,"w":14,"h":10},"fireball":{"x":160,"y":0,"w":12,"h":12},"bottle":{"x":173,"y":0,"w":8,"h":14},"chair":{"x":182,"y":0,"w":14,"h":16},"pan":{"x":197,"y":0,"w":16,"h":8},"gear":{"x":214,"y":0,"w":12,"h":12},"flowerpot":{"x":227,"y":0,"w":12,"h":12},"soap":{"x":240,"y":0,"w":12,"h":12},"seed":{"x":0,"y":17,"w":10,"h":10},"pot":{"x":11,"y":17,"w":16,"h":14},"barrel":{"x":28,"y":17,"w":16,"h":18},"shard":{"x":45,"y":17,"w":6,"h":6},"bubble":{"x":52,"y":17,"w":16,"h":16},"petal":{"x":69,"y":17,"w":12,"h":8},"orb_float":{"x":82,"y":17,"w":16,"h":16},"orb_turbo":{"x":99,"y":17,"w":16,"h":16},"orb_djump":{"x":116,"y":17,"w":16,"h":16},"orb_phase":{"x":133,"y":17,"w":16,"h":16},"orb_tank":{"x":150,"y":17,"w":16,"h":16},"bone":{"x":167,"y":17,"w":16,"h":8},"duck":{"x":184,"y":17,"w":14,"h":13},"note":{"x":199,"y":17,"w":12,"h":12}},"kanata":{"frameWidth":106,"frameHeight":70,"anchorX":46,"anchorY":69,"targetHeight":68,"frames":[{"i":0,"sheet":"a","pose":"idle"},{"i":1,"sheet":"a","pose":"blink"},{"i":2,"sheet":"a","pose":"move1"},{"i":3,"sheet":"a","pose":"move2"},{"i":4,"sheet":"a","pose":"suck"},{"i":5,"sheet":"a","pose":"spit"},{"i":6,"sheet":"a","pose":"hurt"},{"i":7,"sheet":"a","pose":"down"},{"i":8,"sheet":"b","pose":"idle"},{"i":9,"sheet":"b","pose":"blink"},{"i":10,"sheet":"b","pose":"move1"},{"i":11,"sheet":"b","pose":"move2"},{"i":12,"sheet":"b","pose":"suck"},{"i":13,"sheet":"b","pose":"spit"},{"i":14,"sheet":"b","pose":"hurt"},{"i":15,"sheet":"b","pose":"down"}],"poses":{"idle":[0,8],"blink":[1,9],"move1":[2,10],"move2":[3,11],"suck":[4,12],"spit":[5,13],"hurt":[6,14],"down":[7,15]}},"props":{"window":{"x":0,"y":0,"w":40,"h":76},"window_wide":{"x":41,"y":0,"w":56,"h":84},"portrait_lord":{"x":98,"y":0,"w":28,"h":36},"portrait_lady":{"x":127,"y":0,"w":28,"h":36},"portrait_land":{"x":156,"y":0,"w":44,"h":32},"portrait_big":{"x":201,"y":0,"w":44,"h":56},"sconce":{"x":246,"y":0,"w":12,"h":22},"flame0":{"x":259,"y":0,"w":6,"h":8},"flame1":{"x":266,"y":0,"w":6,"h":8},"flame2":{"x":273,"y":0,"w":6,"h":8},"flame3":{"x":280,"y":0,"w":6,"h":8},"bflame0":{"x":287,"y":0,"w":8,"h":10},"bflame1":{"x":296,"y":0,"w":8,"h":10},"bflame2":{"x":305,"y":0,"w":8,"h":10},"bflame3":{"x":314,"y":0,"w":8,"h":10},"curtain":{"x":323,"y":0,"w":32,"h":72},"curtain_rod":{"x":356,"y":0,"w":32,"h":4},"dust0":{"x":389,"y":0,"w":20,"h":10},"dust1":{"x":410,"y":0,"w":20,"h":10},"dust2":{"x":431,"y":0,"w":20,"h":10},"cobweb":{"x":452,"y":0,"w":20,"h":20},"vase":{"x":473,"y":0,"w":14,"h":22},"table":{"x":0,"y":85,"w":80,"h":30},"chair":{"x":81,"y":85,"w":16,"h":30},"candelabra":{"x":98,"y":85,"w":24,"h":18},"bookshelf":{"x":123,"y":85,"w":40,"h":72},"clock":{"x":164,"y":85,"w":22,"h":64},"save":{"x":187,"y":85,"w":28,"h":40},"doorframe":{"x":216,"y":85,"w":20,"h":64},"door":{"x":237,"y":85,"w":10,"h":48},"chandelier_deco":{"x":248,"y":85,"w":48,"h":30},"rail":{"x":297,"y":85,"w":16,"h":24},"rug":{"x":314,"y":85,"w":96,"h":4},"winerack":{"x":411,"y":85,"w":40,"h":40},"pedestal":{"x":452,"y":85,"w":28,"h":34},"linenshelf":{"x":0,"y":158,"w":36,"h":52},"pipes":{"x":37,"y":158,"w":20,"h":80},"lamp_wall":{"x":58,"y":158,"w":12,"h":18},"sheetline":{"x":71,"y":158,"w":90,"h":40},"basket":{"x":162,"y":158,"w":24,"h":16},"washtub":{"x":187,"y":158,"w":32,"h":22},"boiler":{"x":220,"y":158,"w":40,"h":64},"stove":{"x":261,"y":158,"w":44,"h":34},"potshelf":{"x":306,"y":158,"w":40,"h":40},"hangpans":{"x":347,"y":158,"w":56,"h":30},"sack":{"x":404,"y":158,"w":22,"h":24},"barrel":{"x":427,"y":158,"w":26,"h":30},"crate":{"x":454,"y":158,"w":24,"h":22},"trunk":{"x":0,"y":239,"w":34,"h":22},"dollshelf":{"x":35,"y":239,"w":40,"h":48},"gear_big":{"x":76,"y":239,"w":50,"h":50},"gear_med":{"x":127,"y":239,"w":32,"h":32},"clockface":{"x":160,"y":239,"w":46,"h":46},"bell":{"x":207,"y":239,"w":40,"h":46},"round_window":{"x":248,"y":239,"w":36,"h":36},"glasspane":{"x":285,"y":239,"w":44,"h":72},"fern":{"x":330,"y":239,"w":30,"h":26},"rosebush":{"x":361,"y":239,"w":36,"h":26},"hedge":{"x":398,"y":239,"w":40,"h":36},"fountain":{"x":439,"y":239,"w":72,"h":52},"statue":{"x":0,"y":312,"w":24,"h":56},"vine_hang":{"x":25,"y":312,"w":20,"h":60},"gardenlamp":{"x":46,"y":312,"w":14,"h":60},"wardrobe":{"x":61,"y":312,"w":32,"h":66},"lever_up":{"x":94,"y":312,"w":18,"h":26},"lever_mid":{"x":113,"y":312,"w":18,"h":26},"lever_down":{"x":132,"y":312,"w":18,"h":26},"abil_pedestal":{"x":151,"y":312,"w":30,"h":30},"sheet":{"x":182,"y":312,"w":32,"h":72},"ivy":{"x":215,"y":312,"w":32,"h":72},"vine0":{"x":248,"y":312,"w":16,"h":16},"vine1":{"x":265,"y":312,"w":16,"h":16},"floatpad":{"x":282,"y":312,"w":26,"h":8},"thornspike":{"x":309,"y":312,"w":16,"h":44},"stainedglass":{"x":326,"y":312,"w":36,"h":70},"pew":{"x":363,"y":312,"w":44,"h":20},"altar":{"x":408,"y":312,"w":48,"h":30},"organpipes":{"x":0,"y":385,"w":64,"h":90},"coffin":{"x":65,"y":385,"w":40,"h":16},"skullpile":{"x":106,"y":385,"w":30,"h":22},"urn":{"x":137,"y":385,"w":14,"h":20},"liontap":{"x":152,"y":385,"w":28,"h":26},"bathstool":{"x":181,"y":385,"w":16,"h":12},"buckets":{"x":198,"y":385,"w":26,"h":18},"duckprop":{"x":225,"y":385,"w":16,"h":14},"warp_pad":{"x":242,"y":385,"w":48,"h":10},"spiritlamp":{"x":291,"y":385,"w":14,"h":30}},"tiles":{"brick0":{"x":0,"y":0,"w":16,"h":16},"brick1":{"x":17,"y":0,"w":16,"h":16},"top0":{"x":34,"y":0,"w":16,"h":16},"top1":{"x":51,"y":0,"w":16,"h":16},"secret":{"x":68,"y":0,"w":16,"h":16},"csecret":{"x":85,"y":0,"w":16,"h":16},"tbrick0":{"x":102,"y":0,"w":16,"h":16},"tbrick1":{"x":119,"y":0,"w":16,"h":16},"ttop0":{"x":136,"y":0,"w":16,"h":16},"ttop1":{"x":153,"y":0,"w":16,"h":16},"tsecret":{"x":170,"y":0,"w":16,"h":16},"gbrick0":{"x":187,"y":0,"w":16,"h":16},"gbrick1":{"x":204,"y":0,"w":16,"h":16},"gtop0":{"x":221,"y":0,"w":16,"h":16},"gtop1":{"x":238,"y":0,"w":16,"h":16},"gsecret":{"x":0,"y":17,"w":16,"h":16},"wbrick0":{"x":17,"y":17,"w":16,"h":16},"wbrick1":{"x":34,"y":17,"w":16,"h":16},"wtop0":{"x":51,"y":17,"w":16,"h":16},"wtop1":{"x":68,"y":17,"w":16,"h":16},"wsecret":{"x":85,"y":17,"w":16,"h":16},"kbrick0":{"x":102,"y":17,"w":16,"h":16},"kbrick1":{"x":119,"y":17,"w":16,"h":16},"ktop0":{"x":136,"y":17,"w":16,"h":16},"ktop1":{"x":153,"y":17,"w":16,"h":16},"ksecret":{"x":170,"y":17,"w":16,"h":16},"bbrick0":{"x":187,"y":17,"w":16,"h":16},"bbrick1":{"x":204,"y":17,"w":16,"h":16},"btop0":{"x":221,"y":17,"w":16,"h":16},"btop1":{"x":238,"y":17,"w":16,"h":16},"bsecret":{"x":0,"y":34,"w":16,"h":16},"bars":{"x":17,"y":34,"w":16,"h":16},"grate":{"x":34,"y":34,"w":16,"h":16},"cbrick0":{"x":51,"y":34,"w":16,"h":16},"cbrick1":{"x":68,"y":34,"w":16,"h":16},"ctop0":{"x":85,"y":34,"w":16,"h":16},"ctop1":{"x":102,"y":34,"w":16,"h":16},"platL":{"x":119,"y":34,"w":16,"h":16},"platM":{"x":136,"y":34,"w":16,"h":16},"platR":{"x":153,"y":34,"w":16,"h":16},"shelf":{"x":170,"y":34,"w":16,"h":16}}};
 
 // =====================================================================
 //  Core: canvas, pixel font, hi-res Japanese text, assets, sound effects, input, layout
@@ -439,6 +451,7 @@ const Snd = {
       case 'thorn': this.noise(0.2, 0.22, 3000, 0, 'highpass'); this.tone('sawtooth', 300, 120, 0.12, 0.06); break;
       case 'tick': this.tone('square', 2200, 2200, 0.02, 0.05); break;
       case 'bell': this.tone('triangle', 392, 392, 1.2, 0.16); this.tone('triangle', 784, 784, 0.9, 0.06); this.tone('sine', 196, 196, 1.4, 0.12); break;
+      case 'warp': for (let i = 0; i < 6; i++) this.tone('triangle', 400 + i * 160, 700 + i * 200, 0.12, 0.07, i * 0.05); this.noise(0.4, 0.12, 2400, 0, 'bandpass'); break;
       case 'chomp': this.noise(0.05, 0.3, 3000, 0, 'highpass'); this.tone('square', 260, 90, 0.08, 0.14); this.noise(0.05, 0.25, 2200, 0.09, 'highpass'); this.tone('square', 220, 70, 0.08, 0.12, 0.09); break;
       case 'whoosh': this.noise(0.5, 0.2, 1500, 0, 'bandpass'); break;
     }
@@ -586,10 +599,12 @@ window.addEventListener('orientationchange', () => setTimeout(doLayout, 100));
 //  Map: x = cell column (west < 0 < east), y = cell row (attic/tower < 0, basement > 2). Areas are only a theme/music group.
 // =====================================================================
 const AREAS = {
-  east:    { jp: '幽霊屋敷 東棟', en: 'EAST WING', music: 'mansion', col: '#2a3a7a' },
-  laundry: { jp: '地下 洗濯場と厨房', en: 'UNDERGROUND LAUNDRY & KITCHEN', music: 'laundry', col: '#1f5a66' },
-  garden:  { jp: '月下の温室庭園', en: 'MOONLIT GREENHOUSE', music: 'garden', col: '#2a6a3a' },
-  clock:   { jp: '屋根裏と時計塔', en: 'ATTIC & CLOCK TOWER', music: 'clock', col: '#6a4a24' },
+  east:    { jp: '幽霊屋敷 東棟', short: '東棟', en: 'EAST WING', music: 'mansion', col: '#2a3a7a' },
+  laundry: { jp: '地下 洗濯場と厨房', short: '洗濯場', en: 'UNDERGROUND LAUNDRY & KITCHEN', music: 'laundry', col: '#1f5a66' },
+  garden:  { jp: '月下の温室庭園', short: '温室庭園', en: 'MOONLIT GREENHOUSE', music: 'garden', col: '#2a6a3a' },
+  clock:   { jp: '屋根裏と時計塔', short: '時計塔', en: 'ATTIC & CLOCK TOWER', music: 'clock', col: '#6a4a24' },
+  crypt:   { jp: '礼拝堂と地下墓所', short: '地下墓所', en: 'CHAPEL & CRYPT', music: 'chapel', col: '#4a2a6a' },
+  bath:    { jp: '大浴場と貯水槽', short: '大浴場', en: 'GRAND BATH & CISTERN', music: 'bath', col: '#1e6a7a' },
 };
 const ROOM_DEFS = [
   { id: 'foyer', jp: '玄関ホール', en: 'GRAND FOYER', area: 'east', theme: 'foyer', cx: 0, cy: 1, cw: 2, ch: 1, dark: 0.42,
@@ -636,7 +651,7 @@ const ROOM_DEFS = [
     decor: [['pedestal', 12, 15], ['portrait_big', 12, 9], ['candelabra', 5, 11, { light: 1 }], ['candelabra', 18, 11, { light: 1 }], ['cobweb', 22.75, 2, { top: 1, flip: 1 }]] },
 
   { id: 'cellar', jp: '地下ワイン蔵', en: 'WINE CELLAR', area: 'east', theme: 'cellar', cx: 5, cy: 2, cw: 2, ch: 1, dark: 0.6, tiles: 'c',
-    build(R) { R.box(); R.open('T', 0, 11, 13); R.open('R', 0, 11, 14); R.open('B', 0, 4, 7); R.gate(4, 15, 7, 17, 'grate'); R.plat(10, 14, 7); R.plat(3, 8, 11); R.plat(20, 26, 11); R.plat(36, 42, 11); R.plat(29, 33, 7); },
+    build(R) { R.box(); R.open('T', 0, 11, 13); R.open('R', 0, 11, 14); R.open('L', 0, 11, 14); R.open('B', 0, 4, 7); R.gate(4, 15, 7, 17, 'grate'); R.plat(10, 14, 7); R.plat(3, 8, 11); R.plat(20, 26, 11); R.plat(36, 42, 11); R.plat(29, 33, 7); },
     ents: [['puff', 22, 8], ['armor', 30, 15], ['puff', 40, 8], ['candle', 5, 11], ['candle', 23, 11], ['candle', 39, 11], ['dust', 16, 15, { drop: ['coin', 'coin'] }],
       ['dust', 44, 15, { drop: ['heart'] }], ['coin', 30, 7], ['coin', 32, 7], ['vase', 27, 15, { drop: ['coin', 'coin', 'coin'] }], ['bottle', 3, 15], ['bottle', 9, 15], ['rat', 34, 15], ['barrel', 44, 11]],
     decor: [['winerack', 6, 15], ['winerack', 14, 15], ['barrel', 24, 15], ['barrel', 34, 15], ['barrel', 36.6, 15], ['winerack', 42, 15],
@@ -690,7 +705,7 @@ ROOM_DEFS.push(
       ['lamp_wall', 12, 8, { light: 1 }], ['lamp_wall', 30, 4, { light: 1 }], ['lamp_wall', 40, 7, { light: 1 }], ['basket', 3, 15], ['basket', 45, 9], ['cobweb', 1, 2, { top: 1 }]] },
 
   { id: 'boiler', jp: 'ボイラー室', en: 'BOILER ROOM', area: 'laundry', theme: 'boiler', tiles: 't', cx: 4, cy: 4, cw: 1, ch: 1, dark: 0.55,
-    build(R) { R.box(); R.open('T', 0, 4, 7); R.open('R', 0, 11, 14); R.plat(10, 16, 11); R.plat(3, 9, 7); },
+    build(R) { R.box(); R.open('T', 0, 4, 7); R.open('R', 0, 11, 14); R.open('L', 0, 11, 14); R.plat(10, 16, 11); R.plat(3, 9, 7); },
     ents: [['rat', 8, 15], ['skeleton', 15, 15], ['pot', 4, 15], ['pot', 20, 11], ['pan', 12, 11], ['pan', 6, 7], ['bottle', 21, 15],
       ['hint', 5, 15, { need: 'turbo', text: '鉄なべは重くて吸い込めない…' }]],
     decor: [['boiler', 12, 15], ['pipes', 2, 15], ['pipes', 20, 15], ['pipes', 22, 7], ['lamp_wall', 8, 10, { light: 1 }], ['lamp_wall', 17, 8, { light: 1 }]] },
@@ -755,7 +770,7 @@ ROOM_DEFS.push(
     decor: [['glasspane', 6, 10], ['glasspane', 18, 10], ['fern', 13, 15], ['rosebush', 4, 15], ['vine_hang', 10, 2, { top: 1 }], ['gardenlamp', 15, 15, { light: 1 }]] },
 
   { id: 'courtyard', jp: '噴水の中庭', en: 'FOUNTAIN COURTYARD', area: 'garden', theme: 'courtyard', tiles: 'g', cx: -6, cy: 1, cw: 2, ch: 1, dark: 0.32,
-    build(R) { R.box(); R.open('R', 0, 11, 14); R.open('B', 0, 6, 9); R.plat(14, 20, 11); R.plat(24, 30, 7); R.plat(34, 40, 11); },
+    build(R) { R.box(); R.open('R', 0, 11, 14); R.open('L', 0, 11, 14); R.open('B', 0, 6, 9); R.plat(14, 20, 11); R.plat(24, 30, 7); R.plat(34, 40, 11); },
     ents: [['save', 42, 15], ['puppet', 30, 15], ['gargoyle', 20, 5], ['flowerpot', 12, 15], ['flowerpot', 16, 11], ['candle', 27, 7], ['seed', 36, 11],
       ['bottle', 3, 15], ['chair', 33, 15], ['dust', 22, 15, { drop: ['coin', 'coin', 'coin'] }]],
     decor: [['fountain', 24, 15], ['statue', 4, 15], ['statue', 44, 15], ['hedge', 13, 15], ['hedge', 36, 15], ['gardenlamp', 10, 15, { light: 1 }],
@@ -795,7 +810,7 @@ ROOM_DEFS.push(
 // =====================================================================
 ROOM_DEFS.push(
   { id: 'attic', jp: 'ほこりの屋根裏', en: 'DUSTY ATTIC', area: 'clock', theme: 'attic', tiles: 'w', cx: 6, cy: -1, cw: 3, ch: 1, dark: 0.55,
-    build(R) { R.box(); R.open('B', 1, 18, 21); R.open('T', 2, 8, 11); R.secret(0, 11, 14); R.plat(8, 14, 11); R.plat(18, 24, 7); R.plat(30, 36, 11);
+    build(R) { R.box(); R.open('B', 1, 18, 21); R.open('T', 2, 8, 11); R.secret(0, 11, 14); R.open('R', 0, 11, 14); R.plat(8, 14, 11); R.plat(18, 24, 7); R.plat(30, 36, 11);
       R.plat(46, 51, 11); R.plat(53, 62, 8); R.plat(65, 70, 11); },
     ents: [['save', 32, 15], ['cursedbook', 12, 6], ['cursedbook', 40, 6], ['cursedbook', 60, 5], ['rat', 26, 15], ['puppet', 66, 15],
       ['chair', 6, 15], ['chair', 36, 15], ['book', 10, 11], ['book', 20, 7], ['book', 49, 11], ['bottle', 28, 15], ['gear', 58, 8], ['plate', 33, 11],
@@ -810,7 +825,7 @@ ROOM_DEFS.push(
     decor: [['dollshelf', 12, 15], ['dollshelf', 20, 15], ['round_window', 12, 7], ['candelabra', 5, 11, { light: 1 }], ['cobweb', 1, 2, { top: 1 }]] },
 
   { id: 'gearshaft', jp: '歯車の縦穴', en: 'GEAR SHAFT', area: 'clock', theme: 'gears', tiles: 'w', cx: 8, cy: -3, cw: 1, ch: 2, dark: 0.5,
-    build(R) { R.box(); R.open('B', 0, 8, 11); R.open('L', 0, 11, 14); R.solid(1, 15, 6, 16); R.plat(13, 20, 27); R.plat(3, 10, 21); },
+    build(R) { R.box(); R.open('B', 0, 8, 11); R.open('L', 0, 11, 14); R.gate(0, 11, 0, 14, 'spirit_clock'); R.solid(1, 15, 6, 16); R.plat(13, 20, 27); R.plat(3, 10, 21); },
     ents: [['gargoyle', 18, 14], ['bats', 10, 26], ['cursedbook', 16, 20], ['gear', 15, 27], ['gear', 18, 27], ['gear', 6, 21], ['chair', 4, 33], ['bottle', 20, 33]],
     decor: [['gear_big', 12, 32], ['gear_med', 5, 28], ['gear_big', 17, 20], ['gear_med', 8, 13], ['gear_big', 14, 8], ['sconce', 3, 30, { light: 1 }], ['sconce', 20, 24, { light: 1 }],
       ['sconce', 11, 16, { light: 1 }], ['sconce', 20, 7, { light: 1 }]] },
@@ -824,7 +839,7 @@ ROOM_DEFS.push(
       ['sconce', 43, 9, { light: 1 }], ['clock', 2, 15], ['clock', 45, 15]] },
 
   { id: 'clockback', jp: '文字盤の裏側', en: 'BEHIND THE CLOCKFACE', area: 'clock', theme: 'gears', tiles: 'w', cx: 6, cy: -2, cw: 2, ch: 1, dark: 0.52,
-    build(R) { R.box(); R.open('T', 0, 4, 7); R.plat(10, 16, 11); R.plat(2, 9, 7); R.plat(22, 28, 11); R.plat(32, 38, 8); },
+    build(R) { R.box(); R.open('T', 0, 4, 7); R.open('L', 0, 11, 14); R.plat(10, 16, 11); R.plat(2, 9, 7); R.plat(22, 28, 11); R.plat(32, 38, 8); },
     ents: [['lever', 42, 15, { room: 'pendulum', gate: 'belfry' }], ['gargoyle', 34, 4], ['rat', 20, 15], ['cursedbook', 14, 5],
       ['gear', 24, 11], ['gear', 26, 11], ['gear', 35, 8], ['pot', 44, 15], ['chair', 30, 15], ['bottle', 8, 15]],
     decor: [['gear_big', 8, 15], ['gear_big', 30, 13], ['gear_med', 18, 7], ['gear_med', 40, 9], ['clockface', 24, 6], ['sconce', 14, 9, { light: 1 }], ['sconce', 36, 12, { light: 1 }],
@@ -841,6 +856,104 @@ ROOM_DEFS.push(
     ents: [['boss', 12, 15]],
     decor: [['round_window', 4, 6], ['round_window', 20, 6], ['sconce', 3, 9, { light: 1 }], ['sconce', 21, 9, { light: 1 }], ['gear_med', 12, 4]] },
 );
+
+// =====================================================================
+//  AREA 5 (v0.3): 礼拝堂と地下墓所 (CHAPEL & CRYPT) - east of the attic (needs 二段ジャンプ)
+//  Boss: 呪いのパイプオルガン (cursed pipe organ) -> 霊体化 (PHASE): pass the pale spirit barriers.
+//  The spirit barrier in the gear shaft keeps the clock tower closed until then.
+// =====================================================================
+ROOM_DEFS.push(
+  { id: 'cloister', jp: '月光の回廊', en: 'MOONLIT CLOISTER', area: 'crypt', theme: 'chapel', tiles: 'k', cx: 9, cy: -1, cw: 1, ch: 1, dark: 0.5,
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.plat(4, 9, 11); R.plat(13, 18, 8); },
+    ents: [['skullwisp', 14, 6], ['candle', 6, 11], ['coin', 15, 8], ['coin', 16, 8], ['bone', 18, 15], ['dust', 10, 15, { drop: ['coin', 'coin'] }]],
+    decor: [['stainedglass', 11, 9], ['pillar', 3, 15], ['pillar', 21, 15], ['sconce', 7, 9, { light: 1 }], ['sconce', 17, 9, { light: 1 }], ['urn', 19, 15], ['cobweb', 1, 2, { top: 1 }]] },
+
+  { id: 'nave', jp: '呪われた礼拝堂', en: 'CURSED CHAPEL', area: 'crypt', theme: 'chapel', tiles: 'k', cx: 10, cy: -1, cw: 2, ch: 1, dark: 0.48,
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.open('B', 1, 8, 11); R.plat(4, 9, 11); R.plat(12, 18, 7); R.plat(22, 27, 11); R.plat(28, 31, 7); R.plat(38, 44, 11); },
+    ents: [['save', 16, 15], ['skullwisp', 22, 6], ['skullwisp', 40, 6], ['cursedbook', 30, 5], ['puff', 10, 7], ['book', 6, 11], ['book', 24, 11], ['candle', 14, 7], ['bone', 42, 11],
+      ['coin', 29, 7], ['coin', 30, 7], ['dust', 26, 15, { drop: ['heart'] }], ['dust', 44, 15, { drop: ['coin', 'coin'] }]],
+    decor: [['stainedglass', 8, 9], ['stainedglass', 24, 9], ['stainedglass', 40, 9], ['pew', 5, 15], ['pew', 10.5, 15], ['pew', 21, 15], ['pew', 39, 15], ['altar', 27, 15],
+      ['candelabra', 24, 15, { light: 1 }], ['candelabra', 30, 15, { light: 1 }], ['sconce', 16, 9, { light: 1 }], ['sconce', 32, 9, { light: 1 }], ['organpipes', 45, 15], ['cobweb', 1, 2, { top: 1 }], ['cobweb', 46.75, 2, { top: 1, flip: 1 }]] },
+
+  { id: 'choir', jp: 'パイプオルガンの聖歌隊席', en: 'ORGAN LOFT', area: 'crypt', theme: 'chapel', tiles: 'k', cx: 12, cy: -1, cw: 1, ch: 1, dark: 0.4, boss: 'organ',
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.plat(2, 5, 11); },
+    ents: [['boss', 16, 15], ['ability', 4, 15, { abil: 'phase', after: 'organ' }]],
+    decor: [['stainedglass', 6, 9], ['stainedglass', 18, 9], ['sconce', 12, 7, { light: 1 }], ['pew', 4, 15], ['cobweb', 1, 2, { top: 1 }], ['cobweb', 22.75, 2, { top: 1, flip: 1 }]] },
+
+  { id: 'catacomb', jp: '地下墓所', en: 'CATACOMBS', area: 'crypt', theme: 'crypt', tiles: 'k', cx: 10, cy: 0, cw: 2, ch: 1, dark: 0.62,
+    build(R) { R.box(); R.open('T', 1, 8, 11); R.open('R', 0, 11, 14); R.open('L', 0, 11, 14); R.gate(0, 11, 0, 14, 'spirit_reliq'); R.plat(25, 30, 11); R.plat(33, 38, 7);
+      R.plat(6, 11, 11); R.plat(14, 19, 8); R.plat(41, 45, 11); },
+    ents: [['skeleton', 14, 15], ['skullwisp', 20, 5], ['rat', 40, 15], ['puff', 30, 4], ['bone', 8, 11], ['bone', 16, 8], ['coin', 42, 11], ['coin', 44, 11],
+      ['hint', 3, 15, { need: 'phase', text: '壁に青白い結界… 奥に何かがありそうだ' }], ['dust', 22, 15, { drop: ['heart'] }]],
+    decor: [['coffin', 10, 15], ['coffin', 34, 15], ['skullpile', 4, 15], ['skullpile', 44, 15], ['urn', 20, 15], ['urn', 26, 15], ['spiritlamp', 2, 15, { light: 1 }],
+      ['sconce', 16, 6, { light: 1 }], ['sconce', 38, 5, { light: 1 }], ['cobweb', 1, 2, { top: 1 }]] },
+
+  { id: 'reliquary', jp: '聖遺物の隠し部屋', en: 'HIDDEN RELIQUARY', area: 'crypt', theme: 'chapel', tiles: 'k', cx: 9, cy: 0, cw: 1, ch: 1, dark: 0.4, secret: true,
+    build(R) { R.box(); R.open('R', 0, 11, 14); R.plat(4, 9, 11); R.plat(14, 19, 11); },
+    ents: [['heartbig', 12, 12], ['coin', 5, 11], ['coin', 7, 11], ['coin', 15, 11], ['coin', 17, 11], ['coin', 9, 15], ['coin', 15, 15], ['crystal', 4, 15], ['bone', 19, 15]],
+    decor: [['altar', 12, 15], ['stainedglass', 12, 8], ['candelabra', 5, 11, { light: 1 }], ['candelabra', 18, 11, { light: 1 }], ['cobweb', 1, 2, { top: 1 }]] },
+
+  { id: 'ossuary', jp: '納骨堂の縦穴', en: 'OSSUARY SHAFT', area: 'crypt', theme: 'crypt', tiles: 'k', cx: 12, cy: 0, cw: 1, ch: 2, dark: 0.6,
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 1, 11, 14); R.open('B', 0, 8, 11); R.gate(8, 33, 11, 35, 'spirit_well'); R.solid(1, 15, 6, 16);
+      R.plat(10, 14, 18); R.plat(3, 8, 21); R.plat(12, 17, 25); R.plat(3, 8, 29); R.plat(17, 21, 12); },
+    ents: [['skullwisp', 14, 8], ['skullwisp', 8, 24], ['bats', 18, 20], ['bone', 5, 21], ['bone', 14, 25], ['coin', 18, 12], ['coin', 20, 12],
+      ['hint', 12, 33, { need: 'phase', text: '床の下から水の音… 青白い結界でふさがれている' }], ['dust', 18, 33, { drop: ['heart'] }]],
+    decor: [['skullpile', 4, 15], ['skullpile', 20, 33], ['urn', 15, 33], ['coffin', 4, 33], ['sconce', 12, 10, { light: 1 }], ['sconce', 6, 26, { light: 1 }], ['spiritlamp', 13, 33, { light: 1 }]] },
+);
+
+// =====================================================================
+//  AREA 6 (v0.3): 大浴場と貯水槽 (GRAND BATH & CISTERN) - under the crypt, behind a spirit barrier (needs 霊体化)
+//  Boss: 大浴場の主 ユブネ (bathwater serpent) -> 大容量タンク (tank holds 4)
+// =====================================================================
+ROOM_DEFS.push(
+  { id: 'well', jp: '湯けむりの井戸', en: 'STEAMY WELL', area: 'bath', theme: 'cistern', tiles: 'b', cx: 12, cy: 2, cw: 1, ch: 1, dark: 0.55,
+    build(R) { R.box(); R.open('T', 0, 8, 11); R.open('R', 0, 11, 14); R.plat(2, 7, 11); R.plat(9, 14, 7); R.plat(16, 21, 11); },
+    ents: [['crab', 18, 15], ['duck', 4, 11], ['duck', 19, 11], ['coin', 11, 7], ['coin', 12, 7]],
+    decor: [['pipes', 4, 15], ['spiritlamp', 14, 15, { light: 1 }], ['buckets', 20, 15]] },
+
+  { id: 'grandbath', jp: '大浴場', en: 'GRAND BATH', area: 'bath', theme: 'bath', tiles: 'b', cx: 13, cy: 2, cw: 2, ch: 1, dark: 0.36,
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.open('B', 1, 8, 11); R.solid(14, 13, 28, 14); R.plat(4, 9, 11); R.plat(17, 25, 8); R.plat(37, 43, 11); },
+    ents: [['save', 7, 15], ['crab', 20, 13], ['crab', 41, 15], ['puff', 30, 6], ['sheet', 12, 6], ['duck', 16, 13], ['duck', 26, 13], ['soap', 38, 11], ['bottle', 5, 11],
+      ['coin', 20, 8], ['coin', 22, 8], ['dust', 30, 15, { drop: ['heart'] }]],
+    decor: [['liontap', 21, 11], ['bathstool', 3, 15], ['bathstool', 44, 15], ['buckets', 11, 15], ['duckprop', 25, 13], ['lamp_wall', 8, 8, { light: 1 }], ['lamp_wall', 40, 8, { light: 1 }],
+      ['round_window', 32, 7], ['cobweb', 1, 2, { top: 1 }]] },
+
+  { id: 'sauna', jp: '呪いのサウナ', en: 'CURSED SAUNA', area: 'bath', theme: 'shed', tiles: 'w', cx: 15, cy: 2, cw: 1, ch: 1, dark: 0.45,
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.plat(4, 9, 11); R.plat(14, 19, 9); },
+    ents: [['crab', 12, 15], ['skullwisp', 16, 5], ['soap', 6, 11], ['duck', 17, 9], ['hint', 20, 15, { text: 'ぐらぐら… 奥から湯気と、大きな気配がする' }]],
+    decor: [['bathstool', 6, 15], ['buckets', 14, 15], ['stove', 20, 15, { light: 1 }], ['sconce', 12, 7, { light: 1 }]] },
+
+  { id: 'yubune', jp: '主の湯船', en: 'SERPENT\'S TUB', area: 'bath', theme: 'bath', tiles: 'b', cx: 16, cy: 2, cw: 1, ch: 1, dark: 0.35, boss: 'serpent',
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.plat(2, 5, 11); },
+    ents: [['boss', 16, 15], ['ability', 4, 15, { abil: 'tank', after: 'serpent' }]],
+    decor: [['liontap', 12, 7], ['bathstool', 3, 15], ['lamp_wall', 6, 8, { light: 1 }], ['lamp_wall', 19, 8, { light: 1 }]] },
+
+  { id: 'pumproom', jp: 'ポンプ室', en: 'PUMP ROOM', area: 'bath', theme: 'boiler', tiles: 't', cx: 14, cy: 3, cw: 1, ch: 1, dark: 0.55,
+    build(R) { R.box(); R.open('T', 0, 8, 11); R.open('L', 0, 11, 14); R.plat(2, 7, 11); R.plat(10, 15, 7); R.plat(18, 21, 4); },
+    ents: [['heartbig', 19.5, 2], ['crab', 16, 15], ['skullwisp', 6, 5], ['gear', 4, 11], ['pan', 12, 7], ['coin', 18, 15], ['coin', 20, 15]],
+    decor: [['pipes', 14, 15], ['boiler', 20, 15, { light: 1 }], ['lamp_wall', 4, 8, { light: 1 }]] },
+
+  { id: 'cistern', jp: '地下貯水槽', en: 'UNDERGROUND CISTERN', area: 'bath', theme: 'cistern', tiles: 'b', cx: 12, cy: 3, cw: 2, ch: 1, dark: 0.6,
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.plat(6, 11, 11); R.plat(15, 20, 8); R.plat(26, 31, 11); R.plat(35, 40, 7); },
+    ents: [['crab', 14, 15], ['crab', 34, 15], ['puff', 24, 6], ['bats', 38, 4], ['duck', 8, 11], ['bottle', 28, 11], ['coin', 36, 7], ['coin', 38, 7], ['dust', 44, 15, { drop: ['coin', 'coin', 'coin'] }]],
+    decor: [['pipes', 3, 15], ['pipes', 46, 15], ['spiritlamp', 18, 15, { light: 1 }], ['spiritlamp', 30, 15, { light: 1 }], ['buckets', 22, 15]] },
+);
+
+// =====================================================================
+//  v0.3 WARP ROOMS (ワープの間): one small room per area with a warp circle (see 07c_warp.js).
+// =====================================================================
+const warpRoom = (id, area, theme, tiles, cx, cy, side, decor) => ({ id, jp: 'ワープの間', en: 'WARP ROOM', area, theme, tiles, cx, cy, cw: 1, ch: 1, dark: 0.5, warp: true,
+  build(R) { R.box(); R.open(side, 0, 11, 14); R.plat(side === 'L' ? 15 : 3, side === 'L' ? 20 : 8, 11); },
+  ents: [['warp', 12, 15], ['coin', side === 'L' ? 17 : 5, 11], ['coin', side === 'L' ? 18 : 6, 11]],
+  decor: [['spiritlamp', 6, 15, { light: 1 }], ['spiritlamp', 18, 15, { light: 1 }], ['cobweb', 1, 2, { top: 1 }], ['cobweb', 22.75, 2, { top: 1, flip: 1 }]].concat(decor || []) });
+ROOM_DEFS.push(
+  warpRoom('warp_east', 'east', 'cellar', 'c', 4, 2, 'R', [['winerack', 4, 15]]),
+  warpRoom('warp_laundry', 'laundry', 'boiler', 't', 3, 4, 'R', [['pipes', 4, 15]]),
+  warpRoom('warp_garden', 'garden', 'courtyard', 'g', -7, 1, 'R', [['fern', 4, 15]]),
+  warpRoom('warp_clock', 'clock', 'gears', 'w', 5, -2, 'R', [['gear_med', 4, 12]]),
+  warpRoom('warp_crypt', 'crypt', 'crypt', 'k', 13, 1, 'L', [['urn', 20, 15]]),
+  warpRoom('warp_bath', 'bath', 'bath', 'b', 11, 3, 'R', [['duckprop', 4, 15]]),
+);
 // =====================================================================
 //  room index (all areas are loaded by now), tile codes, room grid builder (DSL)
 // =====================================================================
@@ -849,6 +962,7 @@ const ROOM_BY_ID = {}; for (const d of ROOM_DEFS) ROOM_BY_ID[d.id] = d;
 const CELL_ROOM = {};
 for (const d of ROOM_DEFS) for (let y = 0; y < d.ch; y++) for (let x = 0; x < d.cw; x++) CELL_ROOM[(d.cx + x) + ',' + (d.cy + y)] = d.id;
 const TOTAL_CELLS = Object.keys(CELL_ROOM).length;
+const BOSS_TOTAL = ROOM_DEFS.filter(d => d.boss).length;
 const WORLD = (() => { let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (const d of ROOM_DEFS) { x0 = Math.min(x0, d.cx); y0 = Math.min(y0, d.cy); x1 = Math.max(x1, d.cx + d.cw - 1); y1 = Math.max(y1, d.cy + d.ch - 1); } return { x0, y0, x1, y1, cols: x1 - x0 + 1, rows: y1 - y0 + 1 }; })();
 
 // tile codes
@@ -895,31 +1009,33 @@ let room = null;            // current room: { def, cols, rows, grid, W, H, canv
 const cam = { x: 0, y: 0, shake: 0 };
 let fadeT = 0;              // room-entry fade (frames left)
 const progress = {          // persists in localStorage (save altars)
-  coins: 0, maxHP: CONFIG.maxHP, perm: new Set(), visited: new Set(), hasKey: false, bosses: new Set(), abil: {}, saveRoom: 'foyer', tips: new Set(), time: 0, captures: 0,
+  coins: 0, maxHP: CONFIG.maxHP, perm: new Set(), visited: new Set(), hasKey: false, bosses: new Set(), abil: {}, saveRoom: 'foyer', tips: new Set(), time: 0, captures: 0, warps: new Set(),
 };
 const SAVE_KEY = 'gaiden_save_v1';
 const ABIL_INFO = {
   float: { jp: 'ふわり化', en: 'FLOAT', col: '#8fe8ff', text: '吸い込んだ物を SPIT 長押しで「ふわり化」！ しばらく空中に浮かぶ足場になる。高い場所へ登れるようになった' },
   turbo: { jp: 'ターボ吸引', en: 'TURBO', col: '#ffb040', text: '掃除機がパワーアップ！ 重い物（なべ・たる）やレバー、大きな家具まで吸い込めるようになった' },
   djump: { jp: '二段ジャンプ', en: 'GHOST STEP', col: '#c8a0ff', text: '空中でもう一度 JUMP できるようになった！（ゴーストステップ）' },
+  phase: { jp: '霊体化', en: 'PHASE', col: '#e0b8ff', text: '半分ゴーストの力が目覚めた！ 青白い「霊の結界」をすり抜けられるようになった' },
+  tank:  { jp: '大容量タンク', en: 'BIG TANK', col: '#9affc8', text: '掃除機のタンクが大きくなった！ 物を 4 つまでためておける' },
 };
 const hasAbil = k => !!progress.abil[k];
 function saveGame(roomId) {
   progress.saveRoom = roomId;
   const d = { v: 2, coins: progress.coins, maxHP: progress.maxHP, perm: [...progress.perm], visited: [...progress.visited], hasKey: progress.hasKey,
-    bosses: [...progress.bosses], abil: progress.abil, saveRoom: roomId, tips: [...progress.tips], time: progress.time, captures: progress.captures };
+    bosses: [...progress.bosses], abil: progress.abil, saveRoom: roomId, tips: [...progress.tips], time: progress.time, captures: progress.captures, warps: [...progress.warps] };
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(d)); } catch (_) {}
 }
 function loadSave() { try { const s = localStorage.getItem(SAVE_KEY); return s ? JSON.parse(s) : null; } catch (_) { return null; } }
 function applySave(d) {
   progress.coins = d.coins || 0; progress.maxHP = d.maxHP || CONFIG.maxHP; progress.perm = new Set(d.perm || []); progress.visited = new Set(d.visited || []);
   progress.hasKey = !!d.hasKey; progress.bosses = new Set(d.bosses || (d.bossDone ? ['chandelier'] : [])); progress.abil = Object.assign({}, d.abil || {});
-  progress.saveRoom = ROOM_BY_ID[d.saveRoom] ? d.saveRoom : 'foyer'; progress.tips = new Set(d.tips || []); progress.time = d.time || 0; progress.captures = d.captures || 0;
+  progress.saveRoom = ROOM_BY_ID[d.saveRoom] ? d.saveRoom : 'foyer'; progress.tips = new Set(d.tips || []); progress.time = d.time || 0; progress.captures = d.captures || 0; progress.warps = new Set(d.warps || []); syncAbilities();
   if (progress.bosses.has('chandelier')) progress.perm.add('ballroom:gate:floor'); // v0.1 saves: the floor gives way after the chandelier
 }
 function resetProgress() {
   progress.coins = 0; progress.maxHP = CONFIG.maxHP; progress.perm = new Set(); progress.visited = new Set(); progress.hasKey = false; progress.bosses = new Set(); progress.abil = {};
-  progress.saveRoom = 'foyer'; progress.tips = new Set(); progress.time = 0; progress.captures = 0;
+  progress.saveRoom = 'foyer'; progress.tips = new Set(); progress.time = 0; progress.captures = 0; progress.warps = new Set(); syncAbilities();
 }
 function eraseSave() { try { localStorage.removeItem(SAVE_KEY); } catch (_) {} }
 
@@ -1016,6 +1132,7 @@ function renderRoomStatic() {
     const t = tileAt(col, r), x = col * TS, y = r * TS;
     const gs = t === T_GATE ? (gateAt[r * room.cols + col] || 'bars') : null;
     if (gs === 'hidden') continue;
+    if (gs === 'spirit') { drawSpiritTile(c, x, y, col, r); continue; }
     if (gs === 'bars') { const horiz = tileAt(col - 1, r) === T_GATE || tileAt(col + 1, r) === T_GATE; spr('tiles', horiz && !(tileAt(col, r - 1) === T_GATE || tileAt(col, r + 1) === T_GATE) ? 'grate' : 'bars', x, y, false, c); continue; }
     if (t === T_SOLID || t === T_SECRET || t === T_GATE) {
       const v = hash(col, r) & 1, top = r > 0 && !isSolidT(tileAt(col, r - 1)) && tileAt(col, r - 1) !== T_LOCK;
@@ -1053,7 +1170,7 @@ function renderRoomStatic() {
     const [name, col, row, o] = dc, opt = o || {}, x = col * TS, y = row * TS;
     if (DECOR_FLAMES[name]) for (const [fx, fy] of DECOR_FLAMES[name]) { room.flames.push({ x: x + fx, y: y + fy, k: hash(x, fx | 0) & 3 }); }
     if (opt.light) { const ly = name === 'chandelier_deco' ? 20 : name === 'sconce' ? 24 : name === 'gardenlamp' ? 40 : name === 'lamp_wall' ? 14 : 20; room.lights.push({ x, y: y - ly, r: opt.light === 2 ? 110 : 70, warm: name !== 'gardenlamp', cool: name === 'gardenlamp' }); }
-    if (name === 'window' || name === 'window_wide' || name === 'round_window' || name === 'glasspane') { const r = rectOf('props', name); room.shafts.push({ x: x - r.w / 2 + 3, y: y - r.h + 6, w: r.w - 6, h: r.h - 12 }); room.lights.push({ x, y: y - r.h / 2, r: 60, cool: 1 }); }
+    if (name === 'window' || name === 'window_wide' || name === 'round_window' || name === 'glasspane' || name === 'stainedglass') { const r = rectOf('props', name); room.shafts.push({ x: x - r.w / 2 + 3, y: y - r.h + 6, w: r.w - 6, h: r.h - 12 }); room.lights.push({ x, y: y - r.h / 2, r: 60, cool: 1 }); }
   }
 }
 
@@ -1064,10 +1181,10 @@ function loadRoom(id, entry) {
   const def = ROOM_BY_ID[id], G = buildRoomGrid(def);
   room = { def, id, cols: G.cols, rows: G.rows, grid: G.grid, gates: G.gates, W: G.cols * TS, H: G.rows * TS, canvas: room && room.canvas, openings: roomOpenings(def, G), t: 0 };
   // permanent changes
-  for (const gid in G.gates) if (progress.perm.has(id + ':gate:' + gid)) for (const i of G.gates[gid]) room.grid[i] = T_EMPTY;
+  for (const gid in G.gates) if (progress.perm.has(id + ':gate:' + gid) || (isSpirit(gid) && hasAbil('phase'))) for (const i of G.gates[gid]) room.grid[i] = T_EMPTY;
   room.gateStyle = {};
   for (const gid in G.gates) { const e = def.ents.find(e => (e[0] === 'heavy' || e[0] === 'vines') && e[3] && e[3].gate === gid);
-    room.gateStyle[gid] = e ? 'hidden' : gid === 'floor' ? 'floor' : 'bars'; }
+    room.gateStyle[gid] = e ? 'hidden' : gid === 'floor' ? 'floor' : isSpirit(gid) ? 'spirit' : 'bars'; }
   if (progress.perm.has(id + ':secret')) for (let i = 0; i < room.grid.length; i++) if (room.grid[i] === T_SECRET) room.grid[i] = T_EMPTY;
   if (progress.hasKey && progress.perm.has(id + ':lock')) for (let i = 0; i < room.grid.length; i++) if (room.grid[i] === T_LOCK) room.grid[i] = T_EMPTY;
   renderRoomStatic();
@@ -1557,7 +1674,8 @@ function spawnRoomEntities() {
       case 'save': ents.push({ type: 'save', x, y, w: 28, h: 40, used: false }); room.save = { x, y }; break;
       case 'coin': case 'heart': spawnItem(type, x, y, { perm: id }); break;
       case 'bats': for (let k = 0; k < (opt.n || 2); k++) ents.push(makeFoe('bat', x + (k - 0.5) * 18, y + (k & 1) * 6)); break;
-      case 'rat': case 'gargoyle': case 'puppet': case 'skeleton': case 'cursedbook': ents.push(makeFoe(type, x, y, opt.foe)); break;
+      case 'rat': case 'gargoyle': case 'puppet': case 'skeleton': case 'cursedbook': case 'skullwisp': case 'crab': ents.push(makeFoe(type, x, y, opt.foe)); break;
+      case 'warp': ents.push(makeWarp(x, y, opt, id)); break;
       case 'sheet': ents.push(makeGhost('sheet', x, y)); break;
       case 'lever': ents.push(makeLever(x, y, opt, id)); break;
       case 'heavy': ents.push(makeHeavy(x, y, opt, id)); break;
@@ -1766,6 +1884,7 @@ function updateEnts() {
     else if (e.type === 'vines') updateVines(e);
     else if (e.type === 'ability') updateAbility(e);
     else if (e.type === 'hint') updateHint(e);
+    else if (e.type === 'warp') updateWarp(e);
     else updateInteractables(e);
   }
   for (let i = ents.length - 1; i >= 0; i--) if (ents[i].dead && ents[i] !== P.tug) ents.splice(i, 1);
@@ -1789,9 +1908,9 @@ function updateParts() {
 //  Shared: hp, hit flash + knockback, burn damage over time, coin drops, "the vacuum doesn't work" feedback.
 //  Positions: x = centre, y = bottom (feet), like every non-ghost entity.
 // =====================================================================
-const FOE_SIZE = { bat: [14, 10], rat: [18, 10], gargoyle: [26, 26], puppet: [16, 30], skeleton: [18, 40], cursedbook: [16, 14] };
-const FOE_JP = { bat: 'コウモリ', rat: 'ネズミ', gargoyle: 'ガーゴイル', puppet: 'あやつり人形', skeleton: '骸骨の給仕', cursedbook: '呪いの本' };
-const EDIBLE = { rat: 1, bat: 1 };
+const FOE_SIZE = { bat: [14, 10], rat: [18, 10], gargoyle: [26, 26], puppet: [16, 30], skeleton: [18, 40], cursedbook: [16, 14], skullwisp: [16, 18], crab: [20, 12] };
+const FOE_JP = { bat: 'コウモリ', rat: 'ネズミ', gargoyle: 'ガーゴイル', puppet: 'あやつり人形', skeleton: '骸骨の給仕', cursedbook: '呪いの本', skullwisp: 'どくろ火', crab: 'おふろガニ' };
+const EDIBLE = { rat: 1, bat: 1, crab: 1 };  // tiny critters: the mimic vacuum eats them
 function makeFoe(kind, x, y, opt) {
   const C = CONFIG.foes[kind], [w, h] = FOE_SIZE[kind];
   const e = { type: kind, foe: true, x, y, w, h, hp: C.hp, maxHp: C.hp, state: 'idle', t: 0, face: -1, flash: 0, burnT: 0, burnTick: 0, vx: 0, vy: 0,
@@ -1801,10 +1920,10 @@ function makeFoe(kind, x, y, opt) {
       if (frame % 9 === 0) { sfx('tink'); parts.push({ x: this.x + rnd(-6, 6), y: this.y - this.h / 2 + rnd(-6, 6), vx: rnd(-1, 1), vy: rnd(-1, 0), life: 10, col: '#ffffff', size: 1 }); }
       this.tinkT = 30; tip('foe', FOE_JP[this.type] + 'は生き物（？）だから掃除機が効かない！ 吸い込んだ物をぶつけよう（SPIT）'); },
     hitBy(s) { return foeHit(this, s); } };
-  if (kind === 'rat' || kind === 'puppet' || kind === 'skeleton') { e.body = { x: x - w / 2, y: y - h, w, h, vx: 0, vy: 0 }; e.state = 'walk'; e.face = Math.random() < 0.5 ? -1 : 1; }
+  if (kind === 'rat' || kind === 'puppet' || kind === 'skeleton' || kind === 'crab') { e.body = { x: x - w / 2, y: y - h, w, h, vx: 0, vy: 0 }; e.state = 'walk'; e.face = Math.random() < 0.5 ? -1 : 1; }
   if (kind === 'bat') { e.state = 'hang'; e.y = Math.max(y, 2 * TS + h + 2); }
   if (kind === 'gargoyle') { e.state = 'perch'; }
-  if (kind === 'cursedbook') { e.state = 'float'; }
+  if (kind === 'cursedbook' || kind === 'skullwisp') { e.state = 'float'; }
   return Object.assign(e, opt || {});
 }
 function foeHit(e, s) {
@@ -1821,11 +1940,12 @@ function foeHit(e, s) {
 }
 function killFoe(e) {
   e.dead = true; stats.foeKills++; sfx('foedie'); cam.shake = Math.max(cam.shake, e.type === 'gargoyle' ? 6 : 2);
-  const col = { bat: '#5a3a6a', rat: '#8a7a8a', gargoyle: '#8a8a96', puppet: '#e8c8a0', skeleton: '#e8e4d8', cursedbook: '#7a2030' }[e.type];
+  const col = { bat: '#5a3a6a', rat: '#8a7a8a', gargoyle: '#8a8a96', puppet: '#e8c8a0', skeleton: '#e8e4d8', cursedbook: '#7a2030', skullwisp: '#7ae8ff', crab: '#e8603a' }[e.type];
   for (let i = 0; i < 14; i++) parts.push({ x: e.x + rnd(-e.w / 2, e.w / 2), y: e.y - e.h / 2 + rnd(-e.h / 2, e.h / 2), vx: rnd(-2, 2), vy: rnd(-2.6, 0.4), life: 26, col: i % 3 ? col : '#ffffff', size: 2, grav: 1 });
   const C = CONFIG.foes[e.type], list = []; for (let i = 0; i < C.coins; i++) list.push('coin'); if (Math.random() < 0.22) list.push('heart');
   if (e.type === 'cursedbook') list.push('book');
   if (e.type === 'skeleton') list.push('plate');
+  if (e.type === 'skullwisp') list.push('bone');
   if (e.type === 'gargoyle') list.push('heart');
   popItems(list, e.x, e.y - e.h / 2);
 }
@@ -1897,6 +2017,26 @@ function updateFoe(e) {
       } else if (e.state === 'dash') { e.x += e.vx; e.y += e.vy; if (e.t > 30) { e.state = 'float'; e.t = 0; e.cd = C.every + Math.random() * 60; e.vx *= 0.2; e.vy *= 0.2; } }
       e.x = clamp(e.x, CONFIG.foeEdge, room.W - CONFIG.foeEdge); e.y = clamp(e.y, 2 * TS + e.h + 4, room.H - 3 * TS);
       if (e.state === 'dash' || e.state === 'float') foeTouch(e, C.damage); break; }
+    case 'skullwisp': { // floats on a slow sine, keeps its distance, spits a bone (suckable = BONE ammo)
+      if (e.state === 'float') {
+        const tx = px - Math.sign(dx || 1) * 90, ty = P.y - 10 + Math.sin(e.t * 0.04 + e.seed) * 24;
+        e.vx += clamp((tx - e.x) * 0.003, -0.05, 0.05); e.vy += clamp((ty - (e.y - e.h / 2)) * 0.004, -0.05, 0.05);
+        e.vx = clamp(e.vx, -C.speed, C.speed); e.vy = clamp(e.vy, -C.speed, C.speed); e.x += e.vx; e.y += e.vy; e.face = Math.sign(dx) || e.face;
+        if (--e.cd <= 0 && dist < 200) { e.state = 'warn'; e.t = 0; sfx('warn'); }
+      } else if (e.state === 'warn') {
+        if (e.t >= C.warn) { const d = Math.hypot(dx, dy) || 1; sfx('spit');
+          ebullets.push({ kind: 'bone', x: e.x - 8, y: e.y - e.h / 2 - 4, w: 16, h: 8, vx: dx / d * C.bone, vy: dy / d * C.bone, g: 0, dmg: C.damage, life: 180, suckable: true, ammo: 'bone', nofloor: 1, spin: 0 });
+          e.state = 'float'; e.t = 0; e.cd = C.every + Math.random() * 60; }
+      }
+      e.x = clamp(e.x, CONFIG.foeEdge, room.W - CONFIG.foeEdge); e.y = clamp(e.y, 2 * TS + e.h + 4, room.H - 3 * TS);
+      foeTouch(e, C.damage); break; }
+    case 'crab': { // scuttles sideways; when Kanata is close it raises its claws and lunges
+      const b = e.body;
+      if (e.state === 'walk') { if (e.recoil > 0) e.face = -(Math.sign(dx) || 1); b.vx = e.face * C.speed;
+        if (!e.recoil && Math.abs(dx) < 70 && Math.abs(P.y + P.h - e.y) < 30 && e.t > 40) { e.state = 'warn'; e.t = 0; b.vx = 0; e.face = Math.sign(dx) || e.face; sfx('warn'); } }
+      else if (e.state === 'warn') { b.vx = 0; if (e.t >= C.snapWarn) { e.state = 'snap'; e.t = 0; } }
+      else if (e.state === 'snap') { b.vx = e.face * C.snap * Math.max(0, 1 - e.t / 26); if (e.t > 30) { e.state = 'walk'; e.t = 0; } }
+      walkFoe(e); foeTouch(e, C.damage); break; }
     case 'gargoyle': {
       if (e.state === 'perch') { if (Math.abs(dx) < C.wake && py > e.y - 30) { e.state = 'warn'; e.t = 0; sfx('warn'); } break; }
       if (e.state === 'warn') { if (e.t === 1) { e.tx = pcx(); e.ty = P.y + P.h - 6; } if (e.t >= C.warn) { const d = Math.hypot(e.tx - e.x, e.ty - e.y) || 1; e.vx = (e.tx - e.x) / d * C.dive; e.vy = (e.ty - e.y) / d * C.dive; e.state = 'dive'; e.t = 0; sfx('flap'); } break; }
@@ -1974,7 +2114,8 @@ function updateAbility(e) {
 function gainAbility(e) {
   e.has = true; progress.abil[e.abil] = true; stats.abilities.push(e.abil); sfx('get'); cam.shake = 4; hitStop = 10; P.hp = progress.maxHP;
   for (let i = 0; i < 30; i++) { const a = i / 30 * 6.28; parts.push({ x: e.x, y: e.y - 44, vx: Math.cos(a) * 2.5, vy: Math.sin(a) * 2.5, life: 34, col: ABIL_INFO[e.abil].col, size: 2, glow: 1 }); }
-  abilityGet.t = 300; abilityGet.abil = e.abil;
+  abilityGet.t = 300; abilityGet.abil = e.abil; syncAbilities();
+  if (e.abil === 'phase') openSpiritGates();
   tip('abil_' + e.abil, ABIL_INFO[e.abil].text, true);
 }
 const abilityGet = { t: 0, abil: null };
@@ -1983,6 +2124,105 @@ function updateHint(e) {
   if (e.need && hasAbil(e.need)) return; if (e.have && !hasAbil(e.have)) return;
   if (Math.abs(pcx() - e.x) < 44 && Math.abs(P.y + P.h - e.y) < 50 && !P.dead) tip('hint:' + e.id, e.text);
 }
+
+// =====================================================================
+//  v0.3  WARP ROOMS (ワープの間) + SPIRIT BARRIERS (霊の結界) + new passive abilities
+//   - every area has a small warp room with a glowing circle. Entering one registers it (progress.warps).
+//     Step onto the circle -> the warp menu lists every warp room found so far (also shown on the map as W).
+//     Left/Right choose, JUMP/Enter warp, VAC/MAP back (or tap a destination / outside the panel).
+//   - gates whose id starts with "spirit" are pale violet barriers: only 霊体化 (phase) lets Kanata pass.
+// =====================================================================
+function makeWarp(x, y, opt, id) { return { type: 'warp', x, y, w: 48, h: 10, armed: false, t: 0 }; }
+function updateWarp(e) {
+  e.t++;
+  if (!progress.warps.has(room.id)) {
+    progress.warps.add(room.id); sfx('secret');
+    tip('warpFound', 'ワープの間を見つけた！ 光る魔法陣に乗ると、見つけたワープの間どうしを行き来できる（マップの W）', true);
+  }
+  if (frame % 5 === 0) parts.push({ x: e.x + rnd(-20, 20), y: e.y - 4, vx: 0, vy: -rnd(0.4, 1.2), life: 30, col: (frame & 8) ? '#a8e8ff' : '#c8a0ff', size: 1, glow: 1 });
+  const on = !P.dead && P.onGround && Math.abs(pcx() - e.x) < 14 && Math.abs(P.y + P.h - e.y) < 6;
+  if (!on) { if (Math.abs(pcx() - e.x) > CONFIG.warpArm || Math.abs(P.y + P.h - e.y) > 40) e.armed = true; return; }
+  if (e.armed && !P.tug && !boss) { e.armed = false; openWarpMenu(); }
+}
+const warpMenu = { sel: 0, list: [], from: null };
+function warpRooms() { return ROOM_DEFS.filter(d => d.warp); }
+function openWarpMenu() {
+  warpMenu.list = warpRooms().filter(d => progress.warps.has(d.id)); warpMenu.from = room.id;
+  warpMenu.sel = Math.max(0, warpMenu.list.findIndex(d => d.id === room.id));
+  if (warpMenu.list.length > 1) { const nxt = (warpMenu.sel + 1) % warpMenu.list.length; warpMenu.sel = nxt; }
+  P.vx = 0; Snd.vac(false); setState('warp'); sfx('cursor');
+  if (warpMenu.list.length < 2) tip('warpOne', 'ほかのワープの間を見つけると、ここからワープできるようになる', true);
+}
+function closeWarpMenu() { setState('play'); sfx('cursor'); }
+function updateWarpMenu() {
+  const n = warpMenu.list.length;
+  if (inp.leftPressed && n) { warpMenu.sel = (warpMenu.sel + n - 1) % n; sfx('cursor'); }
+  if (inp.rightPressed && n) { warpMenu.sel = (warpMenu.sel + 1) % n; sfx('cursor'); }
+  if (stateT > 8 && (inp.jumpPressed || inp.startPressed)) { const d = warpMenu.list[warpMenu.sel]; if (!d || d.id === room.id) closeWarpMenu(); else warpTo(d.id); return; }
+  if (stateT > 4 && (inp.vacPressed || inp.mapPressed)) closeWarpMenu();
+}
+function warpTo(id) {
+  endTug(true); stats.warps = (stats.warps || 0) + 1;
+  loadRoom(id, { warp: true });
+  const w = room.def.ents.find(e => e[0] === 'warp');
+  placePlayer(w[1] * TS, w[2] * TS, 1);
+  for (const e of ents) if (e.type === 'warp') e.armed = false;   // don't bounce straight back
+  entrySafety(); snapCamera(); setState('play'); sfx('warp'); fadeT = 24;
+  for (let i = 0; i < 24; i++) { const a = i / 24 * 6.28; parts.push({ x: pcx(), y: P.y + P.h - 6, vx: Math.cos(a) * 2.2, vy: Math.sin(a) * 1.2 - 0.6, life: 30, col: i & 1 ? '#a8e8ff' : '#c8a0ff', size: 2, glow: 1 }); }
+}
+// warp menu layout (buffer px): destination buttons in a row under a map
+function warpButtons() {
+  const n = warpMenu.list.length, bw = Math.min(60, Math.floor((VW - 20) / Math.max(1, n)) - 4), tot = n * (bw + 4) - 4, x0 = Math.round((VW - tot) / 2);
+  return warpMenu.list.map((d, i) => ({ d, x: x0 + i * (bw + 4), y: 206, w: bw, h: 34 }));
+}
+function warpTap(gx, gy) {
+  for (const [i, b] of warpButtons().entries()) if (gx >= b.x && gx < b.x + b.w && gy >= b.y && gy < b.y + b.h) {
+    if (warpMenu.sel === i) { inp.jumpPressed = true; } else { warpMenu.sel = i; sfx('cursor'); } return true; }
+  if (gy > 250) { inp.vacPressed = true; return true; }
+  return false;
+}
+function renderWarpMenu() {
+  renderPlayBase();
+  g.fillStyle = 'rgba(6,4,20,0.9)'; g.fillRect(0, 0, VW, VH);
+  const { cw, chh } = mapLayout(true), mw = WORLD.cols * cw, mh = WORLD.rows * chh, ox = Math.round((VW - mw) / 2), oy = 40;
+  g.fillStyle = 'rgba(30,24,60,0.5)'; g.fillRect(ox - 3, oy - 3, mw + 6, mh + 6); rectLine(ox - 4, oy - 4, mw + 8, mh + 8, '#6a5aa8');
+  drawMapGrid(ox, oy, cw, chh, false);
+  const sel = warpMenu.list[warpMenu.sel];
+  if (sel && (frame >> 3) & 1) { const x = ox + (sel.cx - WORLD.x0) * cw, y = oy + (sel.cy - WORLD.y0) * chh; rectLine(x - 2, y - 2, cw + 4, chh + 4, '#ffffff'); }
+  for (const [i, b] of warpButtons().entries()) {
+    const on = i === warpMenu.sel, here = b.d.id === room.id;
+    g.fillStyle = on ? 'rgba(110,80,200,0.9)' : 'rgba(24,18,48,0.9)'; g.fillRect(b.x, b.y, b.w, b.h); rectLine(b.x, b.y, b.w, b.h, on ? '#e8dcff' : '#5a4a90');
+    g.fillStyle = AREAS[b.d.area].col; g.fillRect(b.x + 3, b.y + 3, b.w - 6, 4);
+    if (here) drawText('HERE', b.x + b.w / 2, b.y + b.h - 9, 'b', 1, 'c');
+  }
+  drawText('< >: SELECT   JUMP: WARP   VAC: BACK', VW / 2, VH - 22, 'b', 1, 'c');
+  blit();
+  drawHiText('ワープの間 ― 行き先をえらぶ', VW / 2, 10, 11, '#e8dcff', '#1a0e28');
+  for (const b of warpButtons()) drawHiText(AREAS[b.d.area].jp.replace('幽霊屋敷 ', '').replace(/^(.{0,6}).*$/, '$1'), b.x + b.w / 2, b.y + 11, 6.5, '#ffffff', null);
+  if (sel) drawHiText(sel.id === room.id ? '（いまいる場所）' : AREAS[sel.area].jp + ' の ' + sel.jp + ' へワープ', VW / 2, 250, 8, sel.id === room.id ? '#a8a0d8' : '#fff4c0', '#1a0e28');
+}
+
+// ---- spirit barriers -----------------------------------------------------
+const isSpirit = gid => gid.startsWith('spirit');
+function openSpiritGates() { for (const gid in room.gates) if (isSpirit(gid)) openGate(room.id, gid); }
+function updateSpirit() {
+  for (const gid in room.gates) {
+    if (!isSpirit(gid) || progress.perm.has(room.id + ':gate:' + gid)) continue;
+    const cells = room.gates[gid];
+    if (frame % 4 === 0) { const i = cells[(Math.random() * cells.length) | 0], c = i % room.cols, r = (i / room.cols) | 0;
+      parts.push({ x: c * TS + rnd(0, 16), y: r * TS + rnd(0, 16), vx: rnd(-0.2, 0.2), vy: -rnd(0.2, 0.7), life: 26, col: (frame & 8) ? '#e0b8ff' : '#a8e8ff', size: 1, glow: 1 }); }
+    for (const i of cells) { const c = i % room.cols, r = (i / room.cols) | 0;
+      if (hitsKanata(c * TS - 6, r * TS - 6, c * TS + TS + 6, r * TS + TS + 6)) { tip('spirit', '青白い霊の結界… 体が押し返される。霊体になれる力があれば通れそうだ'); break; } }
+  }
+}
+// static look of a closed spirit barrier (drawn into the room canvas)
+function drawSpiritTile(c, x, y, col, row) {
+  c.fillStyle = 'rgba(150,90,230,0.42)'; c.fillRect(x, y, TS, TS);
+  c.fillStyle = 'rgba(220,190,255,0.75)'; for (let k = 0; k < 16; k += 4) c.fillRect(x + ((k + row * 5 + col * 3) % 16), y + k, 2, 2);
+  c.fillStyle = 'rgba(168,232,255,0.5)'; c.fillRect(x + ((row * 7) % 12) + 2, y, 1, TS);
+}
+// tank upgrade (大容量タンク): 3 -> 4 slots
+function syncAbilities() { CONFIG.vac.tankMax = hasAbil('tank') ? 4 : 3; }
 
 // =====================================================================
 //  BOSS FRAMEWORK (4 bosses). Shared by all:
@@ -2454,6 +2694,178 @@ BOSS_DEFS.clock = { jp: '大時計の番人 チクタク', en: 'GRANDFATHER TICK
 };
 
 // =====================================================================
+//  BOSS 5 (v0.3): 呪いのパイプオルガン CURSED PIPE ORGAN (organ loft, chapel)
+//    notes      : the pipes sing -> music notes drift after Kanata (vacuum them = NOTE ammo); calls cursed books
+//    pipes      : violet marks on the floor -> air-blast columns roar up from the floor pipes
+//    chord      : a dotted guide line LOW (jump) or HIGH (stay on the floor) -> a chord wave rolls across
+//    fortissimo : (every 3rd) the organ swells (shake + red) and slams three floor shockwaves (jump them),
+//                 then runs out of breath: the organist ghost core drifts out = weak point (tug-of-war)
+// =====================================================================
+BOSS_DEFS.organ = { jp: '呪いのパイプオルガン', en: 'CURSED PIPE ORGAN', cfg: 'organ', cols: ['#d8b8ff', '#c8b088', '#ffffff', '#6a3a54'], rageText: 'オルガンが怒った！ 音が割れている',
+  sayIntro: '……オルガン、ひとりで鳴ってる。……うるさい', sayCore: '……オルガン弾きの、ゴースト……',
+  make(b) { b.x = 280; b.petalHigh = false; },
+  hitBox(b) { return { x0: b.x - 58, x1: b.x + 58, y0: FLOOR_Y - 120, y1: FLOOR_Y }; },
+  aim(b) { return { x: b.x - 30, y: FLOOR_Y - 60 }; },
+  update(b) {
+    const C = CONFIG.organ;
+    switch (b.state) {
+      case 'idle': if (b.t >= bossP('idle')) chooseAttack(b, ['notes', 'pipes', 'chord'], 'fortissimo'); break;
+      case 'notes': {
+        const n = bossP('notes'), t0 = C.noteWarn;
+        if (b.t === 1) { sfx('warn'); const books = ents.filter(e => e.type === 'cursedbook' && !e.dead).length;
+          if (books < bossP('books')) { const bk = makeFoe('cursedbook', b.x - 70, FLOOR_Y - 90); bk.cd = 80; ents.push(bk); for (let i = 0; i < 10; i++) parts.push({ x: bk.x, y: bk.y - 7, vx: rnd(-1.5, 1.5), vy: rnd(-1.5, 1), life: 20, col: '#d8b8ff', size: 2, glow: 1 }); } }
+        if (b.t >= t0 && (b.t - t0) % 12 === 0 && (b.t - t0) / 12 < n) { sfx('bell');
+          const px = b.x - 50 + rnd(-10, 40), py = FLOOR_Y - 100 + rnd(-10, 20);
+          ebullets.push({ kind: 'note', x: px - 6, y: py - 6, w: 12, h: 12, vx: -C.noteSpeed, vy: rnd(-0.8, 0.4), g: 0, dmg: C.noteDamage, life: 320, suckable: true, ammo: 'note', home: 1, homeMax: C.noteSpeed, static: 1 }); }
+        if (b.t >= t0 + n * 12 + 40) { b.state = 'idle'; b.t = 0; } break; }
+      case 'pipes': {
+        const warn = bossP('pipeWarn');
+        if (b.t === 1) { const n = bossP('pipes'), px = pcx(); b.marks = []; const xs = [px]; for (let k = 1; xs.length < n; k++) { xs.push(px + k * 70); if (xs.length < n) xs.push(px - k * 70); }
+          for (const x of xs) b.marks.push(clamp(x, 20, b.x - 70)); sfx('warn'); }
+        if (b.t < warn && b.t % 10 === 0) sfx('tick');
+        if (b.t === warn) { for (const mx of b.marks) ebullets.push({ kind: 'blast', x: mx - 11, y: 2 * TS, w: 22, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: C.pipeDamage, life: 30, static: 1 }); b.marks = []; sfx('whoosh'); cam.shake = 5; }
+        if (b.t >= warn + 44) { b.state = 'idle'; b.t = 0; } break; }
+      case 'chord': {
+        const warn = bossP('chordWarn');
+        if (b.t === 1) { b.petalHigh = Math.random() < 0.45; sfx('warn'); }
+        if (b.t < warn && b.t % 12 === 0) sfx('warn');
+        if (b.t === warn || (b.rage && b.t === warn + 46)) { if (b.t > warn) { b.petalHigh = !b.petalHigh; }
+          const y = b.petalHigh ? FLOOR_Y - 92 : FLOOR_Y - 26, h = b.petalHigh ? 50 : 26;
+          ebullets.push({ kind: 'chord', x: b.x - 70, y, w: 18, h, vx: -bossP('chordSpeed'), vy: 0, g: 0, dmg: C.chordDamage, life: 260, static: 1, wall: 1 }); sfx('bell'); cam.shake = 3; }
+        if (b.t >= warn + (b.rage ? 130 : 84)) { b.state = 'idle'; b.t = 0; } break; }
+      case 'fortissimo': {
+        if (b.t === 1) { sfx('warn'); tip('organFF', 'オルガンが息を吸い込んでいる… 床の衝撃波はジャンプでかわせ！'); }
+        if (b.t < 56) { if (b.t % 8 === 0) sfx('warn'); break; }
+        if (b.t === 56 || b.t === 96 || b.t === 136) { sfx('boom'); cam.shake = 9; hitStop = 2;
+          for (const d of [-1]) ebullets.push({ kind: 'wave', x: b.x - 70, y: FLOOR_Y - 14, w: 16, h: 14, vx: d * 2.6, vy: 0, dmg: 1, life: 200 });
+          for (let i = 0; i < 14; i++) parts.push({ x: b.x - 40 + rnd(-30, 30), y: FLOOR_Y - 100 + rnd(-20, 20), vx: rnd(-2, 1), vy: rnd(-2, 1), life: 30, col: '#d8b8ff', size: 2, glow: 1 }); }
+        if (b.t === 176) { b.state = 'stunned'; b.t = 0; b.winLen = bossP('stun'); sfx('crash'); cam.shake = 8;
+          b.core = makeCore(b, b.x - 90, FLOOR_Y - 34, () => ({ x: boss.x - 40, y: FLOOR_Y - 60 }), 'ocore');
+          tip('ocore', 'オルガンが息切れした！ 出てきたオルガン弾きのゴーストを VAC で吸い込め！', true); }
+        break; }
+      case 'stunned': coreBob(b, b.x - 90, FLOOR_Y - 34); if (coreWindowOver(b)) { b.state = 'idle'; b.t = 0; } break;
+    }
+    if (b.state !== 'stunned' && overlapBox(b.x - 52, FLOOR_Y - 60, b.x + 60, FLOOR_Y)) hurtPlayer(C.contactDamage, b.x - 60, 'organ');
+  },
+  onDefeat(b) { bossReward(b, b.x - 80); say('……しずかになった。……耳が、きーんってする', 200); tip('organDown', '呪いのパイプオルガンをやっつけた！ 祭壇に新しい力が…', true); },
+  draw(b, lights) {
+    const x = Math.round(b.x - cam.x), y = Math.round(FLOOR_Y - cam.y);
+    if (b.state === 'pipes' && b.marks.length) { const k = b.t / bossP('pipeWarn'); for (const mx of b.marks) { drawFloorMark(mx, k, 'rgba(200,140,255,0.8)');
+      g.fillStyle = 'rgba(200,160,255,' + (0.08 + k * 0.18) + ')'; g.fillRect(Math.round(mx - 11 - cam.x), Math.round(2 * TS - cam.y), 22, FLOOR_Y - 2 * TS); } }
+    if (b.state === 'chord' && b.t < bossP('chordWarn') + (b.rage ? 46 : 0)) { const yy = Math.round((b.petalHigh ? FLOOR_Y - 67 : FLOOR_Y - 13) - cam.y); g.fillStyle = (frame & 4) ? 'rgba(220,170,255,0.9)' : 'rgba(255,255,255,0.6)';
+      for (let xx = 0; xx < x - 60; xx += 8) g.fillRect(xx, yy, 4, 2); drawTextShadow(b.petalHigh ? 'HIGH' : 'LOW', 20, yy - 12, 'p', 1); }
+    if (b.state === 'dying' && b.t >= 90) return;
+    const key = b.state === 'stunned' || b.state === 'dying' ? 'organ_stop' : b.rage ? 'organ_rage' : (b.state === 'notes' || b.state === 'chord') && (frame & 8) ? 'organ_sing' : 'organ_idle';
+    const r = rectOf('boss', key); let sx = x - (r.w >> 1), sy = y - r.h;
+    if (b.state === 'fortissimo' && b.t < 56) sx += (frame & 2) ? 2 : -2;
+    spr('boss', key, sx, sy);
+    if (b.flash > 0 && (frame & 2)) { g.globalAlpha = 0.7; sprWhite('boss', key, sx, sy, false); g.globalAlpha = 1; }
+    if (b.state === 'fortissimo' && b.t < 56 && (frame & 4)) { g.globalAlpha = 0.4; sprWhite('boss', key, sx, sy, false, '#ff4040'); g.globalAlpha = 1; }
+    lights.push({ x: b.x, y: FLOOR_Y - 70, r: 90, cool: 1 });
+    drawCore(b, lights, 'ocore');
+  },
+};
+
+// =====================================================================
+//  BOSS 6 (v0.3): 大浴場の主 ユブネ BATHWATER SERPENT (grand bath) - a long serpent of hot bathwater
+//    arcs   : rears back -> blue landing marks -> hot-water blobs arc onto them and leave scalding puddles
+//    sweep  : the head drops LOW (jump) or HIGH (stay on the floor) and sweeps the whole room
+//    rain   : drip marks on the floor -> hot droplets fall from the steam on the ceiling
+//    geyser : (every 3rd) dives into the tub; geysers burst at the marks, the last one throws it out onto the
+//             floor DIZZY: the rubber-duck ghost core bobs out = weak point (tug-of-war)
+//  Rubber ducks (bouncy DUCK ammo) float out of the tub during the fight.
+// =====================================================================
+BOSS_DEFS.serpent = { jp: '大浴場の主 ユブネ', en: 'BATHWATER SERPENT', cfg: 'serpent', cols: ['#5ac8e0', '#b8f0ff', '#ffffff', '#ffd83a'], rageText: 'ユブネが怒った！ お湯が煮えたぎる',
+  sayIntro: '……お湯が、立ち上がった。……のぼせそう', sayCore: '……あひるの、ゴースト？',
+  BASE: 318,
+  make(b) { b.hx = 300; b.hy = FLOOR_Y - 110; b.hidden = 0; b.petalHigh = false; b.face = -1; b.duckT = 0; },
+  hitBox(b) { if (b.hidden) return { x0: -999, x1: -998, y0: -999, y1: -998 }; return { x0: b.hx - 24, x1: b.hx + 24, y0: b.hy - 20, y1: b.hy + 20 }; },
+  aim(b) { return b.hidden ? null : { x: b.hx, y: b.hy }; },
+  home(b, k) { const tx = this.BASE - 22 + Math.sin(b.t * 0.03) * 10, ty = FLOOR_Y - 112 + Math.sin(b.t * 0.05) * 8; b.hx += (tx - b.hx) * (k || 0.06); b.hy += (ty - b.hy) * (k || 0.06); },
+  update(b) {
+    const C = CONFIG.serpent, D = this;
+    // ducks to throw: keep ~2 lying around
+    if (++b.duckT > 260 && items.filter(i => i.kind === 'duck' && !i.dead).length < 2) { b.duckT = 0; spawnItem('duck', D.BASE - 10, FLOOR_Y - 40, { vx: -rnd(1.2, 2.4), vy: -2.5 }); sfx('bubble'); }
+    switch (b.state) {
+      case 'idle': D.home(b); if (b.t >= bossP('idle')) chooseAttack(b, ['arcs', 'sweep', 'rain'], 'geyser'); break;
+      case 'arcs': {
+        const warn = C.arcWarn; D.home(b, 0.04); b.hy -= 0.3;
+        if (b.t === 1) { const n = bossP('arcs'), px = pcx(); b.marks = []; const xs = [px]; for (let k = 1; xs.length < n; k++) { xs.push(px + k * 60); if (xs.length < n) xs.push(px - k * 60); }
+          for (const x of xs) b.marks.push(clamp(x, 24, D.BASE - 50)); sfx('warn'); }
+        if (b.t === warn) { sfx('spit');
+          for (const tx of b.marks) { const tf = 50, gg = 0.14, vx = (tx - b.hx) / tf, vy = (FLOOR_Y - 8 - b.hy - 0.5 * gg * tf * tf) / tf;
+            ebullets.push({ kind: 'hotwater', x: b.hx - 6, y: b.hy - 6, w: 12, h: 12, vx, vy, g: gg, dmg: C.arcDamage, life: 200, tx,
+              onLand: q => { sfx('splash'); ebullets.push({ kind: 'puddle', x: q.x + 6 - 18, y: FLOOR_Y - 6, w: 36, h: 6, vx: 0, vy: 0, dmg: C.puddleDamage, life: C.puddle, static: 1 }); } }); }
+          b.marks = []; }
+        if (b.t >= warn + 70) { b.state = 'idle'; b.t = 0; } break; }
+      case 'sweep': {
+        const warn = bossP('sweepWarn');
+        if (b.t === 1) { b.petalHigh = Math.random() < 0.45; sfx('warn'); }
+        const yy = b.petalHigh ? FLOOR_Y - 70 : FLOOR_Y - 16;
+        if (b.t < warn) { b.hx += (D.BASE - 30 - b.hx) * 0.1; b.hy += (yy - b.hy) * 0.1; if (b.t % 12 === 0) sfx('warn'); break; }
+        if (b.t === warn) { b.sweepVx = -bossP('sweepSpeed'); sfx('whoosh'); }
+        b.hx += b.sweepVx; b.hy = yy + Math.sin(b.t * 0.3) * 2; b.sweepX = b.hx;
+        if (b.hx < 26 && b.sweepVx < 0) { b.sweepVx = b.rage ? bossP('sweepSpeed') * 0.9 : 0; if (b.rage) { b.petalHigh = !b.petalHigh; sfx('warn'); } }
+        if (b.sweepVx === 0 || b.hx > D.BASE - 30) { b.sweepX = undefined; b.state = 'idle'; b.t = 0; }
+        if (b.sweepVx === 0) b.hx = 26;
+        break; }
+      case 'rain': {
+        const warn = bossP('rainWarn'); D.home(b);
+        if (b.t === 1) { const n = bossP('drops'), px = pcx(); b.marks = []; const xs = [px]; for (let k = 1; xs.length < n; k++) { xs.push(px + k * 46); if (xs.length < n) xs.push(px - k * 46); }
+          for (const x of xs) b.marks.push(clamp(x, 20, room.W - 20)); sfx('warn'); }
+        if (b.t < warn && b.t % 10 === 0) sfx('tick');
+        if (b.t === warn) { for (const mx of b.marks) ebullets.push({ kind: 'drop', x: mx - 4, y: 2 * TS, w: 8, h: 10, vx: 0, vy: 1.5, g: 0.25, dmg: C.dropDamage, life: 200, onLand: q => { for (let k = 0; k < 4; k++) parts.push({ x: q.x + 4, y: FLOOR_Y - 2, vx: rnd(-1.2, 1.2), vy: rnd(-1.6, -0.4), life: 14, col: '#b8f0ff', size: 1, grav: 1 }); } }); b.marks = []; sfx('splash'); }
+        if (b.t >= warn + 40) { b.state = 'idle'; b.t = 0; } break; }
+      case 'geyser': {
+        const gw = C.geyserWarn;
+        if (b.t === 1) { sfx('warn'); tip('geyser', 'ユブネがお湯にもぐった！ 光る印から間欠泉が吹き出すぞ'); }
+        if (b.t < 30) { b.hy += 4; b.hx += (D.BASE - b.hx) * 0.1; if (b.t === 20) { b.hidden = 1; sfx('splash'); cam.shake = 4; } break; }
+        const k = Math.floor((b.t - 30) / (gw + 14)), tt = (b.t - 30) % (gw + 14);
+        if (k < 3) {
+          if (tt === 0) { b.marks = [clamp(k === 2 ? 150 : pcx(), 24, D.BASE - 40)]; if (b.rage && k < 2) b.marks.push(clamp(pcx() + (Math.random() < 0.5 ? -70 : 70), 24, D.BASE - 40)); sfx('warn'); }
+          if (tt === gw) { for (const mx of b.marks) ebullets.push({ kind: 'geyser', x: mx - 13, y: FLOOR_Y - 120, w: 26, h: 120, vx: 0, vy: 0, g: 0, dmg: 2, life: 24, static: 1 }); sfx('whoosh'); cam.shake = 6;
+            if (k === 2) { b.hidden = 0; b.hx = b.marks[0]; b.hy = FLOOR_Y - 130; b.state = 'flung'; b.t = 0; }
+            b.marks = []; }
+        }
+        break; }
+      case 'flung': b.hy = Math.min(FLOOR_Y - 18, b.hy + b.t * 0.35); if (b.hy >= FLOOR_Y - 18) { b.state = 'dizzy'; b.t = 0; b.winLen = bossP('dizzy'); sfx('crash'); cam.shake = 9; hitStop = 4;
+          b.core = makeCore(b, b.hx - 40, FLOOR_Y - 30, () => ({ x: boss.hx, y: boss.hy }), 'dcore'); tip('dcore', 'ユブネが目を回した！ あひるのゴーストを VAC で吸い込め！', true); } break;
+      case 'dizzy': coreBob(b, b.hx - 40, FLOOR_Y - 30); if (coreWindowOver(b)) { b.state = 'return'; b.t = 0; } break;
+      case 'return': b.hx += (D.BASE - 22 - b.hx) * 0.05; b.hy += (FLOOR_Y - 112 - b.hy) * 0.05; if (b.t > 70) { b.state = 'idle'; b.t = 0; } break;
+    }
+    if (!b.hidden && b.state !== 'dizzy' && b.state !== 'flung' && overlapBox(b.hx - 18, b.hy - 14, b.hx + 18, b.hy + 14)) hurtPlayer(b.state === 'sweep' ? C.sweepDamage : C.contactDamage, b.hx, 'serpent');
+  },
+  dying(b) { b.hy += 0.4; },
+  onDefeat(b) { bossReward(b, 180); say('……お湯、ぬるくなった。……いいお湯だった', 200); tip('serpentDown', '大浴場の主ユブネをやっつけた！', true); },
+  draw(b, lights) {
+    const D = this;
+    if ((b.state === 'arcs' || b.state === 'rain' || b.state === 'geyser') && b.marks.length) {
+      const k = b.state === 'geyser' ? ((b.t - 30) % (CONFIG.serpent.geyserWarn + 14)) / CONFIG.serpent.geyserWarn : b.state === 'arcs' ? b.t / CONFIG.serpent.arcWarn : b.t / bossP('rainWarn');
+      for (const mx of b.marks) drawFloorMark(mx, Math.min(1, k), 'rgba(90,200,255,0.85)'); }
+    if (b.state === 'sweep' && b.t < bossP('sweepWarn')) { const yy = Math.round((b.petalHigh ? FLOOR_Y - 70 : FLOOR_Y - 16) - cam.y); g.fillStyle = (frame & 4) ? 'rgba(120,220,255,0.9)' : 'rgba(255,255,255,0.6)';
+      for (let xx = 0; xx < room.W; xx += 8) g.fillRect(Math.round(xx - cam.x), yy, 4, 2); drawTextShadow(b.petalHigh ? 'HIGH' : 'LOW', 20, yy - 12, 'c', 1); }
+    // tub rim at the base
+    if (b.state === 'dying' && b.t >= 90) return;
+    const rage = b.rage, seg = rage ? 'serp_seg_r' : 'serp_seg';
+    if (!b.hidden && b.state !== 'flung' && b.state !== 'dizzy') { // body: segments from the tub to the head
+      const bx = D.BASE, by = FLOOR_Y - 6, mx = (bx + b.hx) / 2 + 30, my = Math.min(by, b.hy) - 10;
+      for (let i = 9; i >= 1; i--) { const u = i / 10, x = (1 - u) * (1 - u) * bx + 2 * (1 - u) * u * mx + u * u * b.hx, y = (1 - u) * (1 - u) * by + 2 * (1 - u) * u * my + u * u * b.hy;
+        const sc = 0.75 + u * 0.25, r = rectOf('boss', seg); g.drawImage(IMG.boss, r.x, r.y, r.w, r.h, Math.round(x - cam.x - r.w * sc / 2), Math.round(y - cam.y - r.h * sc / 2), Math.round(r.w * sc), Math.round(r.h * sc)); }
+    }
+    if (!b.hidden) {
+      const key = b.state === 'dizzy' || b.state === 'flung' || b.state === 'dying' ? 'serp_dizzy' : rage ? 'serp_rage' : b.state === 'arcs' && b.t > 20 ? 'serp_spit' : 'serp_head';
+      const r = rectOf('boss', key), fl = b.state === 'sweep' && b.sweepVx > 0; let sx = Math.round(b.hx - cam.x - r.w / 2), sy = Math.round(b.hy - cam.y - r.h / 2);
+      spr('boss', key, sx, sy, !fl);
+      if (b.flash > 0 && (frame & 2)) { g.globalAlpha = 0.7; sprWhite('boss', key, sx, sy, !fl); g.globalAlpha = 1; }
+    }
+    const rr = rectOf('boss', 'splashring'); spr('boss', 'splashring', Math.round(D.BASE - cam.x - rr.w / 2), Math.round(FLOOR_Y - cam.y - rr.h + 2));
+    if (frame % 6 === 0) parts.push({ x: D.BASE + rnd(-20, 20), y: FLOOR_Y - 10, vx: rnd(-0.3, 0.3), vy: -rnd(0.4, 1), life: 30, col: 'rgba(230,250,255,0.6)', size: 3 });
+    lights.push({ x: b.hx, y: b.hy, r: 70, cool: 1 });
+    drawCore(b, lights, 'dcore');
+  },
+};
+
+// =====================================================================
 //  MUSIC: NES-style chiptune BGM synthesized live with Web Audio (engine reused from ROCKSIDE 04h_music.js:
 //  4 channels pulse 1 lead / pulse 2 / triangle bass / noise drums, chord charts + melody bars).
 //  All melodies below are original compositions for ROCKSIDE外伝.
@@ -2559,6 +2971,43 @@ const MUSIC_SONGS = {
       A2: { base: 'A', p2: 'echo' } },
     order: ['A', 'B', 'A2'] },
 
+  chapel: { name: 'REQUIEM FOR DUST BUNNIES', jp: '道中：礼拝堂と地下墓所', mood: 'solemn, eerie C minor chorale-march; organ-like pads, slow hymn melody over a ghostly pulse', bpm: 96,
+    lead: { duty: 0.5, vol: 0.058, gate: 0.95 }, p2v: { duty: 0.25, vol: 0.04 },
+    sections: {
+      A: { chords: ['Cm', 'Ab', 'Fm', 'G', 'Cm', 'Eb', 'Fm,G', 'Cm'], p2: 'harm3', bass: 'drone',
+        drums: ['k.......s.......'], fill: 'k.......s...s.s.',
+        mel: ['G5:4 C6:4 Eb6:4 D6:4', 'C6:8 Ab5:8', 'F5:4 Ab5:4 C6:4 Bb5:4', 'B5:12 G5:4',
+              'C6:4 Eb6:4 G6:4 F6:4', 'Eb6:8 Bb5:8', 'Ab5:4 C6:4 D6:4 B5:4', 'C6:12 r:4'] },
+      B: { chords: ['Ab', 'Bb', 'Gm', 'Cm', 'Fm', 'G', 'Ab,Bb', 'G7'], p2: 'arp8', bass: 'half',
+        drums: ['k...h...s...h...'], fill: 'k...h...s.s.sss.',
+        mel: ['C6:2 Eb6 Ab6:4 G6:2 F6 Eb6:4', 'D6:2 F6 Bb6:4 Ab6:2 G6 F6:4', 'G6:4 D6:4 Bb5:4 D6:4', 'Eb6:8 C6:8',
+              'Ab5:2 C6 F6:4 Eb6:2 D6 C6:4', 'B5:2 D6 G6:4 F6:2 D6 B5:4', 'C6:2 Eb6 Ab6 G6 F6 D6 Bb5 D6', 'G5:12 r:4'] },
+      A2: { base: 'A', p2: 'echo' } },
+    order: ['A', 'B', 'A2'] },
+  bath: { name: 'STEAMY SPLASH', jp: '道中：大浴場と貯水槽', mood: 'relaxed but spooky Bb mixolydian bossa; dripping echoes, warm steam pads, rubber-duck squeaks', bpm: 116, swing: 0.2,
+    lead: { duty: 0.125, vol: 0.06, gate: 0.7 }, p2v: { duty: 0.25, vol: 0.038 },
+    sections: {
+      A: { chords: ['Bb', 'Ab', 'Bb', 'Ab', 'Gm', 'Eb', 'F', 'Bb'], p2: 'arp16', bass: 'walk',
+        drums: ['k..h..s.h.k.s..h'], fill: 'k..h..s.s.s.sscs',
+        mel: ['D5:2 F5 Bb5:3 Ab5:1 F5:4 D5:2 F5', 'Eb5:3 C5:1 Eb5:2 Ab5:6 G5:2 F5', 'D5:2 F5 Bb5 D6:4 C6:2 Bb5 Ab5', 'C6:8 r:4 Ab5:2 C6',
+              'Bb5:2 D6 G6:4 F6:2 D6 Bb5:4', 'G5:2 Bb5 Eb6:4 D6:2 Bb5 G5:4', 'A5:2 C6 F6 Eb6 C6:4 A5:4', 'Bb5:12 r:4'] },
+      B: { chords: ['Eb', 'F', 'Dm', 'Gm', 'Cm', 'F', 'Bb,Gm', 'C7,F'], p2: 'stab', bass: 'pop',
+        drums: ['k..h..s.h.kks..h'], fill: 'k..h..s.ssscsscs',
+        mel: ['G5:2 Bb5 Eb6:6 D6:2 C6 Bb5', 'A5:2 C6 F6:6 Eb6:2 D6 C6', 'D6:4 F6:2 A6 F6:4 D6', 'G6:8 D6:8',
+              'Eb6:2 D6 C6 G5 C6:4 Eb6', 'F6:4 C6:2 A5 F5:4 A5', 'Bb5:2 D6 F6 Bb6 G6:4 D6', 'E6:4 G6:4 F6:8'] } },
+    order: ['A', 'B'] },
+  boss4: { name: 'FORTISSIMO / BOILING POINT', jp: 'ボス：呪いのパイプオルガン＆大浴場の主', mood: 'dramatic D minor toccata-rock; descending organ runs over a pounding gallop', bpm: 168,
+    lead: { duty: 0.25, vol: 0.066, gate: 0.82 }, p2v: { duty: 0.5, vol: 0.034 },
+    sections: {
+      A: { chords: ['Dm', 'C#dim', 'Dm', 'A7', 'Dm', 'Bb', 'Gm,A', 'Dm'], p2: 'arp16', bass: 'gallop',
+        drums: ['k.h.s.h.k.k.s.h.'], fill: 'k.h.s.h.s.s.sscs',
+        mel: ['A5:1 G5 A5:6 G5:1 F5 E5 D5 C#5:4', 'D5:12 r:4', 'A5:1 G5 A5:2 E5 F5 C#5 D5:6', 'A4:12 r:4',
+              'D6:2 C6 Bb5 A5 G5 F5 E5 D5', 'Bb5:4 D6:4 F6:8', 'G6:2 F6 E6 D6 C#6:4 A5', 'D6:12 r:4'] },
+      B: { chords: ['Bb', 'C', 'A', 'Dm', 'Gm', 'A', 'Bb,C', 'A7'], p2: 'harm3', bass: 'oct8',
+        drums: ['k.hks.h.k.hks.hk'], fill: 'k.hks.h.sssscsxc',
+        mel: ['F6:4 D6:2 Bb5 F6:4 Bb6', 'G6:4 E6:2 C6 G6:4 C7', 'A6:2 G6 F6 E6 C#6:4 A5', 'D6:4 F6:4 A6:8',
+              'Bb6:2 A6 G6 F6 D6:4 G6', 'A6:2 G6 F6 E6 C#6:4 E6', 'D6:2 F6 Bb6 C7 A6:4 F6', 'E6:4 C#6:4 A5:8'] } },
+    order: ['A', 'B'] },
   boss2: { name: 'WASH CYCLE / THORN WALTZ', jp: 'ボス：洗濯ゴーレム＆夜咲きの女王', mood: 'urgent C minor boss theme; churning ostinato, pounding toms', bpm: 160,
     lead: { duty: 0.25, vol: 0.07, gate: 0.82 }, p2v: { duty: 0.125, vol: 0.036 },
     sections: {
@@ -2607,9 +3056,9 @@ const MUSIC_SONGS = {
       mel: ['F5:2 E5 D5 A4 F4:8', 'G4:4 E4 D4:8'] } },
     order: ['A'] },
 };
-const MUSIC_LIST = ['title', 'mansion', 'laundry', 'garden', 'clock', 'boss', 'boss2', 'boss3', 'vault', 'afterglow', 'jingle_warning', 'jingle_save', 'jingle_clear', 'jingle_gameover'];
+const MUSIC_LIST = ['title', 'mansion', 'laundry', 'garden', 'clock', 'chapel', 'bath', 'boss', 'boss2', 'boss3', 'boss4', 'vault', 'afterglow', 'jingle_warning', 'jingle_save', 'jingle_clear', 'jingle_gameover'];
 const BOSS_THEMES = new Set(['boss', 'boss2', 'boss3']);
-const BOSS_MUSIC = { chandelier: 'boss', golem: 'boss2', rose: 'boss2', clock: 'boss3' };
+const BOSS_MUSIC = { chandelier: 'boss', golem: 'boss2', rose: 'boss2', clock: 'boss3', organ: 'boss4', serpent: 'boss4' };
 
 // ---------------------------------------------------------------------
 //  compiler: song -> events per 16th step  { ch: 'p1'|'p2'|'tri'|'noi', m: midi, len (steps), vol, duty, kind }
@@ -2843,6 +3292,7 @@ function update() {
   if (state === 'loading') { if (assetsReady()) { setState('title'); if (QS.get('room')) debugStart(); } }
   else if (state === 'title') updateTitle();
   else if (state === 'play') updatePlay();
+  else if (state === 'warp') updateWarpMenu();
   else if (state === 'map') { if (inp.mapPressed || inp.startPressed || inp.jumpPressed) { setState('play'); sfx('cursor'); } }
   else if (state === 'clear') { clearT++; if (clearT > 240 && (inp.startPressed || inp.jumpPressed)) { setState('title'); sfx('start'); } }
   musicTick();
@@ -2864,7 +3314,7 @@ function updatePlay() {
   else updatePlayer();
   if (state !== 'play') return;
   if (P.dead) { if (P.deadT > 170) respawn(); updateParts(); return; }
-  updateEnts(); updateItems(); updateFloats(); updateShots(); updateEBullets(); updateBoss();
+  updateEnts(); updateItems(); updateFloats(); updateShots(); updateEBullets(); updateBoss(); updateSpirit();
   if (abilityGet.t > 0) abilityGet.t--;
   if (boss && boss.core && boss.core.state === 'swallow') { const c = boss.core, n = nozzle(); c.t++; c.x += (n.x - c.x) * 0.2; c.y += (n.y - c.y) * 0.2; if (c.t > 18) boss.core = null; }
   updateParts(); checkLockedDoor(); updateTips(); updateCamera();
@@ -3036,7 +3486,9 @@ function drawEnt(e) {
     case 'ability': { if (e.hidden) break; sprBC('props', 'abil_pedestal', x, y);
       if (!e.has) { const oy = y - 44 + Math.sin(e.t * 0.06) * 3; g.globalCompositeOperation = 'lighter'; g.fillStyle = 'rgba(255,255,255,0.18)'; g.beginPath(); g.arc(x, oy, 14 + Math.sin(frame * 0.1) * 2, 0, 7); g.fill(); g.globalCompositeOperation = 'source-over';
         spr('items', 'orb_' + e.abil, Math.round(x - 8), Math.round(oy - 8)); } break; }
-    case 'bat': case 'rat': case 'gargoyle': case 'puppet': case 'skeleton': case 'cursedbook': drawFoe(e, x, y); break;
+    case 'bat': case 'rat': case 'gargoyle': case 'puppet': case 'skeleton': case 'cursedbook': case 'skullwisp': case 'crab': drawFoe(e, x, y); break;
+    case 'warp': { sprBC('props', 'warp_pad', x, y + 3); g.globalCompositeOperation = 'lighter'; const a = 0.18 + 0.1 * Math.sin(frame * 0.08);
+      const gr = g.createLinearGradient(0, y - 60, 0, y); gr.addColorStop(0, 'rgba(160,120,255,0)'); gr.addColorStop(1, 'rgba(160,200,255,' + a + ')'); g.fillStyle = gr; g.fillRect(Math.round(x - 20), Math.round(y - 60), 40, 60); g.globalCompositeOperation = 'source-over'; break; }
     case 'armor': {
       const k = e.state === 'walk' ? 'armor' + ((e.t >> 4) & 1) : 'armor0', r = rectOf('enemies', k);
       const sx = x - r.w / 2 + (e.state === 'windup' ? ((frame & 2) ? 1 : -1) : 0), sy = y - r.h;
@@ -3054,6 +3506,8 @@ function foeSprite(e) {
     case 'puppet': return e.state === 'warn' ? 'puppet_throw' : 'puppet' + ((e.t >> 4) & 1);
     case 'skeleton': return e.state === 'warn' ? 'skel_throw' : 'skel' + ((e.t >> 4) & 1);
     case 'cursedbook': return e.state === 'warn' || e.state === 'dash' ? 'cbook_bite' : 'cbook' + ((e.t >> 3) & 1);
+    case 'skullwisp': return 'skullwisp' + ((e.t >> 3) & 1);
+    case 'crab': return e.state === 'warn' || e.state === 'snap' ? 'crab_snap' : 'crab' + ((e.t >> 3) & 1);
   }
 }
 function drawFoe(e, x, y) {
@@ -3104,6 +3558,14 @@ function drawEBullet(b) {
   else if (b.kind === 'bubble') { spr('items', 'bubble', x, y + Math.sin((frame + b.life) * 0.15)); }
   else if (b.kind === 'dropbottle') spr('items', 'bottle', x, y);
   else if (b.kind === 'seedpod') spr('items', 'seed', x, y);
+  else if (b.kind === 'bone') { g.save(); g.translate(Math.round(x + 8), Math.round(y + 4)); g.rotate(frame * 0.3); const r = rectOf('items', 'bone'); g.drawImage(IMG.items, r.x, r.y, r.w, r.h, -8, -4, r.w, r.h); g.restore(); }
+  else if (b.kind === 'note') spr('boss', 'note', x, y);
+  else if (b.kind === 'blast') { const k = b.life / 30; g.fillStyle = 'rgba(230,210,255,' + (0.35 + 0.3 * k) + ')'; g.fillRect(Math.round(x + 3), y, b.w - 6, b.h); g.fillStyle = 'rgba(255,255,255,0.7)'; for (let yy = (frame * 6) % 20; yy < b.h; yy += 20) g.fillRect(Math.round(x + 6 + ((yy >> 2) % 8)), Math.round(y + yy), 2, 10); }
+  else if (b.kind === 'chord') { g.fillStyle = 'rgba(210,170,255,0.75)'; for (let i = 0; i < 3; i++) { g.beginPath(); g.ellipse(x + 9 + i * 5, y + b.h / 2, 3, b.h / 2, 0, 0, 7); g.fill(); } g.fillStyle = '#ffffff'; g.fillRect(Math.round(x + 7), y + 2, 2, b.h - 4); }
+  else if (b.kind === 'hotwater') { g.fillStyle = '#5ac8e0'; g.beginPath(); g.arc(x + 6, y + 6, 6, 0, 7); g.fill(); g.fillStyle = '#ffffff'; g.fillRect(Math.round(x + 3), Math.round(y + 3), 3, 2); if (frame % 3 === 0) parts.push({ x: b.x + 6, y: b.y, vx: 0, vy: -0.6, life: 14, col: 'rgba(230,250,255,0.5)', size: 2 }); }
+  else if (b.kind === 'puddle') { g.fillStyle = (frame & 8) ? 'rgba(90,200,240,0.75)' : 'rgba(140,220,255,0.75)'; g.beginPath(); g.ellipse(x + b.w / 2, y + 4, b.w / 2, 3, 0, 0, 7); g.fill(); if (frame % 8 === 0) parts.push({ x: b.x + rnd(0, b.w), y: b.y, vx: 0, vy: -0.5, life: 20, col: 'rgba(230,250,255,0.5)', size: 2 }); }
+  else if (b.kind === 'drop') { g.fillStyle = '#8ad8f0'; g.beginPath(); g.moveTo(x + 4, y); g.lineTo(x + 8, y + 7); g.arc(x + 4, y + 7, 4, 0, 3.15); g.fill(); }
+  else if (b.kind === 'geyser') { const k = b.life / 24; g.fillStyle = 'rgba(160,230,255,' + (0.4 + 0.4 * k) + ')'; g.fillRect(Math.round(x), y, b.w, b.h); g.fillStyle = 'rgba(255,255,255,0.8)'; for (let yy = (frame * 7) % 16; yy < b.h; yy += 16) g.fillRect(Math.round(x + 4 + ((yy >> 1) % 14)), Math.round(y + yy), 4, 8); }
   else if (b.kind === 'sock') { g.fillStyle = '#d8ecff'; g.fillRect(x + 2, y, 5, 8); g.fillRect(x + 2, y + 7, 8, 4); g.fillStyle = '#5a9ad8'; g.fillRect(x + 2, y, 5, 2); g.fillRect(x + 2, y + 4, 5, 1); g.fillStyle = '#9ad0ff'; g.fillRect(x + 3, y + 12, 1, 2); g.fillRect(x + 7, y + 12, 1, 2); }
   else if (b.kind === 'rgear') { const r = rectOf('items', 'gear'); g.save(); g.translate(Math.round(x + 7), Math.round(y + 7)); g.rotate(frame * 0.2 * Math.sign(b.vx)); g.drawImage(IMG.items, r.x, r.y, r.w, r.h, -r.w / 2, -r.h / 2, r.w, r.h); g.restore(); }
   else if (b.kind === 'petal') spr('items', 'petal', x, y + Math.sin((frame + b.life) * 0.3) * 2, b.vx > 0);
@@ -3154,6 +3616,7 @@ function drawMapGrid(ox, oy, cw, chh, mini, win) {
     if (!mini) {
       if (rd.ents.some(e => e[0] === 'save')) { g.fillStyle = '#8ad0ff'; g.fillRect(x0 + 2, y0 + 2, 3, 3); }
       if (rd.boss) drawText(progress.bosses.has(rd.boss) ? 'X' : 'B', x0 + w - 7, y0 + 2, progress.bosses.has(rd.boss) ? 'b' : 'r', 1);
+      if (rd.warp && progress.warps.has(rd.id)) { g.fillStyle = (frame >> 4) & 1 ? '#c8a0ff' : '#8a6ad8'; g.fillRect(x0 + 1, y0 + 1, w - 2, h - 2); drawText('W', x0 + w / 2, y0 + h / 2 - 3, 'w', 1, 'c'); }
       if (rd.ents.some(e => e[0] === 'ability' && !hasAbil(e[3].abil))) { g.fillStyle = (frame >> 3) & 1 ? '#ffffff' : '#ffe080'; g.fillRect(x0 + w / 2 - 1, y0 + h / 2 - 1, 3, 3); }
     }
   }
@@ -3185,13 +3648,13 @@ function drawHUD() {
     const x = 34 + i * 15, y = 18; g.fillStyle = '#16122a'; g.fillRect(x, y, 13, 13); rectLine(x, y, 13, 13, i < P.tank.length ? (i === 0 ? '#ffe080' : '#8fe8ff') : '#3e3866');
     if (i < P.tank.length) { const r = rectOf('items', P.tank[i]); const sc = Math.min(1, 11 / Math.max(r.w, r.h)); g.drawImage(IMG.items, r.x, r.y, r.w, r.h, Math.round(x + 6.5 - r.w * sc / 2), Math.round(y + 6.5 - r.h * sc / 2), Math.round(r.w * sc), Math.round(r.h * sc)); }
   }
-  spr('items', 'coin0', 82, 20); drawTextShadow(String(progress.coins), 94, 22, 'y', 1);
+  const cx0 = 82 + (CONFIG.vac.tankMax - 3) * 15; spr('items', 'coin0', cx0, 20); drawTextShadow(String(progress.coins), cx0 + 12, 22, 'y', 1);
   { // GABU gauge (critters eaten -> powered SPIT)
     const E = CONFIG.eat, full = P.gabu >= E.max; g.fillStyle = 'rgba(8,6,20,0.72)'; g.fillRect(4, 35, 18 + E.max * 9, 11); rectLine(4, 35, 18 + E.max * 9, 11, full && (frame & 8) ? '#ff8aa8' : '#4e4876');
     drawText('GABU', 6, 37, full ? 'r' : 'b', 1);
     for (let i = 0; i < E.max; i++) { const x = 25 + i * 9; g.fillStyle = i < P.gabu ? (full ? ((frame & 4) ? '#ffffff' : '#ff8aa8') : '#ff8aa8') : '#2a2440';
       g.beginPath(); g.moveTo(x, 38); g.lineTo(x + 6, 38); g.lineTo(x + 3, 44); g.fill(); } }
-  let ax = 112; for (const k of ['float', 'turbo', 'djump']) if (hasAbil(k)) { drawAbilIcon(k, ax, 20, true); ax += 11; }
+  let ax = 112 + (CONFIG.vac.tankMax - 3) * 15; for (const k in ABIL_INFO) if (hasAbil(k)) { drawAbilIcon(k, ax, 20, true); ax += 11; }
   if (progress.hasKey) spr('items', 'key', 46 + hearts * 9 - 2, 6);
   // mini-map: 7 x 5 cells around the current room
   const cw = 8, chh = 6, cols = 7, rows = 5, mw = cols * cw + 4, mh = rows * chh + 4, mx = VW - mw - 4;
@@ -3254,28 +3717,28 @@ function renderPlay() {
   if (abilityGet.t > 0) { const a = Math.min(1, abilityGet.t / 20, (300 - abilityGet.t) / 15), I = ABIL_INFO[abilityGet.abil]; drawHiText('NEW POWER', VW / 2, 96, 8, '#ffffff', '#140a20', 'center', a); drawHiText(I.jp, VW / 2, 110, 18, I.col, '#140a20', 'center', a); }
   if (P.dead && P.deadT > 40) drawHiText('やられちゃった…', VW / 2, VH / 2 - 10, 16, '#ffd0e0', '#200818', 'center', Math.min(1, (P.deadT - 40) / 20));
 }
-const MAP_LAY = { cw: 20, chh: 14 };
+function mapLayout() { const cw = Math.min(20, Math.floor(368 / WORLD.cols)); return { cw, chh: Math.min(14, Math.round(cw * 0.75)) }; }
 function renderMap() {
   renderPlayBase();
   g.fillStyle = 'rgba(6,4,16,0.92)'; g.fillRect(0, 0, VW, VH);
-  const { cw, chh } = MAP_LAY, mw = WORLD.cols * cw, mh = WORLD.rows * chh, ox = Math.round((VW - mw) / 2), oy = 50;
+  const { cw, chh } = mapLayout(), mw = WORLD.cols * cw, mh = WORLD.rows * chh, ox = Math.round((VW - mw) / 2), oy = 50;
   g.fillStyle = 'rgba(30,24,60,0.5)'; g.fillRect(ox - 4, oy - 4, mw + 8, mh + 8); rectLine(ox - 5, oy - 5, mw + 10, mh + 10, '#4e4876');
   drawMapGrid(ox, oy, cw, chh, false);
   const by = oy + mh + 10;
   drawText('MAP ' + mapPercent() + '%', 14, by, 'w', 1);
   drawText('COIN ' + progress.coins, 90, by, 'y', 1);
   const tsec = Math.floor(progress.time / 60); drawText('TIME ' + Math.floor(tsec / 60) + ':' + String(tsec % 60).padStart(2, '0'), 160, by, 'b', 1);
-  drawText('BOSS ' + progress.bosses.size + '/4', 240, by, 'r', 1);
+  drawText('BOSS ' + progress.bosses.size + '/' + BOSS_TOTAL, 240, by, 'r', 1);
   drawText('GHOST ' + progress.captures, 306, by, 'c', 1);
-  let ax = 14; for (const k of ['float', 'turbo', 'djump']) { drawAbilIcon(k, ax, by + 12, hasAbil(k)); ax += 84; }
+  let ax = 14; for (const k in ABIL_INFO) { drawAbilIcon(k, ax, by + 12, hasAbil(k)); ax += 74; }
   // area legend
-  let lx = 14; for (const k in AREAS) { g.fillStyle = AREAS[k].col; g.fillRect(lx, by + 40, 8, 8); rectLine(lx, by + 40, 8, 8, '#a8b8e8'); lx += 92; }
+  let lx = 14; for (const k in AREAS) { g.fillStyle = AREAS[k].col; g.fillRect(lx, by + 40, 8, 8); rectLine(lx, by + 40, 8, 8, '#a8b8e8'); lx += 62; }
   drawText('TAP / MAP: BACK', VW / 2, VH - 10, 'b', 1, 'c');
   blit();
   drawHiText((AREAS[room.def.area] || AREAS.east).jp + '　' + room.def.jp, VW / 2, 12, 10, '#fff4e0', '#1a0e28');
-  ax = 14; for (const k of ['float', 'turbo', 'djump']) { drawHiText(hasAbil(k) ? ABIL_INFO[k].jp : '？？？', ax + 13, by + 11, 6.5, hasAbil(k) ? ABIL_INFO[k].col : '#5a5488', null, 'left'); ax += 84; }
-  lx = 14; for (const k in AREAS) { drawHiText(AREAS[k].jp.replace('幽霊屋敷 ', ''), lx + 11, by + 39, 6, '#c8c0f0', null, 'left'); lx += 92; }
-  drawHiText('■セーブ  B＝ボス  ・光＝新しい力  黄色＝とびら' + (progress.hasKey ? '  舞踏会場の鍵あり' : ''), VW / 2, by + 54, 6.5, '#a8a0d8', null);
+  ax = 14; for (const k in ABIL_INFO) { drawHiText(hasAbil(k) ? ABIL_INFO[k].jp : '？？？', ax + 13, by + 11, 6.5, hasAbil(k) ? ABIL_INFO[k].col : '#5a5488', null, 'left'); ax += 74; }
+  lx = 14; for (const k in AREAS) { drawHiText(AREAS[k].short, lx + 11, by + 39, 6, '#c8c0f0', null, 'left'); lx += 62; }
+  drawHiText('■セーブ  B＝ボス  W＝ワープの間  ・光＝新しい力  黄色＝とびら' + (progress.hasKey ? '  舞踏会場の鍵あり' : ''), VW / 2, by + 54, 6.5, '#a8a0d8', null);
 }
 function renderPlayBase() { g.fillStyle = '#000'; g.fillRect(0, 0, VW, VH); g.drawImage(room.canvas, clamp(Math.round(cam.x), 0, room.W - VW), clamp(Math.round(cam.y), 0, room.H - VH), VW, VH, 0, 0, VW, VH); }
 const TITLE_MENU = [{ x: 108, y: 246, w: 76, h: 18 }, { x: 200, y: 246, w: 76, h: 18 }];
@@ -3293,7 +3756,7 @@ function renderTitle() {
   const hasSave = assetsReady() && !!loadSave();
   if (hasSave) { TITLE_MENU.forEach((m, i) => { const on = i === titleSel; g.fillStyle = on ? 'rgba(90,76,192,0.85)' : 'rgba(20,16,40,0.8)'; g.fillRect(m.x, m.y, m.w, m.h); rectLine(m.x, m.y, m.w, m.h, on ? '#e0d8ff' : '#5a5488'); }); }
   else drawTextShadow('TAP / PRESS ENTER', VW / 2 - 50, 254, ((stateT >> 5) & 1) ? 'w' : 'b', 1, 'c');
-  drawText('v' + GAME_VERSION + '  PROTOTYPE', 6, VH - 9, 'd', 1);
+  drawText('v' + GAME_VERSION, 6, VH - 9, 'd', 1);
   blit();
   drawHiText('清掃員カナタ', 104, 62, 30, '#f4f0ff', '#2a1648');
   drawHiText('〜幽霊屋敷のおそうじ〜', 104, 102, 10, '#bfe0ff', '#1a0e28');
@@ -3307,7 +3770,7 @@ function renderClear() {
   if (clearT > 40) {
     const tsec = Math.floor(progress.time / 60);
     const secrets = ROOM_DEFS.filter(d => d.secret), found = secrets.filter(roomSeen).length;
-    const rows = [['TIME', Math.floor(tsec / 60) + ':' + String(tsec % 60).padStart(2, '0')], ['COINS', String(progress.coins)], ['MAP', mapPercent() + '%'], ['GHOSTS', String(progress.captures)], ['BOSSES', progress.bosses.size + '/4'], ['SECRET ROOMS', found + '/' + secrets.length]];
+    const rows = [['TIME', Math.floor(tsec / 60) + ':' + String(tsec % 60).padStart(2, '0')], ['COINS', String(progress.coins)], ['MAP', mapPercent() + '%'], ['GHOSTS', String(progress.captures)], ['BOSSES', progress.bosses.size + '/' + BOSS_TOTAL], ['SECRET ROOMS', found + '/' + secrets.length]];
     rows.forEach((r, i) => { if (clearT > 60 + i * 12) { drawText(r[0], 112, 104 + i * 13, 'b', 1); drawText(r[1], 272, 104 + i * 13, 'w', 1, 'r'); } });
     if (clearT > 240 && (clearT >> 5) & 1) drawTextShadow('TAP TO TITLE', VW / 2, 252, 'w', 1, 'c');
   }
@@ -3330,7 +3793,7 @@ function blit() {
 let msgShown = '';
 function updateMsgPanel() {
   let html;
-  if (state === 'play' || state === 'map') {
+  if (state === 'play' || state === 'map' || state === 'warp') {
     if (tipBox.t > 0) html = '<span class="tip">' + tipBox.text + '</span>';
     else { const a = AREAS[room.def.area] || AREAS.east; html = '<span class="area" style="color:' + '#c8c0f0' + '">' + a.jp + '</span><span class="room">' + room.def.jp + '</span>'; }
   } else html = '<span class="area">ROCKSIDE外伝 清掃員カナタ</span><span class="room">v' + GAME_VERSION + '</span>';
@@ -3342,6 +3805,7 @@ function render() {
   else if (state === 'title') renderTitle();
   else if (state === 'play') renderPlay();
   else if (state === 'map') renderMap();
+  else if (state === 'warp') renderWarpMenu();
   else if (state === 'clear') renderClear();
 }
 function screenTap(gx, gy) {
@@ -3349,6 +3813,7 @@ function screenTap(gx, gy) {
     for (let i = 0; i < TITLE_MENU.length; i++) { const m = TITLE_MENU[i]; if (gx >= m.x && gx < m.x + m.w && gy >= m.y && gy < m.y + m.h) { titleSel = i; inp.startPressed = true; return true; } }
   }
   if (state === 'map') { inp.mapPressed = true; return true; }
+  if (state === 'warp') return warpTap(gx, gy);
   return false;
 }
 

@@ -6,31 +6,33 @@ let room = null;            // current room: { def, cols, rows, grid, W, H, canv
 const cam = { x: 0, y: 0, shake: 0 };
 let fadeT = 0;              // room-entry fade (frames left)
 const progress = {          // persists in localStorage (save altars)
-  coins: 0, maxHP: CONFIG.maxHP, perm: new Set(), visited: new Set(), hasKey: false, bosses: new Set(), abil: {}, saveRoom: 'foyer', tips: new Set(), time: 0, captures: 0,
+  coins: 0, maxHP: CONFIG.maxHP, perm: new Set(), visited: new Set(), hasKey: false, bosses: new Set(), abil: {}, saveRoom: 'foyer', tips: new Set(), time: 0, captures: 0, warps: new Set(),
 };
 const SAVE_KEY = 'gaiden_save_v1';
 const ABIL_INFO = {
   float: { jp: 'ふわり化', en: 'FLOAT', col: '#8fe8ff', text: '吸い込んだ物を SPIT 長押しで「ふわり化」！ しばらく空中に浮かぶ足場になる。高い場所へ登れるようになった' },
   turbo: { jp: 'ターボ吸引', en: 'TURBO', col: '#ffb040', text: '掃除機がパワーアップ！ 重い物（なべ・たる）やレバー、大きな家具まで吸い込めるようになった' },
   djump: { jp: '二段ジャンプ', en: 'GHOST STEP', col: '#c8a0ff', text: '空中でもう一度 JUMP できるようになった！（ゴーストステップ）' },
+  phase: { jp: '霊体化', en: 'PHASE', col: '#e0b8ff', text: '半分ゴーストの力が目覚めた！ 青白い「霊の結界」をすり抜けられるようになった' },
+  tank:  { jp: '大容量タンク', en: 'BIG TANK', col: '#9affc8', text: '掃除機のタンクが大きくなった！ 物を 4 つまでためておける' },
 };
 const hasAbil = k => !!progress.abil[k];
 function saveGame(roomId) {
   progress.saveRoom = roomId;
   const d = { v: 2, coins: progress.coins, maxHP: progress.maxHP, perm: [...progress.perm], visited: [...progress.visited], hasKey: progress.hasKey,
-    bosses: [...progress.bosses], abil: progress.abil, saveRoom: roomId, tips: [...progress.tips], time: progress.time, captures: progress.captures };
+    bosses: [...progress.bosses], abil: progress.abil, saveRoom: roomId, tips: [...progress.tips], time: progress.time, captures: progress.captures, warps: [...progress.warps] };
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(d)); } catch (_) {}
 }
 function loadSave() { try { const s = localStorage.getItem(SAVE_KEY); return s ? JSON.parse(s) : null; } catch (_) { return null; } }
 function applySave(d) {
   progress.coins = d.coins || 0; progress.maxHP = d.maxHP || CONFIG.maxHP; progress.perm = new Set(d.perm || []); progress.visited = new Set(d.visited || []);
   progress.hasKey = !!d.hasKey; progress.bosses = new Set(d.bosses || (d.bossDone ? ['chandelier'] : [])); progress.abil = Object.assign({}, d.abil || {});
-  progress.saveRoom = ROOM_BY_ID[d.saveRoom] ? d.saveRoom : 'foyer'; progress.tips = new Set(d.tips || []); progress.time = d.time || 0; progress.captures = d.captures || 0;
+  progress.saveRoom = ROOM_BY_ID[d.saveRoom] ? d.saveRoom : 'foyer'; progress.tips = new Set(d.tips || []); progress.time = d.time || 0; progress.captures = d.captures || 0; progress.warps = new Set(d.warps || []); syncAbilities();
   if (progress.bosses.has('chandelier')) progress.perm.add('ballroom:gate:floor'); // v0.1 saves: the floor gives way after the chandelier
 }
 function resetProgress() {
   progress.coins = 0; progress.maxHP = CONFIG.maxHP; progress.perm = new Set(); progress.visited = new Set(); progress.hasKey = false; progress.bosses = new Set(); progress.abil = {};
-  progress.saveRoom = 'foyer'; progress.tips = new Set(); progress.time = 0; progress.captures = 0;
+  progress.saveRoom = 'foyer'; progress.tips = new Set(); progress.time = 0; progress.captures = 0; progress.warps = new Set(); syncAbilities();
 }
 function eraseSave() { try { localStorage.removeItem(SAVE_KEY); } catch (_) {} }
 
@@ -127,6 +129,7 @@ function renderRoomStatic() {
     const t = tileAt(col, r), x = col * TS, y = r * TS;
     const gs = t === T_GATE ? (gateAt[r * room.cols + col] || 'bars') : null;
     if (gs === 'hidden') continue;
+    if (gs === 'spirit') { drawSpiritTile(c, x, y, col, r); continue; }
     if (gs === 'bars') { const horiz = tileAt(col - 1, r) === T_GATE || tileAt(col + 1, r) === T_GATE; spr('tiles', horiz && !(tileAt(col, r - 1) === T_GATE || tileAt(col, r + 1) === T_GATE) ? 'grate' : 'bars', x, y, false, c); continue; }
     if (t === T_SOLID || t === T_SECRET || t === T_GATE) {
       const v = hash(col, r) & 1, top = r > 0 && !isSolidT(tileAt(col, r - 1)) && tileAt(col, r - 1) !== T_LOCK;
@@ -164,7 +167,7 @@ function renderRoomStatic() {
     const [name, col, row, o] = dc, opt = o || {}, x = col * TS, y = row * TS;
     if (DECOR_FLAMES[name]) for (const [fx, fy] of DECOR_FLAMES[name]) { room.flames.push({ x: x + fx, y: y + fy, k: hash(x, fx | 0) & 3 }); }
     if (opt.light) { const ly = name === 'chandelier_deco' ? 20 : name === 'sconce' ? 24 : name === 'gardenlamp' ? 40 : name === 'lamp_wall' ? 14 : 20; room.lights.push({ x, y: y - ly, r: opt.light === 2 ? 110 : 70, warm: name !== 'gardenlamp', cool: name === 'gardenlamp' }); }
-    if (name === 'window' || name === 'window_wide' || name === 'round_window' || name === 'glasspane') { const r = rectOf('props', name); room.shafts.push({ x: x - r.w / 2 + 3, y: y - r.h + 6, w: r.w - 6, h: r.h - 12 }); room.lights.push({ x, y: y - r.h / 2, r: 60, cool: 1 }); }
+    if (name === 'window' || name === 'window_wide' || name === 'round_window' || name === 'glasspane' || name === 'stainedglass') { const r = rectOf('props', name); room.shafts.push({ x: x - r.w / 2 + 3, y: y - r.h + 6, w: r.w - 6, h: r.h - 12 }); room.lights.push({ x, y: y - r.h / 2, r: 60, cool: 1 }); }
   }
 }
 
@@ -175,10 +178,10 @@ function loadRoom(id, entry) {
   const def = ROOM_BY_ID[id], G = buildRoomGrid(def);
   room = { def, id, cols: G.cols, rows: G.rows, grid: G.grid, gates: G.gates, W: G.cols * TS, H: G.rows * TS, canvas: room && room.canvas, openings: roomOpenings(def, G), t: 0 };
   // permanent changes
-  for (const gid in G.gates) if (progress.perm.has(id + ':gate:' + gid)) for (const i of G.gates[gid]) room.grid[i] = T_EMPTY;
+  for (const gid in G.gates) if (progress.perm.has(id + ':gate:' + gid) || (isSpirit(gid) && hasAbil('phase'))) for (const i of G.gates[gid]) room.grid[i] = T_EMPTY;
   room.gateStyle = {};
   for (const gid in G.gates) { const e = def.ents.find(e => (e[0] === 'heavy' || e[0] === 'vines') && e[3] && e[3].gate === gid);
-    room.gateStyle[gid] = e ? 'hidden' : gid === 'floor' ? 'floor' : 'bars'; }
+    room.gateStyle[gid] = e ? 'hidden' : gid === 'floor' ? 'floor' : isSpirit(gid) ? 'spirit' : 'bars'; }
   if (progress.perm.has(id + ':secret')) for (let i = 0; i < room.grid.length; i++) if (room.grid[i] === T_SECRET) room.grid[i] = T_EMPTY;
   if (progress.hasKey && progress.perm.has(id + ':lock')) for (let i = 0; i < room.grid.length; i++) if (room.grid[i] === T_LOCK) room.grid[i] = T_EMPTY;
   renderRoomStatic();

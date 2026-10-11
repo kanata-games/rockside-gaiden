@@ -260,6 +260,7 @@ const Snd = {
       case 'thorn': this.noise(0.2, 0.22, 3000, 0, 'highpass'); this.tone('sawtooth', 300, 120, 0.12, 0.06); break;
       case 'tick': this.tone('square', 2200, 2200, 0.02, 0.05); break;
       case 'bell': this.tone('triangle', 392, 392, 1.2, 0.16); this.tone('triangle', 784, 784, 0.9, 0.06); this.tone('sine', 196, 196, 1.4, 0.12); break;
+      case 'warp': for (let i = 0; i < 6; i++) this.tone('triangle', 400 + i * 160, 700 + i * 200, 0.12, 0.07, i * 0.05); this.noise(0.4, 0.12, 2400, 0, 'bandpass'); break;
       case 'chomp': this.noise(0.05, 0.3, 3000, 0, 'highpass'); this.tone('square', 260, 90, 0.08, 0.14); this.noise(0.05, 0.25, 2200, 0.09, 'highpass'); this.tone('square', 220, 70, 0.08, 0.12, 0.09); break;
       case 'whoosh': this.noise(0.5, 0.2, 1500, 0, 'bandpass'); break;
     }
