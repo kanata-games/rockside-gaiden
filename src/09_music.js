@@ -64,6 +64,74 @@ const MUSIC_SONGS = {
             'C6:6 Bb5:2 A5:4 F5', 'E5:4 G5 C6 E6', 'D6:2 C6 Bb5 A5 G5 A5 Bb5 E5', 'F5:12 r:4'] } },
     order: ['A'] },
 
+  laundry: { name: 'SOAP SUDS SHUFFLE', jp: '道中：地下の洗濯場', mood: 'bubbly, slightly sinister G minor shuffle; dripping pipes and steam', bpm: 124, swing: 0.18,
+    lead: { duty: 0.125, vol: 0.064, gate: 0.8 }, p2v: { duty: 0.25, vol: 0.036 },
+    sections: {
+      A: { chords: ['Gm', 'Gm', 'Eb', 'D', 'Gm', 'Cm', 'Eb,D', 'Gm'], p2: 'stab', bass: 'walk',
+        drums: ['k..hs.h.k.hhs.h.'], fill: 'k..hs.h.s.s.sscs',
+        mel: ['G4:2 Bb4 D5 G5:4 F5:2 D5', 'Eb5:2 D5 C5 Bb4 A4:4 G4', 'Bb4:2 Eb5 G5 Bb5:4 G5:2 Eb5', 'F#5:6 A5:2 D5:8',
+              'G5:2 A5 Bb5 D6 C6:4 Bb5:2 A5', 'G5:4 Eb5:2 C5 G5:4 C6', 'Bb5:2 G5 Eb5 G5 A5 F#5 D5 A4', 'G4:12 r:4'] },
+      B: { chords: ['Cm', 'F', 'Bb', 'Eb', 'Cm', 'D', 'Gm', 'D7'], p2: 'arp8', bass: 'pop',
+        drums: ['k.hhs..hk.hhs.hh'], fill: 'k.hhs.s.s.s.ccc.',
+        mel: ['C6:4 Eb6:2 D6 C6:4 G5', 'A5:4 C6:2 Bb5 A5:4 F5', 'D6:2 C6 Bb5 F5 D6:4 F6', 'Eb6:8 G5:4 Bb5',
+              'C6:2 D6 Eb6 G6 F6:4 Eb6', 'D6:4 F#6:2 E6 D6:4 A5', 'Bb5:2 A5 G5 D5 G5:4 Bb5', 'A5:8 F#5:4 D5'] },
+      A2: { base: 'A', p2: 'echo' } },
+    order: ['A', 'B', 'A2'] },
+
+  garden: { name: 'MOONLIT GREENHOUSE', jp: '道中：月下の温室庭園', mood: 'airy, dreamy E dorian waltz-feel in 6/8-ish lilt; glassy arps and soft tom pulse', bpm: 112, swing: 0.28,
+    lead: { duty: 0.5, vol: 0.058, gate: 0.92 }, p2v: { duty: 0.125, vol: 0.034 },
+    sections: {
+      A: { chords: ['Em', 'A', 'Em', 'A', 'G', 'D', 'C', 'B'], p2: 'arp16', bass: 'half',
+        drums: ['k.....h.t.....h.'], fill: 'k.....h.t.t.t.c.',
+        mel: ['B4:4 E5:2 F#5 G5:6 A5:2', 'B5:8 A5:4 F#5', 'G5:4 E5:2 B4 E5:6 F#5:2', 'C#6:8 B5:4 A5',
+              'B5:2 D6 G6:4 F#6:2 E6 D6:4', 'A5:6 D6:2 F#6:8', 'E6:4 G6:2 E6 C6:4 G5', 'F#5:8 D#5:4 B4'] },
+      B: { chords: ['C', 'G', 'Am', 'Em', 'C', 'G', 'A', 'B7'], p2: 'arp8', bass: 'drone',
+        drums: ['k...h...t...h...'], fill: 'k...h...t.t.tccc',
+        mel: ['E6:6 D6:2 C6:4 G5', 'D6:6 B5:2 G5:8', 'C6:4 E6 A6:4 G6:2 E6', 'G6:6 F#6:2 E6:8',
+              'E6:2 G6 C7:4 B6:2 G6 E6:4', 'D6:4 G6:2 B6 D7:8', 'C#7:2 B6 A6 E6 C#6:4 E6', 'D#6:8 F#6:4 B5'] } },
+    order: ['A', 'B'] },
+
+  clock: { name: 'TICK-TOCK TOWER', jp: '道中：屋根裏と時計塔', mood: 'mechanical, clockwork F# minor march; ticking hats, music-box countermelody, steady climb', bpm: 128,
+    lead: { duty: 0.25, vol: 0.064, gate: 0.78 }, p2v: { duty: 0.125, vol: 0.036 },
+    sections: {
+      A: { chords: ['F#m', 'F#m', 'D', 'E', 'F#m', 'Bm', 'D,E', 'F#m'], p2: 'arp8', bass: 'march',
+        drums: ['k.r.s.r.k.r.s.r.'], fill: 'k.r.s.r.s.s.sscs',
+        mel: ['F#5:2 C#5 F#5 A5 G#5:4 F#5', 'E5:2 F#5 G#5 A5 C#6:8', 'D6:2 C#6 B5 A5 F#5:4 D5', 'E5:2 G#5 B5 E6 D6:4 B5',
+              'C#6:2 A5 F#5 A5 C#6:4 F#6', 'D6:4 B5:2 F#5 B5:4 D6', 'A5:2 F#5 D6 A5 G#5 E5 B5 G#5', 'F#5:12 r:4'] },
+      B: { chords: ['Bm', 'C#', 'F#m', 'D', 'Bm', 'C#', 'D', 'C#7'], p2: 'harm3', bass: 'oct8',
+        drums: ['k.rrs.r.k.rrs.rk'], fill: 'k.r.s.r.ssssxcx.',
+        mel: ['D6:4 F#6:2 E6 D6:4 B5', 'C#6:4 E#6:2 G#6 C#7:8', 'A6:4 F#6:2 C#6 A5:4 C#6', 'D6:2 E6 F#6 A6 F#6:4 D6',
+              'B5:2 D6 F#6 B6 A6:4 F#6', 'G#6:4 E#6:2 C#6 G#5:4 C#6', 'D6:2 F#6 A6 D7 C#7:4 A6', 'G#6:8 E#6:4 C#6'] },
+      A2: { base: 'A', p2: 'echo' } },
+    order: ['A', 'B', 'A2'] },
+
+  boss2: { name: 'WASH CYCLE / THORN WALTZ', jp: 'ボス：洗濯ゴーレム＆夜咲きの女王', mood: 'urgent C minor boss theme; churning ostinato, pounding toms', bpm: 160,
+    lead: { duty: 0.25, vol: 0.07, gate: 0.82 }, p2v: { duty: 0.125, vol: 0.036 },
+    sections: {
+      A: { chords: ['Cm', 'Cm', 'Ab', 'G', 'Cm', 'Fm', 'Ab,G', 'Cm'], p2: 'arp16', bass: 'gallop',
+        drums: ['k.hks.hkk.hks.ht'], fill: 'k.hks.hks.t.t.tt',
+        mel: ['C5:2 Eb5 G5 C6 B5:4 G5', 'Ab5:2 G5 F5 Eb5 D5:4 G4', 'Ab5:2 C6 Eb6 Ab6 G6:4 Eb6', 'D6:6 F6:2 B5:8',
+              'C6:2 G5 Eb6 C6 G6:4 F6:2 Eb6', 'F6:4 Ab6:2 G6 F6:4 C6', 'Eb6:2 D6 C6 Ab5 B5 D6 F6 G6', 'C6:12 r:4'] },
+      B: { chords: ['Fm', 'Bb', 'Eb', 'Ab', 'Fm', 'G', 'Ab', 'G7'], p2: 'harm3', bass: 'oct8',
+        drums: ['k.tks.tkk.tks.tk'], fill: 'k.k.s.k.ssssxcx.',
+        mel: ['F5:4 Ab5:2 C6 F6:4 Eb6', 'D6:4 F6:2 Bb5 D6:4 F6', 'Eb6:6 D6:2 Bb5:4 G5', 'Ab5:2 C6 Eb6 Ab6 G6:4 Eb6',
+              'F6:4 C6:2 Ab5 F5:4 Ab5', 'G5:2 B5 D6 G6 F6:4 D6', 'Eb6:2 D6 C6 Eb6 Ab6:4 G6', 'G6:8 F6:4 D6'] } },
+    order: ['A', 'B'] },
+
+  boss3: { name: 'MIDNIGHT STRIKES', jp: 'ボス：大時計の番人', mood: 'final boss, B minor; relentless ticking, bell-like accents, rising sequence', bpm: 176,
+    lead: { duty: 0.25, vol: 0.072, gate: 0.8 }, p2v: { duty: 0.25, vol: 0.034 },
+    sections: {
+      A: { chords: ['Bm', 'Bm', 'G', 'F#', 'Bm', 'Em', 'G,F#', 'Bm'], p2: 'arp16', bass: 'gallop',
+        drums: ['k.rks.rkk.rks.rk'], fill: 'k.rks.rks.s.ssss',
+        mel: ['B4:1 r B4 r F#5:2 B5 D6 C#6 B5 A#5', 'B5:4 D6:2 F#6 B6:8', 'G6:2 F#6 E6 D6 B5 D6 G6 B6', 'A#6:6 C#7:2 F#6:8',
+              'B6:2 A#6 B6 F#6 D6 F#6 B6 D7', 'C#7:4 B6:2 A#6 B6:8', 'G6:2 B6 E7 B6 F#6 A#6 C#7 E7', 'D7:4 C#7 B6:8'] },
+      B: { chords: ['Em', 'A', 'D', 'G', 'Em', 'F#', 'G', 'F#7'], p2: 'harm3', bass: 'oct8',
+        drums: ['k.hks.hkk.hks.hk'], fill: 'k.k.s.k.ssssxcx.',
+        mel: ['E6:4 G6:2 B6 E7:4 D7', 'C#7:4 A6:2 E6 C#7:4 E7', 'D7:6 C#7:2 A6:4 F#6', 'G6:2 B6 D7 G7 F#7:4 D7',
+              'E7:4 B6:2 G6 E6:4 G6', 'F#6:2 A#6 C#7 F#7 E7:4 C#7', 'D7:2 C#7 B6 D7 G7:4 F#7', 'F#7:8 E7:4 C#7'] },
+      A2: { base: 'A', p2: 'echo' } },
+    order: ['A', 'B', 'A2'] },
+
   jingle_warning: { once: true, name: 'JINGLE: WARNING!', jp: 'ジングル：ボス出現', mood: 'tritone alarm before the boss', bpm: 150,
     lead: { duty: 0.125, vol: 0.06, gate: 0.9 }, p2v: { duty: 0.5, vol: 0.03 },
     sections: { A: { chords: ['E5', 'E5'], p2: 'echo', bass: 'drone', drums: ['t...t...t...t...'], fill: 'x.x.x.x.ssssc...',
@@ -85,8 +153,9 @@ const MUSIC_SONGS = {
       mel: ['F5:2 E5 D5 A4 F4:8', 'G4:4 E4 D4:8'] } },
     order: ['A'] },
 };
-const MUSIC_LIST = ['title', 'mansion', 'boss', 'vault', 'afterglow', 'jingle_warning', 'jingle_save', 'jingle_clear', 'jingle_gameover'];
-const BOSS_THEMES = new Set(['boss']);
+const MUSIC_LIST = ['title', 'mansion', 'laundry', 'garden', 'clock', 'boss', 'boss2', 'boss3', 'vault', 'afterglow', 'jingle_warning', 'jingle_save', 'jingle_clear', 'jingle_gameover'];
+const BOSS_THEMES = new Set(['boss', 'boss2', 'boss3']);
+const BOSS_MUSIC = { chandelier: 'boss', golem: 'boss2', rose: 'boss2', clock: 'boss3' };
 
 // ---------------------------------------------------------------------
 //  compiler: song -> events per 16th step  { ch: 'p1'|'p2'|'tri'|'noi', m: midi, len (steps), vol, duty, kind }
@@ -261,9 +330,9 @@ function musicWanted() {
   if (state === 'clear') return clearT < 200 ? 'jingle_clear' : 'afterglow';
   if (state !== 'play' && state !== 'map') return null;
   if (P.dead) return 'jingle_gameover';
-  if (boss && boss.state !== 'sleep' && boss.state !== 'done') return boss.state === 'dying' ? null : 'boss';
+  if (boss && boss.state !== 'sleep' && boss.state !== 'done') return boss.state === 'dying' ? null : BOSS_MUSIC[boss.kind] || 'boss';
   if (room && room.def.secret) return 'vault';
-  return 'mansion';
+  return room && AREAS[room.def.area] ? AREAS[room.def.area].music : 'mansion';
 }
 async function musicRenderWav(id, sampleRate, normalize) {
   const C = compileSong(id), sr = sampleRate || 44100, AC = window.OfflineAudioContext || window.webkitOfflineAudioContext;

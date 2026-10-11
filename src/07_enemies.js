@@ -5,7 +5,7 @@
 const ents = [];
 let boss = null;
 function spawnRoomEntities() {
-  ents.length = 0; items.length = 0; playerShots.length = 0; ebullets.length = 0; parts.length = 0; boss = null;
+  ents.length = 0; items.length = 0; playerShots.length = 0; ebullets.length = 0; parts.length = 0; floats.length = 0; P.onFloat = null; boss = null;
   const d = room.def;
   d.ents.forEach((e, i) => {
     const [type, c, r, o] = e, opt = o || {}, x = c * TS, y = r * TS, id = d.id + ':' + i;
@@ -14,7 +14,14 @@ function spawnRoomEntities() {
       case 'start': room.start = { x, y }; break;
       case 'save': ents.push({ type: 'save', x, y, w: 28, h: 40, used: false }); room.save = { x, y }; break;
       case 'coin': case 'heart': spawnItem(type, x, y, { perm: id }); break;
-      case 'book': case 'plate': case 'candle': case 'crystal': spawnItem(type, x, y); break;
+      case 'bats': for (let k = 0; k < (opt.n || 3); k++) ents.push(makeFoe('bat', x + (k - 1) * 18, y + (k & 1) * 6)); break;
+      case 'rat': case 'gargoyle': case 'puppet': case 'skeleton': case 'cursedbook': ents.push(makeFoe(type, x, y, opt.foe)); break;
+      case 'sheet': ents.push(makeGhost('sheet', x, y)); break;
+      case 'lever': ents.push(makeLever(x, y, opt, id)); break;
+      case 'heavy': ents.push(makeHeavy(x, y, opt, id)); break;
+      case 'vines': ents.push(makeVines(opt)); break;
+      case 'ability': ents.push(makeAbility(x, y, opt, id)); break;
+      case 'hint': ents.push(makeHint(x, y, opt, id)); break;
       case 'key': case 'heartbig': { const it = spawnItem(type, x, y, { perm: id, fixed: true }); it.baseY = it.y; break; }
       case 'curtain': ents.push(makeCurtain(x, y, opt, id)); break;
       case 'dust': ents.push({ type: 'dust', x, y, w: 20, h: 12, stage: 0, suckT: 0, drop: opt.drop || [], id, onSuck() { this.suckT++; this.inCone = 3; } }); break;
@@ -22,7 +29,8 @@ function spawnRoomEntities() {
       case 'puff': ents.push(makeGhost('puff', x, y)); break;
       case 'dish': ents.push(makeGhost('dish', x, y)); break;
       case 'armor': ents.push(makeArmor(x, y)); break;
-      case 'boss': if (!progress.bossDone) boss = makeBoss(x, y); break;
+      case 'boss': if (!progress.bosses.has(d.boss)) boss = makeBoss(d.boss, x, y); break;
+      default: if (CONFIG.ammo[type]) spawnItem(type, x, y);
     }
   });
 }
@@ -31,6 +39,7 @@ function spawnRoomEntities() {
 // ---------------------------------------------------------------------
 function makeGhost(kind, x, y, extra) {
   const C = CONFIG[kind === 'armorghost' ? 'puff' : kind] || CONFIG.puff;
+  if (kind === 'sheet') return Object.assign(makeGhost('puff', x, y), { type: 'sheet', hp: C.hp, maxHp: C.hp, w: 28, h: 30 }, extra || {});
   const hp = kind === 'armorghost' ? CONFIG.armor.ghostHp : C.hp;
   return Object.assign({ type: kind, ghost: true, x, y, w: kind === 'dish' ? 28 : 24, h: kind === 'dish' ? 28 : 24, hp, maxHp: hp, state: 'float', t: 0, catchT: 0, stunT: 0,
     vx: 0, vy: 0, homeX: x, homeY: y, seed: Math.random() * 10, dashCD: 60 + Math.random() * 80, throwCD: 60 + Math.random() * 60, inCone: 0, flash: 0,
@@ -44,10 +53,10 @@ function ghostTouchDamage(e, dmg) {
 function updateGhost(e) {
   e.t++; if (e.flash > 0) e.flash--; if (e.inCone > 0) e.inCone--; else if (e.catchT > 0 && e.state !== 'caught') e.catchT = Math.max(0, e.catchT - 2);
   const px = pcx(), py = P.y + 24, dx = px - e.x, dy = py - e.y, dist = Math.hypot(dx, dy);
-  const C = e.type === 'dish' ? CONFIG.dish : CONFIG.puff, fast = e.type === 'armorghost' ? 1.45 : 1;
+  const C = e.type === 'dish' ? CONFIG.dish : e.type === 'sheet' ? CONFIG.sheet : CONFIG.puff, fast = e.type === 'armorghost' ? 1.45 : 1;
   if (e.state === 'swallow') {
     const n = nozzle(), k = Math.min(1, e.t / 18); e.x = e.sx + (n.x - e.sx) * k * k; e.y = e.sy + (n.y - e.sy) * k * k;
-    if (e.t >= 18) { e.dead = true; stats.swallowed++; if (e.onSwallowed) { e.onSwallowed(); return; } const nn = e.type === 'dish' ? CONFIG.dish.coins : e.type === 'armorghost' ? CONFIG.armor.coins : CONFIG.puff.coins;
+    if (e.t >= 18) { e.dead = true; stats.swallowed++; progress.captures++; if (e.onSwallowed) { e.onSwallowed(); return; } const nn = e.type === 'dish' ? CONFIG.dish.coins : e.type === 'armorghost' ? CONFIG.armor.coins : e.type === 'sheet' ? CONFIG.sheet.coins : CONFIG.puff.coins;
       const list = []; for (let i = 0; i < nn; i++) list.push('coin'); if (Math.random() < 0.35) list.push('heart'); popItems(list, n.x + P.face * 30, n.y);
       for (let i = 0; i < 14; i++) parts.push({ x: n.x, y: n.y, vx: rnd(-2, 2), vy: rnd(-2, 2), life: 20, col: '#bff4ff', size: 2, glow: 1 }); }
     return;
@@ -138,14 +147,14 @@ function updateArmor(a) {
 // ---------------------------------------------------------------------
 function makeCurtain(x, y, opt, id) {
   const torn = progress.perm.has(id);
-  return { type: 'curtain', x, y, w: 32, h: 72, suckT: 0, torn, need: 50, secret: !!opt.secret, drop: opt.drop || [], id, inCone: 0,
+  return { type: 'curtain', x, y, w: 32, h: 72, suckT: 0, torn, need: 50, secret: !!opt.secret, drop: opt.drop || [], id, inCone: 0, sprite: opt.sprite || 'curtain',
     onSuck() { if (!this.torn) { this.suckT++; this.inCone = 3; if (this.suckT === 1) tip('vac', 'VAC長押しで吸い込み中…カーテンやホコリの中に何かあるかも'); } } };
 }
 function updateInteractables(e) {
   if (e.inCone > 0) e.inCone--; else if (e.suckT > 0 && e.type !== 'vase') e.suckT = Math.max(0, e.suckT - 0.5);
   if (e.type === 'curtain' && !e.torn && e.suckT >= e.need) {
     e.torn = true; progress.perm.add(e.id); sfx('rip'); cam.shake = 2;
-    parts.push({ x: e.x, y: e.y - 40, tx: 1, life: 26, sprite: 'curtain', fly: 1, sx: e.x - 16, sy: e.y - 72 });
+    parts.push({ x: e.x, y: e.y - 40, tx: 1, life: 26, sprite: 'curtain', key: e.sprite, fly: 1, sx: e.x - 16, sy: e.y - 72 });
     if (e.secret) { revealSecret(); stats.secrets++; }
     popItems(e.drop, e.x, e.y - 30);
   }
@@ -173,21 +182,32 @@ function checkLockedDoor() {
 // ---------------------------------------------------------------------
 //  enemy bullets (plates, candles, crystal shards, fire patches, floor waves)
 // ---------------------------------------------------------------------
+const PERSIST_BULLETS = new Set(['firepatch', 'wave', 'suds', 'thorn', 'hand']);
 function updateEBullets() {
   for (const b of ebullets) {
     if (b.dead) continue;
     b.life--; if (b.life <= 0) { b.dead = true; if (b.onExpire) b.onExpire(b); continue; }
-    if (!b.captured) { b.vy += b.g || 0; }
+    if (!b.captured) {
+      b.vy += b.g || 0;
+      if (b.home) { const dx = pcx() - (b.x + b.w / 2), dy = P.y + 20 - (b.y + b.h / 2), d = Math.hypot(dx, dy) || 1; b.vx += dx / d * 0.018; b.vy += dy / d * 0.018; const v = Math.hypot(b.vx, b.vy); if (v > 0.9) { b.vx *= 0.9 / v; b.vy *= 0.9 / v; } }
+    }
     b.captured = false;
     b.x += b.vx; b.y += b.vy; b.spin = (b.spin || 0) + 1;
-    if (b.kind === 'wave' || b.kind === 'firepatch') { if (b.kind === 'wave' && (solidAtPx(b.x + (b.vx > 0 ? b.w : 0), b.y + b.h / 2) || b.x < 0 || b.x > room.W)) b.dead = true; }
-    else if (b.y + b.h > room.H - 3 * TS + 1 || solidAtPx(b.x + b.w / 2, b.y + b.h) || solidAtPx(b.x + b.w / 2, b.y)) {
+    if (b.kind === 'wave' || b.kind === 'suds' || b.kind === 'firepatch') { if (b.kind !== 'firepatch' && (solidAtPx(b.x + (b.vx > 0 ? b.w : 0), b.y + b.h / 2) || b.x < 0 || b.x > room.W)) b.dead = true; }
+    else if (b.static) {
+      if ((b.roll || b.wall || b.home) && (solidAtPx(b.x + (b.vx > 0 ? b.w : 0), b.y + b.h / 2) || b.x < -4 || b.x + b.w > room.W + 4 || (b.home && (solidAtPx(b.x + b.w / 2, b.y) || solidAtPx(b.x + b.w / 2, b.y + b.h))))) {
+        if (b.bounces > 0) { b.bounces--; b.vx = -b.vx; b.x += b.vx * 2; sfx('tink'); }
+        else { b.dead = true; if (b.roll) spawnItem('gear', clamp(b.x + b.w / 2, 20, room.W - 20), b.y + b.h); if (b.onExpire) b.onExpire(b); for (let i = 0; i < 5; i++) parts.push({ x: b.x + b.w / 2, y: b.y + b.h / 2, vx: rnd(-1.5, 1.5), vy: rnd(-2, 0), life: 16, col: '#e8e2ff', size: 2, grav: 1 }); }
+        continue;
+      }
+    }
+    else if (b.y + b.h > room.H - 3 * TS + 1 || solidAtPx(b.x + b.w / 2, b.y + b.h) || solidAtPx(b.x + b.w / 2, b.y) || b.x < -10 || b.x > room.W + 10) {
       b.dead = true; if (b.onLand) b.onLand(b);
-      else { const col = b.kind === 'plate' ? '#f4f4fc' : '#a8e0ff'; for (let i = 0; i < 6; i++) parts.push({ x: b.x + b.w / 2, y: b.y + b.h / 2, vx: rnd(-1.5, 1.5), vy: rnd(-2, 0), life: 18, col, size: 2, grav: 1 }); sfx('tink'); }
+      else { const col = b.kind === 'plate' ? '#f4f4fc' : b.kind === 'needle' ? '#e8e8f0' : '#a8e0ff'; for (let i = 0; i < 6; i++) parts.push({ x: b.x + b.w / 2, y: b.y + b.h / 2, vx: rnd(-1.5, 1.5), vy: rnd(-2, 0), life: 18, col, size: 2, grav: 1 }); sfx('tink'); }
       continue;
     }
     if (!P.dead && b.x < P.x + P.w - 2 && b.x + b.w > P.x + 2 && b.y < P.y + P.h - 2 && b.y + b.h > P.y + 6) {
-      if (b.kind !== 'firepatch' || P.onGround) { if (hurtPlayer(b.dmg, b.x + b.w / 2, b.kind) && b.kind !== 'firepatch' && b.kind !== 'wave') b.dead = true; }
+      if (b.kind !== 'firepatch' || P.onGround) { if (hurtPlayer(b.dmg, b.x + b.w / 2, b.kind) && !PERSIST_BULLETS.has(b.kind)) b.dead = true; }
     }
   }
   for (let i = ebullets.length - 1; i >= 0; i--) if (ebullets[i].dead) ebullets.splice(i, 1);
@@ -196,7 +216,13 @@ function updateEnts() {
   for (const e of ents) {
     if (e.dead) continue;
     if (e.ghost) updateGhost(e);
+    else if (e.foe) updateFoe(e);
     else if (e.type === 'armor') updateArmor(e);
+    else if (e.type === 'lever') { if (e.wob > 0) e.wob--; if (e.inCone > 0) e.inCone--; else if (!e.down) e.pullT = Math.max(0, e.pullT - 1); }
+    else if (e.type === 'heavy') updateHeavy(e);
+    else if (e.type === 'vines') updateVines(e);
+    else if (e.type === 'ability') updateAbility(e);
+    else if (e.type === 'hint') updateHint(e);
     else updateInteractables(e);
   }
   for (let i = ents.length - 1; i >= 0; i--) if (ents[i].dead && ents[i] !== P.tug) ents.splice(i, 1);

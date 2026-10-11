@@ -245,6 +245,22 @@ const Snd = {
       case 'start': this.tone('square', 523, 523, 0.07, 0.08); this.tone('square', 784, 784, 0.1, 0.08, 0.07); this.tone('square', 1047, 1047, 0.16, 0.08, 0.14); break;
       case 'death': for (let i = 0; i < 5; i++) this.tone('square', 700 - i * 110, 500 - i * 90, 0.09, 0.12, i * 0.09); break;
       case 'chime': this.tone('triangle', 1568, 1568, 0.5, 0.07); this.tone('triangle', 2093, 2093, 0.6, 0.05, 0.1); break;
+      case 'djump': this.tone('triangle', 600, 1100, 0.12, 0.09); this.noise(0.08, 0.08, 4000, 0, 'highpass'); break;
+      case 'float': this.tone('triangle', 400, 900, 0.25, 0.08); this.tone('square', 900, 1300, 0.12, 0.04, 0.08); break;
+      case 'heavyspit': this.tone('square', 120, 320, 0.12, 0.14); this.noise(0.16, 0.2, 1200); break;
+      case 'thud': this.noise(0.18, 0.3, 500); this.tone('triangle', 140, 60, 0.18, 0.18); break;
+      case 'splash': this.noise(0.25, 0.22, 2500, 0, 'bandpass'); this.tone('triangle', 900, 300, 0.12, 0.05); break;
+      case 'lever': this.tone('square', 200, 90, 0.15, 0.12); this.noise(0.2, 0.2, 900); this.tone('square', 90, 90, 0.08, 0.1, 0.15); break;
+      case 'burn': this.noise(0.5, 0.18, 1800, 0, 'bandpass'); break;
+      case 'get': for (let i = 0; i < 8; i++) this.tone('square', [523, 659, 784, 1047, 784, 1047, 1319, 1568][i], [523, 659, 784, 1047, 784, 1047, 1319, 1568][i], 0.12, 0.07, i * 0.07); break;
+      case 'bat': this.tone('square', 2400, 1800, 0.05, 0.04); this.tone('square', 2600, 2000, 0.05, 0.04, 0.07); break;
+      case 'flap': this.noise(0.1, 0.12, 1200, 0, 'bandpass'); break;
+      case 'foedie': this.tone('square', 500, 120, 0.16, 0.1); this.noise(0.15, 0.16, 2000); break;
+      case 'bubble': this.tone('sine', 300, 900, 0.1, 0.08); break;
+      case 'thorn': this.noise(0.2, 0.22, 3000, 0, 'highpass'); this.tone('sawtooth', 300, 120, 0.12, 0.06); break;
+      case 'tick': this.tone('square', 2200, 2200, 0.02, 0.05); break;
+      case 'bell': this.tone('triangle', 392, 392, 1.2, 0.16); this.tone('triangle', 784, 784, 0.9, 0.06); this.tone('sine', 196, 196, 1.4, 0.12); break;
+      case 'whoosh': this.noise(0.5, 0.2, 1500, 0, 'bandpass'); break;
     }
   },
 };
@@ -269,14 +285,15 @@ window.addEventListener('keydown', e => {
 });
 window.addEventListener('keyup', e => { const k = KEYMAP[e.code]; if (k) { keys[k] = false; refreshButtons(); } });
 
+const msgEl = document.getElementById('msg');
 const pad = document.getElementById('pad'), muteBtn = document.getElementById('mute'), hintEl = document.getElementById('hint'), mapBtn = document.getElementById('bMap');
 hintEl.textContent = 'ROCKSIDE GAIDEN  v' + GAME_VERSION;
 const BTN = { left: document.getElementById('bL'), right: document.getElementById('bR'), jump: document.getElementById('bJ'), vac: document.getElementById('bV'), spit: document.getElementById('bS') };
 const BTN_ON = { left: false, right: false, jump: false, vac: false, spit: false };
 const ptrs = new Map();
-const layout = { portrait: true, W: 390, H: 844, gameX: 0, gameY: 0, gameW: 390, gameH: 292, dpadMid: 100, act: {} };
+const layout = { portrait: true, W: 390, H: 844, gameX: 0, gameY: 0, gameW: 390, gameH: 292, dpadMid: 100, act: {}, ctrlTop: 0 };
 function zoneAt(x, y) {
-  if (layout.portrait && y < layout.gameY + layout.gameH) return null;
+  if (layout.portrait && y < layout.ctrlTop) return null;
   if (x < layout.W / 2) return x < layout.dpadMid ? 'left' : 'right';
   let best = null, bd = 1e9;
   for (const k in layout.act) { const p = layout.act[k], d = (x - p.x) * (x - p.x) + (y - p.y) * (y - p.y); if (d < bd) { bd = d; best = k; } }
@@ -324,6 +341,8 @@ function toggleMute() {
 try { if (localStorage.getItem('gaiden_muted') === '1') { Snd.muted = true; muteBtn.textContent = 'SOUND OFF'; muteBtn.classList.add('off'); } } catch (_) {}
 
 function place(el, x, y, w, h) { el.style.left = Math.round(x) + 'px'; el.style.top = Math.round(y) + 'px'; el.style.width = Math.round(w) + 'px'; el.style.height = Math.round(h) + 'px'; }
+// Portrait: canvas at the top, then the message panel (tips / room name), the MAP + SOUND row and the controls
+// packed right underneath (no dead gap), any spare height goes below the controls.
 function doLayout() {
   const W = window.innerWidth, H = window.innerHeight, dpr = Math.min(window.devicePixelRatio || 1, 3);
   const portrait = H >= W * 1.1;
@@ -332,8 +351,8 @@ function doLayout() {
   let gw, gh, gx, gy;
   if (portrait) {
     gw = W; gh = Math.round(W * VH / VW);
-    if (gh > H * 0.56) { gh = Math.round(H * 0.56); gw = Math.round(gh * VW / VH); }
-    gx = Math.round((W - gw) / 2); gy = Math.round(Math.min(72, Math.max(0, H - gh - 420) * 0.5)); // clear of notches, controls keep >=420px
+    if (gh > H * 0.5) { gh = Math.round(H * 0.5); gw = Math.round(gh * VW / VH); }
+    gx = Math.round((W - gw) / 2); gy = H > 700 ? 22 : H > 600 ? 10 : 0; // clear of the notch / status bar
   } else {
     gh = H; gw = Math.round(H * VW / VH); if (gw > W) { gw = W; gh = Math.round(W * VH / VW); }
     gx = Math.round((W - gw) / 2); gy = Math.round((H - gh) / 2);
@@ -345,16 +364,20 @@ function doLayout() {
   sctx.imageSmoothingEnabled = false;
   let bs, gap = 10, cy, margin;
   if (portrait) {
-    const ctrlTop = gy + gh, ctrlH = H - ctrlTop;
-    bs = Math.max(70, Math.min(92, Math.floor((W / 2 - 30) / 2), ctrlH * 0.26));
     margin = Math.max(12, Math.round(W * 0.03));
-    cy = ctrlTop + ctrlH * 0.55;
-    place(muteBtn, W - margin - 100, ctrlTop + 14, 100, 30);
-    place(mapBtn, margin, ctrlTop + 12, 64, 34);
-    hintEl.style.top = (H - 24) + 'px';
+    const msgH = H > 740 ? 62 : 50, msgTop = gy + gh + 6;
+    place(msgEl, margin, msgTop, W - margin * 2, msgH);
+    const rowTop = msgTop + msgH + 8;
+    place(mapBtn, margin, rowTop, 64, 32); place(muteBtn, W - margin - 100, rowTop + 1, 100, 30);
+    const ctrlTop = rowTop + 40; layout.ctrlTop = ctrlTop;
+    bs = Math.max(66, Math.min(92, Math.floor((W / 2 - 30) / 2)));
+    const off = bs * 0.62, vb = Math.round(bs * 1.12), clusterH = off * 1.75 + bs / 2 + vb / 2;
+    const spare = Math.max(0, H - 24 - ctrlTop - clusterH);
+    cy = ctrlTop + Math.min(spare * 0.3, 70) + off + bs / 2;
+    hintEl.style.top = (H - 20) + 'px';
   } else {
     bs = Math.max(60, Math.min(84, H * 0.2));
-    margin = 14; cy = H * 0.66; gap = 8;
+    margin = 14; cy = H * 0.66; gap = 8; layout.ctrlTop = 0;
     place(muteBtn, 10, 10, 96, 30); place(mapBtn, 10, 48, 64, 34);
   }
   const lx = margin, rx = margin + bs + gap;
@@ -365,9 +388,6 @@ function doLayout() {
   const vx = (jx + sx + bs) / 2 - vb / 2;
   place(BTN.spit, sx, cy - off - bs / 2, bs, bs); place(BTN.jump, jx, cy - off - bs / 2, bs, bs); place(BTN.vac, vx, cy + off * 0.75 - vb / 2, vb, vb);
   layout.act = { spit: { x: sx + bs / 2, y: cy - off }, jump: { x: jx + bs / 2, y: cy - off }, vac: { x: vx + vb / 2, y: cy + off * 0.75 } };
-  if (!portrait) { // keep the cluster on screen in landscape
-    const top = Math.min(cy - off - bs / 2, H - (cy + off * 0.75 + vb / 2) );
-  }
 }
 window.addEventListener('resize', doLayout);
 window.addEventListener('orientationchange', () => setTimeout(doLayout, 100));

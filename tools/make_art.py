@@ -13,6 +13,7 @@ A = os.path.join(ROOT, 'assets')
 random.seed(7)
 
 def hexc(h, a=255):
+    if not isinstance(h, str): h = tuple(int(v) for v in h); return h if len(h) == 4 else h + (a,)
     h = h.lstrip('#'); return (int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16), a)
 
 class Spr:
@@ -86,7 +87,10 @@ T = Atlas('tiles', 256)
 def brick(variant, top=False, crack=False, theme='stone'):
     s = Spr(16, 16)
     base, hi, lo, mort = {'stone': ('#3f3757', '#564c74', '#2e2842', '#1d1829'),
-                         'cellar': ('#3c3a40', '#55525a', '#2a282e', '#18171b')}[theme]
+                         'cellar': ('#3c3a40', '#55525a', '#2a282e', '#18171b'),
+                         'laundry': ('#3a5058', '#557078', '#28383e', '#161f24'),
+                         'garden': ('#3c4a3a', '#566a52', '#2a3428', '#161c15'),
+                         'wood': ('#4a3426', '#6a4c36', '#33231a', '#1c130d')}[theme]
     s.rect(0, 0, 16, 16, mort)
     rows = [(0, 7), (8, 15)]
     for ri, (y0, y1) in enumerate(rows):
@@ -104,13 +108,44 @@ def brick(variant, top=False, crack=False, theme='stone'):
     if crack:
         pts = [(9, 2), (8, 4), (9, 6), (7, 9), (8, 11), (6, 13)]
         for (a, b), (c, d) in zip(pts, pts[1:]): s.line(a, b, c, d, '#151220')
+    if theme == 'wood' and not top:  # planks instead of bricks
+        s.rect(0, 0, 16, 16, mort)
+        for k, x0 in enumerate((0, 8)):
+            s.rect(x0, 0, 7, 16, base if (k + variant) % 2 else lo); s.vline(x0, 0, 15, hi)
+            for yy in range(2, 16, 5): s.px(x0 + 3 + (yy + variant) % 3, yy, mort)
+        s.hline(0, 15, (6 + variant * 5) % 16, mort)
     if top:
-        s.rect(0, 0, 16, 5, '#6e4a36'); s.hline(0, 15, 0, '#b88758'); s.hline(0, 15, 1, '#8c6044')
-        for xx in range(0, 16, 6): s.vline((xx + variant * 3) % 16, 1, 4, '#4f3326')
-        s.hline(0, 15, 5, '#1a1420'); s.hline(0, 15, 6, '#2a2236')
+        if theme == 'garden':  # grass + moss over stone
+            s.rect(0, 0, 16, 5, '#2e5a2a'); s.hline(0, 15, 0, '#6ab04a'); s.hline(0, 15, 1, '#4a8a3a')
+            for xx in range(0, 16, 2): s.vline(xx, -1 + (xx * 7 + variant) % 3, 1, '#7ac85a')
+            s.hline(0, 15, 5, '#1a2416'); s.hline(0, 15, 6, '#24301f')
+        elif theme == 'laundry':  # tiled floor, wet shine
+            s.rect(0, 0, 16, 5, '#7a9aa4'); s.hline(0, 15, 0, '#c8e4ec'); s.vline(7 + variant, 0, 4, '#4a6670'); s.hline(0, 15, 4, '#4a6670')
+            s.px(3, 1, '#ffffff'); s.px(12, 2, '#e8f8ff'); s.hline(0, 15, 5, '#141c20')
+        elif theme == 'wood':
+            s.rect(0, 0, 16, 5, '#7a5238'); s.hline(0, 15, 0, '#c99a66'); s.hline(0, 15, 1, '#9a6a48'); s.px((5 + variant * 7) % 16, 2, '#4a2e1e')
+            s.hline(0, 15, 5, '#1c130d'); s.hline(0, 15, 6, '#2a1c14')
+        else:
+            s.rect(0, 0, 16, 5, '#6e4a36'); s.hline(0, 15, 0, '#b88758'); s.hline(0, 15, 1, '#8c6044')
+            for xx in range(0, 16, 6): s.vline((xx + variant * 3) % 16, 1, 4, '#4f3326')
+            s.hline(0, 15, 5, '#1a1420'); s.hline(0, 15, 6, '#2a2236')
     return s
 T.add('brick0', brick(0)); T.add('brick1', brick(1)); T.add('top0', brick(0, True)); T.add('top1', brick(1, True))
 T.add('secret', brick(0, crack=True))
+T.add('csecret', brick(0, crack=True, theme='cellar'))
+for pre, th in (('t', 'laundry'), ('g', 'garden'), ('w', 'wood')):
+    T.add(pre + 'brick0', brick(0, theme=th)); T.add(pre + 'brick1', brick(1, theme=th)); T.add(pre + 'top0', brick(0, True, theme=th)); T.add(pre + 'top1', brick(1, True, theme=th))
+    T.add(pre + 'secret', brick(0, crack=True, theme=th))
+s = Spr(16, 16)  # iron bars (vertical gate)
+s.rect(0, 0, 16, 16, (10, 8, 18, 200))
+for x in (2, 7, 12): s.rect(x, 0, 3, 16, '#5a5a6a'); s.vline(x, 0, 15, '#9a9aae'); s.vline(x + 2, 0, 15, '#2a2a36')
+s.rect(0, 6, 16, 2, '#4a4a58'); s.hline(0, 15, 6, '#8a8a9e')
+T.add('bars', s)
+s = Spr(16, 16)  # iron grate (floor / ceiling gate)
+s.rect(0, 0, 16, 16, (10, 8, 18, 220))
+for y in (1, 6, 11): s.rect(0, y, 16, 3, '#5a5a6a'); s.hline(0, 15, y, '#9a9aae'); s.hline(0, 15, y + 2, '#2a2a36')
+for x in (3, 11): s.vline(x, 0, 15, '#3a3a48')
+T.add('grate', s)
 T.add('cbrick0', brick(0, theme='cellar')); T.add('cbrick1', brick(1, theme='cellar')); T.add('ctop0', brick(0, True, theme='cellar')); T.add('ctop1', brick(1, True, theme='cellar'))
 def plat(kind):
     s = Spr(16, 16)
@@ -139,6 +174,16 @@ THEMES = {
     'cellar':  dict(w1='#1c1a20', w2='#26232c', w3='#302c36', pat='stone'),
     'vault':   dict(w1='#2a2210', w2='#3a3016', w3='#54461e', pat='diamond'),
     'ballroom':dict(w1='#141a34', w2='#1c2446', w3='#2a3460', pat='diamond'),
+    'laundry': dict(w1='#1e3238', w2='#2a444c', w3='#3e5e68', pat='tile'),
+    'kitchen': dict(w1='#2a2226', w2='#3a3036', w3='#4e4248', pat='checker'),
+    'boiler':  dict(w1='#2a1c16', w2='#3a281e', w3='#5a3a26', pat='rivet'),
+    'garden':  dict(w1='#0e2228', w2='#16343a', w3='#2a5458', pat='glass'),
+    'courtyard': dict(w1='#142016', w2='#1e3020', w3='#2c4630', pat='hedge'),
+    'thorn':   dict(w1='#160e18', w2='#24142a', w3='#3a1e3a', pat='bramble'),
+    'shed':    dict(w1='#2a1e14', w2='#3a2a1c', w3='#4e3a26', pat='plank'),
+    'attic':   dict(w1='#22180f', w2='#302216', w3='#44321f', pat='plank'),
+    'gears':   dict(w1='#1a1814', w2='#28241c', w3='#4a3e28', pat='rivet'),
+    'tower':   dict(w1='#1c1a2a', w2='#282438', w3='#3e3654', pat='stone'),
 }
 for name, th in THEMES.items():
     s = Spr(32, 32); w1, w2, w3 = th['w1'], th['w2'], th['w3']
@@ -171,6 +216,50 @@ for name, th in THEMES.items():
         for y0 in (0, 10, 21):
             s.hline(0, 31, y0, '#141216')
             for x0 in range((y0 * 7) % 13, 32, 13): s.vline(x0, y0, min(31, y0 + 10), '#141216')
+    elif th['pat'] == 'tile':
+        for y in range(32):
+            for x in range(32):
+                c = w2 if ((x // 8) + (y // 8)) % 2 else w1
+                if x % 8 == 0 or y % 8 == 0: c = '#122024'
+                elif x % 8 == 1 or y % 8 == 1: c = w3
+                s.px(x, y, c)
+    elif th['pat'] == 'checker':
+        for y in range(32):
+            for x in range(32): s.px(x, y, w2 if ((x // 16) + (y // 16)) % 2 else w1)
+        for k in range(0, 32, 16): s.hline(0, 31, k, w3); s.vline(k, 0, 31, w3)
+    elif th['pat'] == 'rivet':
+        s.rect(0, 0, 32, 32, w2)
+        for y0 in (0, 16):
+            s.hline(0, 31, y0, '#100c08'); s.hline(0, 31, y0 + 1, w3)
+            for x0 in range(2, 32, 6): s.px(x0, y0 + 3, w3); s.px(x0, y0 + 12, w3); s.px(x0 + 1, y0 + 4, '#100c08')
+        for y in range(32):
+            for x in range(32):
+                if random.random() < .06: s.px(x, y, w1)
+    elif th['pat'] == 'glass':  # greenhouse panes with iron frames + moonlit sky behind
+        for y in range(32):
+            for x in range(32):
+                c = lerp(w2, w1, y / 32)
+                if dith(x, y, .25): c = lerp(w3, w2, y / 32)
+                s.px(x, y, c)
+        for k in (0, 16): s.vline(k, 0, 31, '#0a1214'); s.vline(k + 1, 0, 31, '#3a5a5c')
+        s.hline(0, 31, 0, '#0a1214'); s.hline(0, 31, 1, '#3a5a5c')
+        s.line(4, 28, 12, 20, (200, 240, 255, 50)); s.line(20, 30, 28, 22, (200, 240, 255, 40))
+    elif th['pat'] == 'hedge':
+        for y in range(32):
+            for x in range(32):
+                n = math.sin(x * 1.1 + y * .5) + math.sin(x * .4 - y * 1.3) + random.random()
+                s.px(x, y, w3 if n > 1.4 else w2 if n > .3 else w1)
+    elif th['pat'] == 'bramble':
+        s.rect(0, 0, 32, 32, w1)
+        for k in range(3):
+            pts = [(0, 6 + k * 11)] + [(x, int(6 + k * 11 + 4 * math.sin(x * .4 + k))) for x in range(4, 33, 4)]
+            for (a, b), (c, d) in zip(pts, pts[1:]): s.line(a, b, c, d, w3)
+            for x in range(3, 32, 7): s.px(x, int(6 + k * 11 + 4 * math.sin(x * .4 + k)) - 2, w2)
+    elif th['pat'] == 'plank':
+        for x in range(32):
+            c = (w1, w2, w1, w3)[(x // 8) % 4] if x % 8 else '#0e0a06'
+            for y in range(32): s.px(x, y, c if not (y == (x * 13) % 32 and x % 8) else '#0e0a06')
+        for x0 in range(0, 32, 8): s.px(x0 + 3, 5, '#0e0a06'); s.px(x0 + 3, 26, '#0e0a06')
     elif th['pat'] == 'diamond':
         for y in range(32):
             for x in range(32):
@@ -183,6 +272,10 @@ for name, th in THEMES.items():
     s = Spr(32, 24)
     wood = '#3a2418' if name != 'ballroom' else '#1a1e38'; woodh = '#5a3a26' if name != 'ballroom' else '#2c3460'; woodl = '#24160e' if name != 'ballroom' else '#10122a'
     if name == 'cellar': wood, woodh, woodl = '#2a2620', '#3a352c', '#18160f'
+    if name in ('laundry', 'kitchen'): wood, woodh, woodl = '#c8d4dc', '#eef4f8', '#7a8a96'
+    if name in ('boiler', 'gears'): wood, woodh, woodl = '#3a3a44', '#5a5a68', '#1e1e26'
+    if name in ('garden', 'courtyard', 'thorn'): wood, woodh, woodl = '#2a3a2a', '#3e5a3a', '#162016'
+    if name == 'tower': wood, woodh, woodl = '#2a2438', '#3e3654', '#16121e'
     s.rect(0, 0, 32, 24, wood); s.hline(0, 31, 0, woodh); s.hline(0, 31, 1, '#c9a24a' if name in ('ballroom', 'vault', 'foyer') else woodh); s.hline(0, 31, 3, woodl)
     for x0 in (2, 18):
         s.rect(x0, 6, 12, 14, woodl); s.rect(x0 + 1, 7, 10, 12, wood); s.hline(x0 + 1, x0 + 11, 7, woodh); s.vline(x0 + 1, 7, 18, woodh)
@@ -190,7 +283,8 @@ for name, th in THEMES.items():
     B.add('wain_' + name, s)
     # pillar
     s = Spr(16, 32)
-    pc, ph, pl = ('#4a4058', '#6a5e80', '#2c2638') if name not in ('library', 'cellar') else ('#4a3426', '#6a4c36', '#2a1c14')
+    pc, ph, pl = ('#4a4058', '#6a5e80', '#2c2638') if name not in ('library', 'cellar', 'attic', 'shed') else ('#4a3426', '#6a4c36', '#2a1c14')
+    if name in ('garden', 'courtyard', 'thorn'): pc, ph, pl = '#3a4a46', '#5a6e68', '#202a28'
     s.rect(2, 0, 12, 32, pc); s.vline(3, 0, 31, ph); s.vline(4, 0, 31, ph); s.vline(12, 0, 31, pl); s.vline(13, 0, 31, pl)
     for x in (6, 9): s.vline(x, 0, 31, pl)
     B.add('pillar_' + name, s)
@@ -385,7 +479,6 @@ def barrel():
                 s.px(x, y, c)
     s.rect(11, 11, 4, 4, '#2a1a10')
     return s
-P.add('barrel', barrel())
 def save_altar():
     s = Spr(28, 40)
     s.rect(4, 26, 20, 14, '#3a3450'); s.hline(4, 23, 26, '#6a6090'); s.rect(2, 36, 24, 4, '#2a2440'); s.hline(2, 25, 36, '#5a5080')
@@ -452,6 +545,314 @@ def heart_container():
     s.rect(6, 26, 16, 8, '#3a3450'); s.hline(6, 21, 26, '#6a6090'); s.rect(4, 31, 20, 3, '#2a2440')
     return s
 P.add('pedestal', heart_container())
+# ---------------- v0.2 props ----------------
+WOOD, WOODH, WOODL, WOODD = '#6a4430', '#9a6a48', '#4a2e1e', '#2a1a10'
+IRON, IRONH, IRONL = '#5a5a68', '#9a9aae', '#2a2a36'
+def shelf_unit(w, h, rows, fill):
+    s = Spr(w, h); s.rect(0, 0, w, h, WOODL); s.rect(2, 2, w - 4, h - 4, '#1e140c'); s.vline(0, 0, h - 1, WOOD); s.hline(0, w - 1, 0, WOODH)
+    rh = (h - 4) // rows
+    for r in range(rows):
+        y0 = 2 + r * rh; fill(s, 3, y0, w - 6, rh - 2, r); s.rect(2, y0 + rh - 2, w - 4, 2, WOOD); s.hline(2, w - 3, y0 + rh - 2, WOODH)
+    return s
+def linens(s, x, y, w, h, r):
+    xx = x
+    cols = ['#e8eef8', '#c8d8f0', '#f0e0e8', '#d8f0e0', '#f8f0d8']
+    while xx < x + w - 5:
+        bw = random.randint(6, 10); c = random.choice(cols); hh = random.randint(h // 2, h - 1)
+        for k in range(0, hh, 3): s.rect(xx, y + h - hh + k, min(bw, x + w - xx), 2, c); s.hline(xx, xx + min(bw, x + w - xx) - 1, y + h - hh + k + 2, lerp(c, '#000000', .3))
+        xx += bw + 1
+P.add('linenshelf', shelf_unit(36, 52, 3, linens))
+def pipes():
+    s = Spr(20, 80)
+    for x0, c in ((3, '#7a6a5a'), (11, '#5a6a7a')):
+        s.rect(x0, 0, 6, 80, c); s.vline(x0 + 1, 0, 79, lerp(c, '#ffffff', .35)); s.vline(x0 + 5, 0, 79, lerp(c, '#000000', .4))
+        for y in (12, 40, 68): s.rect(x0 - 1, y, 8, 4, IRON); s.hline(x0 - 1, x0 + 6, y, IRONH)
+    s.rect(1, 52, 18, 5, '#8a7a6a'); s.hline(1, 18, 52, '#b8a898'); s.ellipse(10, 54, 3, 3, '#c03030'); s.px(9, 53, '#ff8080')
+    return s
+P.add('pipes', pipes())
+def lamp_wall():
+    s = Spr(12, 18); s.rect(5, 0, 2, 6, IRON); s.rect(1, 6, 10, 2, IRONL); s.ellipse(6, 12, 4, 5, '#ffe8a0'); s.ellipse(6, 11, 2, 2, '#fffff0'); s.rect(2, 16, 8, 2, IRON)
+    s.outline('#1a1424'); return s
+P.add('lamp_wall', lamp_wall())
+def sheetline():  # top anchored: rope with hanging sheets
+    s = Spr(90, 40)
+    for x in range(90): s.px(x, 2 + int(4 * math.sin(x / 89 * math.pi)), '#a89878')
+    for x0, w, c in ((8, 22, '#e8eef8'), (36, 18, '#f0d8e0'), (60, 24, '#d8e8f0')):
+        y0 = 3 + int(4 * math.sin((x0 + w / 2) / 89 * math.pi)); hgt = random.randint(26, 34)
+        for x in range(x0, x0 + w):
+            hh = hgt - int(3 * abs(math.sin((x - x0) * .5)))
+            for y in range(y0, y0 + hh): s.px(x, y, c if (x - x0) % 6 else lerp(c, '#000000', .18))
+        s.rect(x0 + 2, y0 - 1, 2, 3, '#b8a070'); s.rect(x0 + w - 4, y0 - 1, 2, 3, '#b8a070')
+    return s
+P.add('sheetline', sheetline())
+def basket():
+    s = Spr(24, 16)
+    for y in range(4, 16):
+        for x in range(1 + (16 - y) // 4, 23 - (16 - y) // 4): s.px(x, y, '#a07a48' if (x + y) % 3 else '#6a4a28')
+    s.ellipse(12, 4, 11, 3, '#e8eef8'); s.ellipse(8, 3, 4, 2, '#f0d8e0'); s.hline(1, 22, 6, '#c89a5a'); s.outline('#2a1a10'); return s
+P.add('basket', basket())
+def washtub():
+    s = Spr(32, 22)
+    for y in range(6, 22):
+        for x in range(2 + (y - 6) // 5, 30 - (y - 6) // 5): s.px(x, y, IRON if (x % 6) else IRONL)
+    s.rect(1, 5, 30, 3, IRONH); s.ellipse(16, 5, 13, 2, '#bfe8f8'); s.ellipse(9, 3, 4, 3, '#ffffff'); s.ellipse(15, 2, 3, 2, '#e8f8ff'); s.ellipse(22, 3, 4, 3, '#ffffff')
+    s.rect(6, 12, 20, 2, IRONL); s.outline('#14121e'); return s
+P.add('washtub', washtub())
+def boiler_prop():
+    s = Spr(40, 64)
+    s.rect(4, 6, 32, 54, '#6a4a3a'); s.ellipse(20, 8, 16, 6, '#8a6a52'); s.vline(6, 8, 58, '#9a7a62'); s.vline(33, 8, 58, '#3a2a20')
+    for y in (16, 34, 52): s.rect(4, y, 32, 3, IRON); s.hline(4, 35, y, IRONH)
+    s.ellipse(20, 26, 7, 7, '#2a1a10'); s.ellipse(20, 26, 5, 5, '#ff8030'); s.ellipse(20, 27, 3, 2, '#ffd080')
+    s.ellipse(29, 42, 4, 4, '#e8e8f0'); s.line(29, 42, 31, 40, '#c03030'); s.rect(16, 0, 8, 6, IRON); s.rect(0, 58, 40, 6, '#2a2228')
+    s.outline('#14101a'); return s
+P.add('boiler', boiler_prop())
+def stove():
+    s = Spr(44, 34)
+    s.rect(0, 6, 44, 28, '#2a2a32'); s.rect(0, 4, 44, 4, '#4a4a56'); s.hline(0, 43, 4, '#7a7a8a')
+    s.rect(6, 14, 14, 12, '#141418'); s.rect(8, 16, 10, 8, '#ff6a20'); s.rect(9, 18, 8, 5, '#ffc060'); s.rect(26, 14, 12, 12, '#141418'); s.rect(28, 20, 8, 3, '#5a5a66')
+    s.ellipse(12, 3, 7, 2, '#3a3a44'); s.ellipse(32, 3, 7, 2, '#3a3a44'); s.rect(40, -2, 4, 6, '#3a3a44')
+    s.outline('#0c0c10'); return s
+P.add('stove', stove())
+def pots_fill(s, x, y, w, h, r):
+    xx = x + 1
+    while xx < x + w - 8:
+        k = random.choice(['pot', 'jar', 'jar', 'pan'])
+        if k == 'pot': s.rect(xx, y + h - 7, 9, 7, '#4a4a56'); s.hline(xx, xx + 8, y + h - 7, '#8a8a9a'); xx += 11
+        elif k == 'jar': c = random.choice(['#c87a3a', '#7aa048', '#c84a4a', '#e8c86a']); s.rect(xx, y + h - 9, 6, 9, '#c8d8e0'); s.rect(xx + 1, y + h - 7, 4, 6, c); s.rect(xx, y + h - 10, 6, 2, '#8a6a4a'); xx += 8
+        else: s.ellipse(xx + 5, y + h - 3, 5, 2, '#5a5a66'); xx += 11
+P.add('potshelf', shelf_unit(40, 40, 3, pots_fill))
+def hangpans():  # top anchored rack with hanging pans
+    s = Spr(56, 30); s.rect(0, 0, 56, 3, IRONL); s.hline(0, 55, 0, IRONH)
+    for k, x in enumerate((6, 18, 30, 44)):
+        L = 8 + (k % 2) * 5; s.vline(x, 3, 3 + L, IRON)
+        if k % 2: s.ellipse(x, 6 + L, 6, 6, '#3a3a44'); s.ellipse(x - 1, 5 + L, 4, 4, '#5a5a68')
+        else: s.ellipse(x, 7 + L, 5, 4, '#b87a3a'); s.ellipse(x - 1, 6 + L, 3, 2, '#e0a060'); s.rect(x - 1, 2 + L, 2, 3, '#4a2a1a')
+    return s
+P.add('hangpans', hangpans())
+def sack():
+    s = Spr(22, 24)
+    for y in range(24):
+        hw = 6 + 4 * math.sin(min(1, (y + 2) / 20) * math.pi * .8) if y > 4 else 4
+        for x in range(22):
+            if abs(x + .5 - 11) < hw: s.px(x, y, '#c8a878' if (x * 3 + y) % 7 else '#a88a5a')
+    s.rect(8, 3, 6, 2, '#6a4a28'); s.hline(4, 17, 14, '#a88a5a'); s.px(10, 12, '#6a4a28'); s.outline('#2a1a10'); return s
+P.add('sack', sack())
+# ---- side-view barrel (v0.1 drew it from above)
+def barrel_side(w=26, h=30):
+    s = Spr(w, h); cx = w / 2
+    for y in range(h):
+        t = y / (h - 1); bulge = (w / 2 - 3) + 3 * math.sin(t * math.pi)
+        for x in range(w):
+            dx = x + .5 - cx
+            if abs(dx) < bulge:
+                u = dx / bulge  # -1..1 across the stave curve
+                stave = int((u + 1) * 3.2)
+                c = lerp('#8a5a34', '#4a2e18', (u + 1) / 2 * .8)
+                if stave % 2: c = lerp('#7a4e2c', '#40261a', (u + 1) / 2 * .8)
+                if abs(u) > .88: c = '#2e1c10'
+                if u < -.45 and u > -.65: c = lerp('#b07a4a', '#8a5a34', t)
+                s.px(x, y, c)
+    for hy in (3, 9, h - 10, h - 4):  # iron hoops
+        t = hy / (h - 1); bulge = (w / 2 - 3) + 3 * math.sin(t * math.pi)
+        for x in range(w):
+            if abs(x + .5 - cx) < bulge: s.px(x, hy, '#5a5a68' if x + .5 - cx > 0 else '#9a9aae'); s.px(x, hy + 1, '#2a2a36')
+    s.ellipse(cx, 1, w / 2 - 3, 1.5, '#6a4430'); s.px(int(cx) - 2, 15, '#2a1a10'); s.px(int(cx) - 2, 16, '#c9a24a')
+    s.outline('#1a0e08'); return s
+P.add('barrel', barrel_side())
+def crate():
+    s = Spr(24, 22); s.rect(0, 0, 24, 22, '#8a6038'); s.rect(1, 1, 22, 20, '#a07448')
+    for y in (1, 8, 15): s.hline(1, 22, y, '#6a4428')
+    s.line(2, 20, 21, 2, '#6a4428'); s.line(2, 19, 20, 2, '#c8945a'); s.rect(0, 0, 24, 2, '#5a3a20'); s.rect(0, 20, 24, 2, '#5a3a20')
+    s.outline('#2a180c'); return s
+P.add('crate', crate())
+def trunk():
+    s = Spr(34, 22); s.rect(0, 6, 34, 16, '#5a2e20'); s.ellipse(17, 7, 17, 6, '#6a3a26'); s.rect(0, 7, 34, 2, '#3a1a10')
+    for x in (4, 29): s.rect(x, 2, 3, 20, '#c9a24a'); s.vline(x, 2, 21, '#f3d98a')
+    s.rect(14, 10, 6, 6, '#c9a24a'); s.rect(16, 12, 2, 3, '#2a1a10'); s.outline('#1a0c08'); return s
+P.add('trunk', trunk())
+def dolls_fill(s, x, y, w, h, r):
+    xx = x + 1
+    while xx < x + w - 7:
+        c = random.choice(['#c84a6a', '#4a6ac8', '#e8c86a', '#7a4ab8', '#4ab88a'])
+        s.ellipse(xx + 3, y + h - 9, 3, 3, '#f0d8c0'); s.rect(xx + 1, y + h - 13, 5, 2, random.choice(['#4a2a1a', '#e8c86a', '#1a1a1a']))
+        s.px(xx + 2, y + h - 9, '#000000'); s.px(xx + 4, y + h - 9, '#000000'); s.rect(xx, y + h - 6, 7, 6, c); xx += 9
+P.add('dollshelf', shelf_unit(40, 48, 3, dolls_fill))
+def gear_spr(R, teeth, col=('#8a6a2a', '#c9a24a', '#f3d98a')):
+    S = int(R * 2 + 6); s = Spr(S, S); c = S / 2
+    for y in range(S):
+        for x in range(S):
+            dx, dy = x + .5 - c, y + .5 - c; d = math.hypot(dx, dy); a = math.atan2(dy, dx)
+            rr = R + (2.5 if math.cos(a * teeth) > .3 else 0)
+            if d < rr and d > R * .32:
+                cc = col[1] if (dx + dy) < 0 else col[0]
+                if d < R * .5 and d > R * .38: cc = col[2]
+                if R * .55 < d < R * .75 and (int(math.degrees(a) + 360) // 60) % 2 == 0 and teeth > 7: cc = (0, 0, 0, 0)
+                s.px(x, y, cc)
+    s.outline('#2a1a08'); return s
+P.add('gear_big', gear_spr(22, 12)); P.add('gear_med', gear_spr(13, 9))
+def clockface():
+    s = Spr(46, 46); s.ellipse(23, 23, 22, 22, '#8a6a2a'); s.ellipse(23, 23, 20, 20, '#c9a24a'); s.ellipse(23, 23, 17, 17, '#f0e8d0')
+    for k in range(12):
+        a = k / 12 * 2 * math.pi; s.rect(23 + math.sin(a) * 14 - 1, 23 - math.cos(a) * 14 - 1, 2, 2, '#2a1a10')
+    s.line(23, 23, 23, 11, '#2a1a10'); s.line(23, 23, 31, 27, '#2a1a10'); s.ellipse(23, 23, 2, 2, '#c03030'); s.outline('#1a1008'); return s
+P.add('clockface', clockface())
+def bell():  # top anchored
+    s = Spr(40, 46); s.rect(18, 0, 4, 8, IRONL); s.rect(10, 6, 20, 3, WOOD)
+    for y in range(9, 42):
+        t = (y - 9) / 32; hw = 7 + 12 * t ** 1.6
+        for x in range(40):
+            dx = x + .5 - 20
+            if abs(dx) < hw: s.px(x, y, '#e0b040' if dx < -hw * .3 else ('#c9a24a' if dx < hw * .5 else '#8a6a2a'))
+    s.rect(1, 40, 38, 3, '#8a6a2a'); s.hline(1, 38, 40, '#f3d98a'); s.ellipse(20, 44, 3, 2, '#5a4a2a'); s.outline('#2a1a08'); return s
+P.add('bell', bell())
+def round_window():
+    s = Spr(36, 36); c = 18
+    for y in range(36):
+        for x in range(36):
+            d = math.hypot(x + .5 - c, y + .5 - c)
+            if d < 18: s.px(x, y, '#4a3e60' if d > 15 else lerp('#3a5a9a', '#1a2448', y / 36))
+    s.ellipse(23, 12, 4, 4, '#e8f0ff'); s.vline(18, 3, 32, '#1a1424'); s.hline(3, 32, 18, '#1a1424'); s.outline('#1a1424'); return s
+P.add('round_window', round_window())
+def glasspane():
+    s = Spr(44, 72)
+    for y in range(72):
+        for x in range(44):
+            c = lerp('#2a4a6a', '#0e1c2a', y / 72)
+            if dith(x, y, .2): c = lerp('#3a5a7a', '#1a2a3a', y / 72)
+            s.px(x, y, c)
+    if True:
+        s.ellipse(30, 14, 5, 5, '#e8f0ff')
+        for k in range(30): s.px(random.randrange(44), random.randrange(40), (255, 255, 255, random.randint(80, 200)))
+    for x in (0, 1, 21, 22, 42, 43): s.vline(x, 0, 71, '#2a3a3a')
+    for y in (0, 1, 24, 48, 70, 71): s.hline(0, 43, y, '#2a3a3a')
+    s.line(4, 40, 16, 28, (220, 250, 255, 70)); s.line(26, 64, 38, 52, (220, 250, 255, 50))
+    for y in range(40, 72):  # leaves climbing the frame
+        if y % 5 == 0: s.ellipse(2 + (y % 3), y, 3, 2, '#3a7a3a'); s.ellipse(41 - (y % 3), y + 2, 3, 2, '#2e6a2e')
+    return s
+P.add('glasspane', glasspane())
+def fern():
+    s = Spr(30, 26)
+    for k in range(7):
+        a = -1.3 + k * .43; L = 13 + 4 * math.cos(a)
+        for t in range(int(L)):
+            x = 15 + math.sin(a) * t; y = 25 - math.cos(a) * t + (t * t) * .02
+            s.px(x, y, '#3a8a3a'); 
+            if t % 2 == 0 and t > 2: s.px(x - 1, y + 1, '#5ab04a'); s.px(x + 1, y + 1, '#2a6a2a')
+    s.rect(9, 21, 12, 5, '#8a4a2a'); s.hline(9, 20, 21, '#b06a3a'); s.outline('#0e1a0e'); return s
+P.add('fern', fern())
+def rosebush():
+    s = Spr(36, 26)
+    for y in range(26):
+        for x in range(36):
+            if ((x - 18) / 17) ** 2 + ((y - 16) / 11) ** 2 < 1: s.px(x, y, '#2a5a2a' if (x * 3 + y * 5) % 7 else '#3e7a36')
+    for (x, y) in ((8, 10), (17, 6), (27, 11), (12, 17), (24, 18), (19, 13)):
+        s.ellipse(x, y, 2.6, 2.3, '#c82a4a'); s.px(x - 1, y - 1, '#ff6a8a'); s.px(x, y, '#8a1a30')
+    s.outline('#0e1a0e'); return s
+P.add('rosebush', rosebush())
+def hedge():
+    s = Spr(40, 36)
+    for y in range(36):
+        for x in range(40):
+            edge = 3 + 2 * math.sin(x * .7) if y < 8 else 0
+            if y >= edge: s.px(x, y, '#1e4a22' if (x * 7 + y * 3) % 5 else '#2e6a30')
+    for k in range(18): s.px(random.randrange(40), random.randrange(4, 36), '#4a8a40')
+    s.outline('#0a160a'); return s
+P.add('hedge', hedge())
+def fountain():
+    s = Spr(72, 52)
+    s.rect(4, 36, 64, 16, '#6a6a7a'); s.hline(4, 67, 36, '#9a9aae'); s.ellipse(36, 37, 31, 4, '#3a6a9a'); s.ellipse(36, 37, 26, 2, '#5a8aba')
+    s.rect(32, 14, 8, 22, '#7a7a8a'); s.vline(33, 14, 35, '#a8a8ba'); s.ellipse(36, 14, 14, 3, '#7a7a8a'); s.ellipse(36, 13, 12, 2, '#5a8aba')
+    s.ellipse(36, 6, 4, 5, '#8a8a9a')
+    for k in range(-1, 2, 2):
+        for t in range(14): s.px(36 + k * (3 + t), 6 + t * t * .1 - 2, (180, 220, 255, 200))
+        for t in range(10): s.px(36 + k * (14 + t * .6), 14 + t * 2, (180, 220, 255, 160))
+    s.rect(8, 44, 56, 2, '#4a4a58'); s.outline('#14141e'); return s
+P.add('fountain', fountain())
+def statue():
+    s = Spr(24, 56)
+    s.rect(2, 44, 20, 12, '#5a5a6a'); s.hline(2, 21, 44, '#8a8a9e'); s.rect(4, 42, 16, 3, '#6a6a7a')
+    s.ellipse(12, 10, 5, 6, '#9a9aae'); s.rect(7, 16, 10, 26, '#8a8a9e'); s.vline(8, 16, 41, '#b0b0c4'); s.rect(3, 18, 4, 14, '#8a8a9e'); s.rect(17, 18, 4, 10, '#7a7a8e')
+    s.ellipse(12, 4, 7, 3, '#7a7a8e'); s.px(10, 10, '#4a4a58'); s.px(14, 10, '#4a4a58')
+    for y in (24, 31, 38): s.hline(7, 16, y, '#6a6a7e')
+    for k in range(6): s.ellipse(4 + k * 3, 52 - k, 2, 1.5, '#2e5a2e')
+    s.outline('#14141e'); return s
+P.add('statue', statue())
+def vine_hang():  # top anchored
+    s = Spr(20, 60)
+    for k, x0 in enumerate((5, 13)):
+        L = 40 + k * 16
+        for y in range(L):
+            x = x0 + 2 * math.sin(y * .2 + k); s.px(x, y, '#2a6a2a')
+            if y % 6 == 0: s.ellipse(x + (2 if y % 12 else -2), y + 1, 2, 1.5, '#4a9a3a')
+    return s
+P.add('vine_hang', vine_hang())
+def gardenlamp():
+    s = Spr(14, 60); s.rect(6, 14, 2, 46, '#2a2a36'); s.rect(4, 56, 6, 4, '#3a3a48'); s.rect(3, 4, 8, 10, '#1a1a24')
+    s.rect(4, 5, 6, 8, '#bfe8ff'); s.rect(5, 6, 4, 6, '#ffffff'); s.rect(2, 2, 10, 3, '#2a2a36'); s.rect(6, 0, 2, 2, '#2a2a36'); s.outline('#0c0c14'); return s
+P.add('gardenlamp', gardenlamp())
+# ---- gameplay props
+def wardrobe():
+    s = Spr(32, 66)
+    s.rect(1, 4, 30, 60, '#5a3220'); s.rect(0, 0, 32, 6, '#7a4a30'); s.hline(0, 31, 0, '#b07a50'); s.rect(0, 62, 32, 4, '#3a2014')
+    for x0 in (3, 17):
+        s.rect(x0, 8, 12, 50, '#6a3e28'); s.rect(x0 + 2, 10, 8, 20, '#4a2a1a'); s.rect(x0 + 2, 34, 8, 20, '#4a2a1a'); s.vline(x0, 8, 57, '#8a5a3a')
+    s.rect(14, 30, 2, 6, GOLD); s.rect(17, 30, 2, 6, GOLD); s.vline(16, 8, 57, '#2a160c')
+    s.ellipse(16, -1, 6, 2, '#7a4a30'); s.outline('#1a0c06'); return s
+P.add('wardrobe', wardrobe())
+def lever(pos):
+    s = Spr(18, 26); s.rect(2, 18, 14, 8, IRONL); s.rect(3, 19, 12, 6, IRON); s.hline(3, 14, 19, IRONH); s.px(5, 22, IRONH); s.px(12, 22, IRONH)
+    a = {'up': -0.5, 'mid': 0.1, 'down': 0.75}[pos]
+    for t in range(16): s.rect(9 + math.sin(a) * t - 1, 19 - math.cos(a) * t, 2, 1, '#8a8a9e')
+    s.ellipse(9 + math.sin(a) * 16, 19 - math.cos(a) * 16, 3, 3, '#c03030'); s.px(8 + math.sin(a) * 16, 18 - math.cos(a) * 16, '#ff8080')
+    s.outline('#14121e'); return s
+for k in ('up', 'mid', 'down'): P.add('lever_' + k, lever(k))
+def abil_pedestal():
+    s = Spr(30, 30)
+    s.rect(4, 22, 22, 8, '#3a3450'); s.hline(4, 25, 22, '#7a70b0'); s.rect(7, 8, 16, 14, '#2a2440'); s.vline(8, 8, 21, '#5a5080'); s.rect(5, 4, 20, 4, '#4a4070'); s.hline(5, 24, 4, '#9a90d0')
+    for k in range(3): s.px(11 + k * 4, 14, '#8fe8ff')
+    s.ellipse(15, 3, 8, 2, '#8fe8ff'); s.outline('#100c1c'); return s
+P.add('abil_pedestal', abil_pedestal())
+def hanging_sheet():  # curtain variant for the laundry (white sheet on a line)
+    s = Spr(32, 72); s.hline(0, 31, 0, '#a89878')
+    for y in range(1, 70):
+        for x in range(1, 31):
+            k = .5 + .5 * math.sin(x * .55); c = lerp('#b8c8d8', '#f4f8ff', k)
+            if y > 64 and (x + y) % 3 == 0: continue
+            s.px(x, y, c)
+    s.rect(3, 0, 2, 4, '#c8a070'); s.rect(27, 0, 2, 4, '#c8a070'); return s
+P.add('sheet', hanging_sheet())
+def ivy():
+    s = Spr(32, 72)
+    for y in range(72):
+        for x in range(32):
+            n = math.sin(x * .9 + y * .3) + math.sin(x * .3 - y * .7)
+            if n > -1.2: s.px(x, y, '#1e4a22' if n < .4 else '#2e6a2e' if n < 1.2 else '#4a8a3a')
+    return s
+P.add('ivy', ivy())
+for k in range(2):
+    s = Spr(16, 16)
+    for y in range(16):
+        for x in range(16):
+            n = math.sin((x + k * 5) * .8 + y * .5) + math.sin(x * .3 - (y + k * 3) * .9)
+            if n > -1.0: s.px(x, y, '#1e4a22' if n < .3 else '#2e6a2e' if n < 1.0 else '#4a8a3a')
+    for i in range(4): s.px(random.randrange(16), random.randrange(16), '#8a3a4a')  # thorns
+    s.line(0, 4 + k * 6, 15, 10 - k * 4, '#3a2a14')
+    P.add('vine%d' % k, s)
+s = Spr(26, 8)
+for x in range(26):
+    for y in range(8):
+        d = abs(x - 12.5) / 13 + abs(y - 4) / 5
+        if d < 1: s.px(x, y, (170, 235, 255, int(200 * (1 - d) + 40)))
+s.hline(2, 23, 2, (255, 255, 255, 200)); P.add('floatpad', s)
+def thornspike():
+    s = Spr(16, 44)
+    for y in range(44):
+        hw = 1 + (y / 44) * 6
+        for x in range(16):
+            if abs(x + .5 - 8) < hw: s.px(x, y, '#3a6a2a' if x < 8 else '#24481c')
+    for y in range(6, 44, 7): s.line(8, y, 2 if y % 14 else 14, y - 4, '#c8e0a0')
+    s.ellipse(8, 2, 1.5, 2, '#e8f0c8'); s.outline('#0e1a0a'); return s
+P.add('thornspike', thornspike())
 P.save()
 
 # =====================================================================
@@ -494,6 +895,34 @@ for y in range(12):
         d = math.hypot(x - 5.5, y - 6.5)
         if d < 5 or (y < 6 and abs(x - 5.5) < (6 - y) * 0.6 and y > 0): s.px(x, y, '#fff0a0' if d < 2.2 else ('#ffb040' if d < 3.8 else '#ff6a20'))
 s.outline('#5a1a08'); I.add('fireball', s)
+# ---- v0.2 items (ammo + misc); sizes match CONFIG.ammo
+s = Spr(8, 14); s.rect(2, 0, 4, 4, '#3a6a3a'); s.rect(1, 4, 6, 10, '#2e8a4a'); s.vline(2, 5, 12, '#7ad08a'); s.rect(2, 7, 4, 4, '#f0e8d0'); s.px(2, 0, '#c8a070'); s.outline('#0e2a14'); I.add('bottle', s)
+s = Spr(14, 16); s.rect(2, 0, 3, 16, '#7a4a30'); s.rect(2, 8, 11, 3, '#9a6a48'); s.hline(2, 12, 8, '#c08a5a'); s.rect(10, 11, 2, 5, '#6a3e28'); s.rect(3, 11, 2, 5, '#6a3e28'); s.rect(3, 1, 2, 6, '#c03a4a'); s.outline('#2a160c'); I.add('chair', s)
+s = Spr(16, 8); s.ellipse(6, 4, 5.5, 3.5, '#3a3a44'); s.ellipse(5, 3, 3.5, 1.8, '#6a6a78'); s.rect(11, 3, 5, 2, '#5a3a20'); s.outline('#101016'); I.add('pan', s)
+g12 = gear_spr(4, 8); s = Spr(12, 12); s.blit(g12, -1, -1); I.add('gear', s)
+s = Spr(12, 12); s.rect(2, 6, 8, 6, '#b8603a'); s.rect(1, 5, 10, 2, '#d8804a'); s.ellipse(6, 3, 3, 2.5, '#3a8a3a'); s.px(6, 1, '#ff6a8a'); s.px(5, 2, '#ff6a8a'); s.outline('#3a1a0a'); I.add('flowerpot', s)
+s = Spr(12, 12); s.rect(1, 3, 10, 7, '#f0a8d0'); s.hline(1, 10, 3, '#ffd8f0'); s.rect(3, 5, 5, 2, '#ffffff'); s.ellipse(9, 2, 2, 2, (220, 240, 255, 220)); s.ellipse(3, 1, 1.4, 1.4, (220, 240, 255, 200)); s.outline('#6a2a5a'); I.add('soap', s)
+s = Spr(10, 10); s.ellipse(5, 5, 4, 4.5, '#c8a040'); s.ellipse(4, 4, 2, 2, '#f0d070'); s.line(5, 0, 7, 2, '#3a8a3a'); s.px(6, 6, '#8a6a20'); s.outline('#3a2a08'); I.add('seed', s)
+s = Spr(16, 14); s.rect(1, 3, 14, 11, '#a85a3a'); s.ellipse(8, 3, 7, 2, '#c87a4a'); s.rect(3, 0, 10, 3, '#8a4a2a'); s.vline(3, 4, 12, '#d08a5a'); s.hline(1, 14, 8, '#7a3a20'); s.outline('#2a120a'); I.add('pot', s)
+I.add('barrel', barrel_side(16, 18))
+s = Spr(6, 6); s.line(0, 5, 5, 0, '#c8ecff'); s.line(1, 5, 5, 1, '#8ac8f0'); s.px(2, 3, '#ffffff'); I.add('shard', s)
+s = Spr(16, 16)
+for y in range(16):
+    for x in range(16):
+        d = math.hypot(x + .5 - 8, y + .5 - 8)
+        if d < 7.5: s.px(x, y, (200, 240, 255, 230) if d > 6.3 else (170, 220, 250, 70 + int(d * 8)))
+s.ellipse(5, 5, 2, 1.5, '#ffffff'); s.px(11, 11, (255, 200, 240, 220)); I.add('bubble', s)
+s = Spr(12, 8); s.ellipse(6, 4, 5.5, 3, '#ff5a8a'); s.ellipse(5, 3, 3, 1.5, '#ffa0c0'); s.line(1, 4, 10, 4, '#c02a5a'); s.outline('#5a0a2a'); I.add('petal', s)
+for k, (c1, c2, sym) in {'float': ('#8fe8ff', '#2a8ac8', 'f'), 'turbo': ('#ff9a5a', '#c84a1a', 't'), 'djump': ('#c8a0ff', '#6a3ac8', 'd')}.items():
+    s = Spr(16, 16)
+    for y in range(16):
+        for x in range(16):
+            d = math.hypot(x + .5 - 8, y + .5 - 8)
+            if d < 7.5: s.px(x, y, lerp(c1, c2, min(1, math.hypot(x - 5, y - 5) / 9)))
+    if sym == 'f': s.rect(4, 9, 8, 2, '#ffffff'); s.rect(6, 5, 4, 3, '#ffffff')  # pad + object
+    elif sym == 't': s.line(4, 4, 11, 8, '#ffffff'); s.line(4, 8, 11, 8, '#ffffff'); s.line(4, 12, 11, 8, '#ffffff')
+    else: s.line(4, 8, 8, 4, '#ffffff'); s.line(8, 4, 12, 8, '#ffffff'); s.line(4, 12, 8, 8, '#ffffff'); s.line(8, 8, 12, 12, '#ffffff')
+    s.px(5, 4, '#ffffff'); s.outline('#14102a'); I.add('orb_' + k, s)
 I.save()
 
 # =====================================================================
@@ -567,6 +996,84 @@ for f in range(3):
             if body: s.px(x, y, '#fff0a0' if dx * dx + dy * dy < 8 else ('#ffb040' if dx * dx + dy * dy < 18 else '#ff6a20'))
     s.rect(5, 10, 2, 2, '#4a1400'); s.rect(9, 10, 2, 2, '#4a1400'); s.outline('#5a1a08')
     E.add('firewisp%d' % f, s)
+# ---- v0.2 normal enemies (immune to suction) + sheet ghost
+def bat(f):
+    s = Spr(20, 12); body = '#4a2e5a'; wing = '#6a4a7a'
+    s.ellipse(10, 6, 3.5, 3.5, body); s.px(8, 2, body); s.px(12, 2, body); s.px(9, 5, '#ff4a4a'); s.px(11, 5, '#ff4a4a')
+    if f == 0:
+        for x in range(0, 7): s.vline(x, 2 + x // 2, 6 + (x % 2), wing); s.vline(19 - x, 2 + x // 2, 6 + (x % 2), wing)
+    else:
+        for x in range(0, 7): s.vline(x, 6 + (6 - x) // 2, 9 - (x % 2), wing); s.vline(19 - x, 6 + (6 - x) // 2, 9 - (x % 2), wing)
+    s.outline('#140a1a'); return s
+E.add('bat0', bat(0)); E.add('bat1', bat(1))
+s = Spr(12, 14); s.ellipse(6, 6, 4, 6, '#4a2e5a'); s.rect(1, 2, 10, 8, '#3a2048'); s.vline(6, 0, 1, '#2a2a2a'); s.px(4, 9, '#ff4a4a'); s.px(7, 9, '#ff4a4a'); s.outline('#140a1a'); E.add('bat_hang', s)
+def rat(f):
+    s = Spr(22, 12); s.ellipse(10, 7, 7, 4, '#7a6a7a'); s.ellipse(9, 6, 5, 2.5, '#9a8a9a'); s.ellipse(17, 7, 3.5, 3, '#8a7a8a'); s.ellipse(15, 3, 1.5, 1.5, '#d8a0b0')
+    s.px(18, 6, '#ff3040'); s.px(21, 8, '#ff8090')
+    for x in range(0, 4): s.px(x, 7 - (x if f else -x) // 2, '#d8a0b0')
+    s.rect(6 + f * 2, 10, 2, 2, '#5a4a5a'); s.rect(13 - f * 2, 10, 2, 2, '#5a4a5a'); s.outline('#1a141a'); return s
+E.add('rat0', rat(0)); E.add('rat1', rat(1))
+def garg(mode, f=0):
+    s = Spr(30, 28); st, sh, sl = ('#7a7a86', '#a8a8b8', '#4a4a56')
+    if mode != 'stone': st, sh, sl = '#6a6a7e', '#9a9ab2', '#3a3a4e'
+    # wings
+    if mode == 'stone':
+        for y in range(6, 20): s.hline(1 + (y - 6) // 3, 6, y, sl); s.hline(23, 28 - (y - 6) // 3, y, sl)
+    elif mode == 'dive':
+        for y in range(2, 12): s.hline(2, 9, y, sl); s.hline(20, 27, y, sl)
+    else:
+        wy = 2 if f == 0 else 10
+        for k in range(8): s.line(14, 12, 1 + k, wy + k, sl); s.line(15, 12, 28 - k, wy + k, sl)
+    s.ellipse(15, 16, 7, 8, st); s.ellipse(13, 13, 4, 4, sh); s.ellipse(15, 8, 5, 4.5, st); s.px(11, 3, sh); s.px(19, 3, sh); s.px(11, 4, st); s.px(19, 4, st)
+    eye = '#3a3a44' if mode == 'stone' else '#ff4030'
+    s.px(13, 8, eye); s.px(17, 8, eye); s.hline(13, 17, 11, sl); s.px(14, 12, '#e8e8f0'); s.px(16, 12, '#e8e8f0')
+    s.rect(10, 23, 3, 4, sl); s.rect(17, 23, 3, 4, sl)
+    if mode == 'stone':
+        for k in range(10): s.px(random.randrange(9, 22), random.randrange(6, 24), '#5a5a66')
+    s.outline('#16161e'); return s
+E.add('garg_stone', garg('stone')); E.add('garg_fly0', garg('fly', 0)); E.add('garg_fly1', garg('fly', 1)); E.add('garg_dive', garg('dive'))
+def puppet(f, throw=False):
+    s = Spr(20, 34)
+    for x in (4, 10, 16): s.vline(x, 0, 6 + (x % 3), (220, 220, 230, 140))
+    s.ellipse(10, 9, 4.5, 4.5, '#f0d8c0'); s.rect(5, 4, 10, 3, '#8a2a3a'); s.px(8, 9, '#000000'); s.px(12, 9, '#000000'); s.ellipse(7, 11, 1, 1, '#ff8a9a'); s.ellipse(13, 11, 1, 1, '#ff8a9a')
+    s.hline(9, 11, 12, '#7a2a2a')
+    for y in range(14, 26):
+        hw = 3 + (y - 14) * .45
+        s.hline(10 - hw, 10 + hw, y, '#c03a5a' if y % 4 else '#8a1a3a')
+    s.rect(5, 14, 10, 2, '#ffffff')
+    if throw: s.line(14, 15, 19, 8, '#f0d8c0'); s.px(19, 7, '#c8c8d8'); s.line(6, 15, 2, 20, '#f0d8c0')
+    else: s.line(5, 15, 2 + f, 21, '#f0d8c0'); s.line(15, 15, 18 - f, 21, '#f0d8c0')
+    s.vline(8, 26, 31 + f, '#2a1a1a'); s.vline(12, 26, 32 - f, '#2a1a1a'); s.outline('#1a0c10'); return s
+E.add('puppet0', puppet(0)); E.add('puppet1', puppet(1)); E.add('puppet_throw', puppet(0, True))
+def skel(f, throw=False):
+    s = Spr(24, 42); bone, bl = '#e8e4d8', '#a8a498'
+    s.ellipse(12, 6, 5, 5.5, bone); s.rect(9, 5, 2, 3, '#1a1414'); s.rect(13, 5, 2, 3, '#1a1414'); s.px(10, 6, '#ff7a3a'); s.px(14, 6, '#ff7a3a'); s.hline(10, 14, 10, bl); s.hline(10, 14, 11, bone)
+    s.rect(6, 13, 12, 13, '#2a2030'); s.rect(10, 13, 4, 10, '#f0f0f0'); s.px(11, 14, '#c03030'); s.px(12, 14, '#c03030')  # butler coat + bow
+    s.rect(6, 25, 12, 2, '#1a1420'); s.vline(9, 27, 39 - f, bone); s.vline(15, 27, 38 + f, bone); s.rect(7, 39 - f, 4, 2, bl); s.rect(14, 38 + f, 4, 2, bl)
+    if throw: s.line(17, 15, 22, 6, bone); s.ellipse(22, 5, 3, 1.5, '#f4f4fc')
+    else: s.line(17, 15, 21, 18, bone); s.line(21, 18, 22, 16, bone); s.ellipse(22, 15, 4, 1.5, '#f4f4fc'); s.line(6, 15, 3, 24, bone)
+    s.outline('#1a1418'); return s
+E.add('skel0', skel(0)); E.add('skel1', skel(1)); E.add('skel_throw', skel(0, True))
+def cbook(f, bite=False):
+    s = Spr(22, 18)
+    if bite:  # opened wide with teeth
+        s.rect(1, 2, 20, 4, '#7a2030'); s.rect(1, 12, 20, 4, '#7a2030'); s.rect(2, 6, 18, 6, '#3a0a10')
+        for x in range(3, 20, 3): s.px(x, 6, '#f0e8d0'); s.px(x + 1, 11, '#f0e8d0')
+        s.px(15, 3, '#ffe040'); s.px(17, 3, '#ffe040')
+    else:
+        a = 2 + f * 2
+        s.rect(2, 6, 18, 9, '#7a2030'); s.rect(3, 7, 16, 7, '#9a3040'); s.hline(3, 18, 14, '#f0e8d0'); s.rect(2, 6 - a, 18, 2, '#7a2030'); s.hline(4, 18, 7 - a + 1, '#f0e8d0')
+        s.px(14, 9, '#ffe040'); s.px(17, 9, '#ffe040'); s.px(8, 10, GOLD); s.px(9, 10, GOLD)
+    s.outline('#200810'); return s
+E.add('cbook0', cbook(0)); E.add('cbook1', cbook(1)); E.add('cbook_bite', cbook(0, True))
+SCOL = ('#ffffff', '#dce4f0', '#9aa8c0')
+def sheetghost(f, mood):
+    s = ghost(f, mood, SCOL, 34)
+    for y in range(26, 34):  # ragged hem
+        for x in range(34):
+            if s.a[y, x, 3] and (x + f * 3) % 5 == 0 and y > 29: s.a[y, x] = 0
+    return s
+E.add('sheet0', sheetghost(0, 'normal')); E.add('sheet1', sheetghost(1, 'normal')); E.add('sheet_angry', sheetghost(2, 'angry')); E.add('sheet_tug', sheetghost(1, 'tug'))
 E.save()
 
 # =====================================================================
@@ -639,6 +1146,151 @@ def core(mood):
     s.outline('#5a2a00'); return s
 for m in ('normal', 'angry', 'tug', 'dizzy'): BO.add('core_' + m, core(m))
 s = Spr(6, 10); s.rect(1, 0, 4, 10, GOLD); s.rect(2, 1, 2, 8, GOLDD); s.vline(1, 0, 9, GOLDH); s.outline('#2a1a08'); BO.add('chain', s)
+# ---- v0.2 bosses -----------------------------------------------------
+def tinted_core(mood, c1, c2, c3, edge):
+    s = core(mood)
+    def f(x, y, c):
+        k = (int(c[0]) + int(c[1]) + int(c[2])) / 765
+        if (c[0], c[1], c[2]) in ((0x3a, 0x10, 0), (0x5a, 0x2a, 0), (255, 255, 255), (255, 32, 32), (255, 0x6a, 0x6a)): 
+            return edge if tuple(c[:3]) == (0x5a, 0x2a, 0) else None
+        return c1 if k > .85 else c2 if k > .6 else c3
+    s.shade_mask(f); return s
+for pre, cols in (('gcore', ('#ffffff', '#c8e4ff', '#7ab0e8', '#2a4a7a')), ('rcore', ('#fff0f4', '#ff9ac0', '#d84a7a', '#5a0a2a')), ('ccore', ('#fff8d0', '#f0d070', '#b88a2a', '#4a3008'))):
+    for m in ('tug', 'dizzy'): BO.add(pre + '_' + m, tinted_core(m, *cols))
+# LINEN GOLEM: a heap of laundry with sleeves for arms (anchor bottom-centre)
+def golem(pose='idle', f=0):
+    W, H = 72, 84; s = Spr(W, H); cx = W // 2
+    cols = ['#e8eef8', '#c8d8f0', '#f0d8e0', '#d8f0e0', '#f8f0d8', '#b8c8e0']
+    top = {'idle': 18 + f, 'raise': 10, 'slam': 26, 'puff': 16, 'dizzy': 24}[pose]
+    for y in range(top, H):
+        t = (y - top) / (H - top); hw = 14 + 20 * math.sin(min(1, t * 1.25) * math.pi / 2)
+        for x in range(W):
+            dx = x + .5 - cx
+            if abs(dx) < hw:
+                band = int((y + dx * .35 + f * 2) // 7) % len(cols); c = cols[band]
+                if (x + y) % 9 == 0: c = lerp(c, '#000000', .12)
+                if dx > hw * .45: c = lerp(c, '#3a4a6a', .3)
+                s.px(x, y, c)
+    # sock + towel details
+    s.rect(cx - 30, H - 14, 8, 10, '#c84a5a'); s.hline(cx - 30, cx - 23, H - 14, '#ffffff'); s.rect(cx + 18, top + 22, 12, 4, '#4a8ac8')
+    # arms (sleeves)
+    arm = {'idle': (-8, 30), 'raise': (-26, -20), 'slam': (30, 40), 'puff': (-4, 10), 'dizzy': (20, 30)}[pose]
+    for side in (-1, 1):
+        ax0 = cx + side * 26; ay0 = top + 20
+        ax1 = ax0 + side * 10; ay1 = ay0 + arm[1] if pose != 'raise' else top - 6
+        if pose == 'raise': ax1 = ax0 + side * 4
+        for k in range(5): s.line(ax0 + k - 2, ay0, ax1 + k - 2, ay1, '#f0e8f8' if side < 0 else '#c8d0e8')
+        s.ellipse(ax1, ay1, 5, 4, '#f8f0d8')
+    # face: two buttons and a laundry-bag mouth
+    ey = top + 14
+    if pose == 'dizzy':
+        for ox in (-8, 8):
+            for k in range(10): a = k / 10 * 6.28; s.px(cx + ox + math.cos(a) * (1 + k / 5), ey + math.sin(a) * (1 + k / 5), '#1a2a4a')
+    else:
+        for ox in (-8, 8): s.ellipse(cx + ox, ey, 3, 3, '#2a3a5a'); s.px(cx + ox - 1, ey - 1, '#ffffff')
+        if pose in ('raise', 'slam'): s.line(cx - 12, ey - 6, cx - 5, ey - 3, '#1a2a4a'); s.line(cx + 12, ey - 6, cx + 5, ey - 3, '#1a2a4a')
+    if pose == 'puff': s.ellipse(cx, ey + 10, 5, 4, '#1a2a4a'); s.ellipse(cx, ey + 10, 3, 2, '#5a6a9a')
+    else: s.hline(cx - 6, cx + 6, ey + 9, '#1a2a4a'); s.px(cx - 7, ey + 8, '#1a2a4a'); s.px(cx + 7, ey + 8, '#1a2a4a')
+    # soap suds on top
+    for k in range(5): s.ellipse(cx - 14 + k * 7, top + (k % 2), 4, 3, (240, 250, 255, 230))
+    s.outline('#1a2440'); return s
+BO.add('golem_idle0', golem('idle', 0)); BO.add('golem_idle1', golem('idle', 1)); BO.add('golem_raise', golem('raise')); BO.add('golem_slam', golem('slam'))
+BO.add('golem_puff', golem('puff')); BO.add('golem_dizzy', golem('dizzy'))
+for f in range(4):
+    s = Spr(46, 46); cx = cy = 23; cols = ['#e8eef8', '#c8d8f0', '#f0d8e0', '#d8f0e0']
+    for y in range(46):
+        for x in range(46):
+            dx, dy = x + .5 - cx, y + .5 - cy; d = math.hypot(dx, dy)
+            if d < 22:
+                a = math.atan2(dy, dx) + f * math.pi / 8
+                c = cols[int((a + math.pi) / (2 * math.pi) * 8 + d / 7) % 4]
+                if dx + dy > 14: c = lerp(c, '#3a4a6a', .3)
+                s.px(x, y, c)
+    a = f * math.pi / 8; s.rect(cx + math.cos(a) * 12 - 3, cy + math.sin(a) * 12 - 3, 6, 6, '#c84a5a')
+    s.outline('#1a2440'); BO.add('golem_ball%d' % f, s)
+# MADAME ROSE: a giant rose on a thorny stem
+def rose_stem():
+    W, H = 60, 112; s = Spr(W, H); cx = W // 2
+    for y in range(H):
+        x = cx + 3 * math.sin(y * .06); 
+        for k in range(-3, 4): s.px(x + k, y, '#2e6a2a' if k < 1 else '#1e4a1e')
+        if y % 13 == 5: s.line(x + 3, y, x + 7, y - 3, '#c8e0a0'); s.line(x - 3, y + 6, x - 7, y + 3, '#c8e0a0')
+    for (ly, side) in ((70, -1), (46, 1), (86, 1)):
+        for k in range(16):
+            for w in range(-int(4 * math.sin(k / 16 * math.pi)), int(4 * math.sin(k / 16 * math.pi)) + 1):
+                s.px(cx + side * (3 + k), ly - k * .5 + w, '#3e8a36' if w <= 0 else '#2a6a28')
+    for x in range(W):  # roots
+        if abs(x - cx) < 26: s.px(x, H - 1 - (abs(x - cx) % 5 == 0), '#3a2a1a')
+    s.outline('#0a160a'); return s
+BO.add('rose_stem', rose_stem())
+def rose_head(mood):
+    W, H = 64, 58; s = Spr(W, H); cx, cy = 32, 30
+    pet = {'head': ('#e83a5a', '#b81a3a', '#ff7a9a'), 'rage': ('#c81a2a', '#8a0a1a', '#ff4a4a'), 'bloom': ('#ff6a9a', '#d83a6a', '#ffc0d8'), 'wilt': ('#9a5a6a', '#6a3a48', '#b88a98')}[mood]
+    rr = 27 if mood != 'wilt' else 22
+    for y in range(H):
+        for x in range(W):
+            dx, dy = x + .5 - cx, y + .5 - cy; d = math.hypot(dx, dy); a = math.atan2(dy, dx)
+            edge = rr + 3 * math.cos(a * 7)
+            if mood == 'bloom': edge = rr + 5 * math.cos(a * 9)
+            if d < edge:
+                ring = int(d / 6 + (a + math.pi) * 1.3) % 3
+                s.px(x, y, pet[ring] if d > 10 else pet[1])
+    # face in the centre
+    if mood == 'wilt':
+        for ox in (-6, 6):
+            for k in range(10): a = k / 10 * 6.28; s.px(cx + ox + math.cos(a) * (1 + k / 5), cy + math.sin(a) * (1 + k / 5), '#2a0a14')
+        s.ellipse(cx, cy + 8, 3, 2, '#2a0a14')
+    else:
+        s.ellipse(cx, cy, 11, 10, pet[1])
+        for ox in (-5, 5): s.rect(cx + ox - 1, cy - 3, 3, 4, '#1a0a10'); s.px(cx + ox - 1, cy - 3, '#ffffff' if mood != 'rage' else '#ffe040')
+        if mood == 'rage': s.line(cx - 9, cy - 7, cx - 3, cy - 4, '#1a0a10'); s.line(cx + 9, cy - 7, cx + 3, cy - 4, '#1a0a10')
+        if mood == 'bloom': s.ellipse(cx, cy + 6, 4, 4, '#1a0a10'); s.ellipse(cx, cy + 6, 2, 2, '#ffe080')
+        else: 
+            for x in range(cx - 4, cx + 5): s.px(x, cy + 6 + (x % 2 if mood == 'rage' else 0), '#1a0a10')
+        # lipstick + beauty mark: a "madame"
+        s.px(cx + 7, cy + 4, '#1a0a10')
+    for k in range(4): s.ellipse(cx - 20 + k * 13, H - 6, 6, 3, '#2e6a2a')  # sepals
+    s.outline('#2a0610'); return s
+for m in ('head', 'rage', 'bloom', 'wilt'): BO.add('rose_' + m, rose_head(m))
+s = Spr(40, 12)
+for x in range(40):
+    hgt = int(8 * math.sin((x + .5) / 40 * math.pi)) + 2
+    for y in range(12 - hgt, 12): s.px(x, y, '#4a3020' if (x + y) % 4 else '#6a4a30')
+for k in range(4): s.line(6 + k * 9, 6, 8 + k * 9, 1, '#3e8a36')
+s.outline('#1a0e08'); BO.add('rose_mound', s)
+# GRANDFATHER CLOCK: anchored bottom-centre, face centre at 96px above floor
+def clockbody(mood):
+    W, H = 76, 156; s = Spr(W, H); cx = W // 2
+    wood, woodh, woodl = ('#5a2e1e', '#8a4a30', '#3a1a10') if mood != 'rage' else ('#5a1a1a', '#8a2a2a', '#3a0a0a')
+    s.rect(6, H - 12, W - 12, 12, woodl); s.rect(4, H - 14, W - 8, 3, wood); s.hline(4, W - 5, H - 14, woodh)
+    s.rect(14, 40, W - 28, H - 54, wood); s.vline(15, 40, H - 15, woodh); s.vline(W - 15, 40, H - 15, woodl)
+    # trunk window (inner pendulum drawn in code)
+    s.rect(24, H - 72, W - 48, 44, '#1a0c08'); s.rect(25, H - 71, W - 50, 42, (60, 80, 110, 180)); s.line(27, H - 69, 34, H - 50, (220, 240, 255, 120))
+    # hood
+    s.rect(6, 20, W - 12, 44, wood); s.hline(6, W - 7, 20, woodh); s.vline(6, 20, 63, woodh)
+    for y in range(0, 22):
+        hw = 14 + y * 1.3
+        s.hline(cx - hw, cx + hw, y, wood if y % 6 else woodh)
+    s.ellipse(cx, 6, 6, 6, GOLD); s.ellipse(cx - 2, 4, 2, 2, GOLDH)
+    for side in (-1, 1): s.ellipse(cx + side * 26, 14, 3, 3, GOLD)
+    # face (centre 96 above the bottom -> y = H - 96)
+    fy = H - 96
+    s.ellipse(cx, fy, 21, 21, GOLD); s.ellipse(cx, fy, 19, 19, GOLDL); s.ellipse(cx, fy, 17, 17, '#f4ecd8' if mood != 'stop' else '#d8d0c0')
+    for k in range(12):
+        a = k / 12 * 2 * math.pi; s.rect(cx + math.sin(a) * 14 - 1, fy - math.cos(a) * 14 - 1, 2, 2, '#2a1a10')
+    if mood == 'rage':
+        s.line(cx - 10, fy - 9, cx - 4, fy - 5, '#c01010'); s.line(cx + 10, fy - 9, cx + 4, fy - 5, '#c01010'); s.rect(cx - 8, fy - 4, 3, 3, '#ff2020'); s.rect(cx + 5, fy - 4, 3, 3, '#ff2020')
+    elif mood == 'stop':
+        for ox in (-7, 7):
+            for k in range(10): a = k / 10 * 6.28; s.px(cx + ox + math.cos(a) * (1 + k / 5), fy - 3 + math.sin(a) * (1 + k / 5), '#2a1a10')
+    else:
+        for ox in (-7, 7): s.rect(cx + ox - 1, fy - 5, 3, 4, '#2a1a10')
+    s.hline(cx - 5, cx + 5, fy + 9, '#2a1a10')
+    for side in (-1, 1):  # side columns
+        s.rect(cx + side * 30 - 2, 24, 4, 38, GOLDL); s.vline(cx + side * 30 - 2, 24, 61, GOLDH)
+    s.outline('#140804'); return s
+BO.add('clock_body', clockbody('normal')); BO.add('clock_rage', clockbody('rage')); BO.add('clock_stop', clockbody('stop'))
+s = Spr(32, 32); s.ellipse(16, 16, 15, 15, GOLDL); s.ellipse(16, 16, 13, 13, GOLD); s.ellipse(12, 12, 5, 5, GOLDH); s.ellipse(16, 16, 4, 4, GOLDD); s.outline('#2a1a08'); BO.add('pend_bob', s)
 BO.save()
 
 # =====================================================================
