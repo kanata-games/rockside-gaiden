@@ -78,12 +78,14 @@ Other features:
 ```
 python3 tools/make_art.py       # regenerate the pixel art atlases (assets/*.png + json)
 python3 tools/build.py          # src/*.js + src/01_head.html -> index.html (asset JSON inlined)
-node tools/test.js              # Playwright: 68 checks (abilities, gating, eating, warps, spirit gates, door safety, all 6 bosses beaten by the bot)
+node tools/test.js              # Playwright: ~140 checks (abilities, gating, eating, warps, door safety, drop attacks, avoidability, all bosses beaten by the bot); AVOID=0 skips the avoid audit
 node tools/reach.js             # whole-mansion reachability + ability gating check
 node tools/bossrun.js 5         # boss balance: the bot fights each boss 5x WITHOUT god mode
 node tools/rooms.js /tmp/rooms  # load + screenshot every room
 node tools/shots03.js           # phone screenshots -> screenshots/v03_*.png
 node tools/doors.js             # audit: no enemies placed next to doors
+node tools/avoid.js [bosses] --reps=2   # fairness audit: for EVERY boss attack (normal + enraged), Kanata parked at 4 spots,
+                                # reacts after 18 frames (300 ms) and must reach a safe spot with real walk/jump/hover physics
 ```
 Debug URL params:
 - `?room=attic&x=3&y=15&god=1`

@@ -120,7 +120,7 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       ok('fewer rats and bat swarms (<= 15 rats, <= 6 swarms)', crit.rats <= 15 && crit.bats <= 6, crit);
       ok('a warp room in every area', ['east', 'laundry', 'garden', 'clock', 'crypt', 'bath'].every(a => crit.warps.includes(a)), crit.warps);
       ok('title has no PROTOTYPE', !(await E(page, () => document.documentElement.innerHTML.includes('PROTOTYPE'))));
-      ok('version 0.3.1', await E(page, () => (typeof GAME_VERSION !== 'undefined' && GAME_VERSION === '0.3.1') || GAIDEN.CONFIG.version === '0.3.1'));
+      ok('version 0.3.2', await E(page, () => (typeof GAME_VERSION !== 'undefined' && GAME_VERSION === '0.3.2') || GAIDEN.CONFIG.version === '0.3.2'));
       await ctx.close(); }
 
     // ---- world reachability / ability gating (static check over the stitched tile grid)
@@ -158,7 +158,8 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
     // ---- normal (big) enemies: immune to the vacuum, beaten by thrown objects
     { const { ctx, page } = await open(browser, '?room=laundry&x=5&y=16&god=1');
       await waitFor(page, () => GAIDEN.state === 'play', 5000);
-      await E(page, () => { for (let i = GAIDEN.ents.length - 1; i >= 0; i--) if (GAIDEN.ents[i].ghost || GAIDEN.ents[i].foe) GAIDEN.ents.splice(i, 1);
+      await E(page, () => { GAIDEN.P.x = 150; GAIDEN.P.y = 15 * 16 - GAIDEN.P.h; GAIDEN.P.vx = GAIDEN.P.vy = 0; // v0.3.2: stand on the floor (the spawn is a ledge)
+        for (let i = GAIDEN.ents.length - 1; i >= 0; i--) if (GAIDEN.ents[i].ghost || GAIDEN.ents[i].foe) GAIDEN.ents.splice(i, 1);
         GAIDEN.ents.push(GAIDEN.makeFoe('skeleton', GAIDEN.P.x + 90, 15 * 16)); GAIDEN.P.face = 1; GAIDEN.P.tank = []; });
       const hp0 = await E(page, () => GAIDEN.foes()[0].hp);
       await page.keyboard.down('x'); await sleep(900); await page.keyboard.up('x');
@@ -233,6 +234,10 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       await ctx.close(); }
     { const DROPS = require('./drops.js'); const out = await DROPS(URL0, { speed: 4 });
       for (const c of out) ok(`drop attack ${c.boss}.${c.atk}${c.rage ? ' (enraged)' : ''}: projectiles fall and reach the floor`, c.pass, { n: c.n, bad: c.bad, e: c.sample && { kind: c.sample.kind, spawnY: c.sample.y0, lowest: Math.round(c.sample.maxB), frames: c.sample.frames } }); }
+    // ---- v0.3.2: every boss attack is avoidable at human reaction speed (18f = 300ms) with the real movement (tools/avoid.js)
+    if (process.env.AVOID !== '0') { const AV = require('./avoid.js'); const bosses = (process.env.AVOID || 'chandelier,golem,rose,organ,serpent,clock').split(',');
+      const res = await AV.run(URL0, bosses, { reps: 1 });
+      for (const r of res) ok(`avoidable: ${r.boss}.${r.atk}${r.rage ? ' (enraged)' : ''} (safe spot reachable in time, ${r.volleys} volleys)`, !r.fails.length && !r.errs.length, r.fails.slice(0, 1)); }
     { const { ctx, page } = await open(browser, '?room=clockroom&x=2&y=16&god=1&abil=float,turbo,djump,phase&bossatk=hands');
       await waitFor(page, () => GAIDEN.state === 'play', 5000);
       await E(page, () => { const G = GAIDEN; window.__bot = () => { const K = G._test.keys; K.left = K.right = false; if (G.P.x < 8 * 16) K.right = true; }; window.__speed = 4; });
