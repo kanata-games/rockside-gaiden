@@ -8,7 +8,7 @@ ROOM_DEFS.push(
     vel: 'theater', velAt: [44, 15],
     build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.open('B', 1, 10, 13); R.open('T', 0, 8, 11);
       R.plat(38, 43, 12); R.plat(20, 25, 12); R.plat(13, 18, 9); R.plat(6, 11, 5); R.plat(28, 32, 8); },
-    ents: [['save', 30, 15], ['puppet', 16, 15, { foe: { skin: 'dancer' } }], ['bats', 26, 4, { foe: { skin: 'maskbat' } }], ['coin', 29, 8], ['coin', 31, 8],
+    ents: [['save', 30, 15], ['puppet', 16, 15, { foe: { skin: 'dancer' } }], ['puppet', 36, 15, { foe: { skin: 'dancer' } }], ['coin', 29, 8], ['coin', 31, 8],
       ['plate', 22, 12], ['chair', 4, 15], ['bottle', 41, 12], ['dust', 44, 15, { drop: ['coin', 'coin'] }], ['curtain', 2.5, 15, { drop: ['coin', 'heart'] }], ['vase', 24, 15, { drop: ['coin', 'coin'] }]],
     decor: [['stagecurtain', 9, 15], ['portrait_big', 24, 9], ['masks', 34, 8], ['chandelier_deco', 24, 3.5, { hang: 1, light: 2 }], ['sconce', 18, 8, { light: 1 }], ['sconce', 40, 8, { light: 1 }],
       ['rug', 30, 15], ['rug', 37, 15], ['pillar', 12, 15], ['pillar', 46, 15], ['cobweb', 46.75, 2, { top: 1, flip: 1 }]] },
@@ -23,7 +23,7 @@ ROOM_DEFS.push(
     build(R) { R.box(); R.open('B', 1, 8, 11); R.open('R', 0, 11, 14);
       R.plat(4, 12, 12); R.plat(14, 22, 10); R.plat(38, 46, 12); R.plat(50, 58, 10); R.plat(60, 68, 12); R.plat(26, 30, 7); R.plat(43, 48, 6); },
     ents: [['puppet', 10, 15, { foe: { skin: 'dancer' } }], ['puppet', 44, 15, { foe: { skin: 'dancer' } }], ['puppet', 62, 15, { foe: { skin: 'dancer' } }],
-      ['bats', 20, 4, { foe: { skin: 'maskbat' } }], ['bats', 54, 4, { foe: { skin: 'maskbat' }, n: 3 }], ['chair', 6, 12], ['chair', 18, 10], ['chair', 52, 10], ['plate', 40, 12], ['book', 64, 12],
+      ['bats', 54, 4, { foe: { skin: 'maskbat' }, n: 3 }], ['chair', 6, 12], ['chair', 18, 10], ['chair', 52, 10], ['plate', 40, 12], ['book', 64, 12],
       ['coin', 27, 7], ['coin', 29, 7], ['coin', 44, 6], ['coin', 46, 6], ['dust', 24, 15, { drop: ['coin', 'coin'] }], ['dust', 58, 15, { drop: ['heart'] }], ['bottle', 68, 15],
       ['hint', 69, 15, { text: '舞台の上から、糸のきしむ音がする…' }]],
     decor: [['masks', 36, 9], ['portrait_big', 12, 8], ['portrait_big', 60, 8], ['chandelier_deco', 20, 3.5, { hang: 1, light: 2 }], ['chandelier_deco', 52, 3.5, { hang: 1, light: 2 }],

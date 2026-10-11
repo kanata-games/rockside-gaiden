@@ -21,7 +21,7 @@ ROOM_DEFS.push(
   { id: 'telescope', jp: '望遠鏡の塔', en: 'TELESCOPE SHAFT', area: 'stars', theme: 'observatory', tiles: 'k', cx: 11, cy: -3, cw: 1, ch: 2, dark: 0.55,
     build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.open('L', 1, 11, 14); R.open('R', 1, 11, 14); R.solid(1, 15, 4, 16); R.solid(19, 15, 22, 16);
       R.plat(9, 14, 29); R.plat(3, 8, 25); R.plat(15, 20, 21); R.plat(6, 17, 18); },
-    ents: [['skullwisp', 12, 10, { foe: { skin: 'starwisp' } }], ['cursedbook', 6, 22, { foe: { skin: 'chart' } }], ['bats', 16, 6, { foe: { skin: 'maskbat' } }],
+    ents: [['skullwisp', 12, 10, { foe: { skin: 'starwisp' } }], ['cursedbook', 6, 22, { foe: { skin: 'chart' } }], ['skullwisp', 16, 26, { foe: { skin: 'starwisp' } }],
       ['gear', 10, 29], ['book', 5, 25], ['coin', 16, 21], ['coin', 18, 21], ['bottle', 20, 33]],
     decor: [['telescope', 12, 15], ['starchart', 12, 26], ['sconce', 3, 21, { light: 1 }], ['sconce', 20, 28, { light: 1 }], ['sconce', 12, 5, { light: 1 }], ['gear_med', 4, 31]] },
 

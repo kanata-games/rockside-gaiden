@@ -248,6 +248,7 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       const { ctx, page } = await open(browser, `?room=${roomId}&x=2&y=16&god=1&abil=${abil}`);
       await waitFor(page, () => GAIDEN.state === 'play', 5000);
       await E(page, BOT); await E(page, () => { window.__speed = 8; });
+      if (kind === 'clock') { ok('v0.4: the seal door stays shut while the theater / observatory seals remain', await E(page, () => { const P = GAIDEN.progress; P.bosses.add('clock'); GAIDEN.checkBossGates(); const shut = !P.perm.has('clockroom:gate:heart') && GAIDEN.room.grid[12 * GAIDEN.room.cols + 23] !== 0; P.bosses.delete('clock'); P.bosses.add('marionette'); P.bosses.add('orrery'); return shut; })); }
       ok(`boss ${kind}: intro`, await waitFor(page, () => GAIDEN.boss && GAIDEN.boss.state !== 'sleep', 6000));
       ok(`boss ${kind}: weak point -> core tug-of-war`, await waitFor(page, () => GAIDEN.P.tug && GAIDEN.P.tug.boss, 60000));
       ok(`boss ${kind}: defeated`, await waitFor(page, k => GAIDEN.progress.bosses.has(k), 150000, kind));
