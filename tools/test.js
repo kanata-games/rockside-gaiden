@@ -120,7 +120,7 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       ok('fewer rats and bat swarms (<= 15 rats, <= 6 swarms)', crit.rats <= 15 && crit.bats <= 6, crit);
       ok('a warp room in every area', ['east', 'laundry', 'garden', 'clock', 'crypt', 'bath'].every(a => crit.warps.includes(a)), crit.warps);
       ok('title has no PROTOTYPE', !(await E(page, () => document.documentElement.innerHTML.includes('PROTOTYPE'))));
-      ok('version 0.3.2', await E(page, () => (typeof GAME_VERSION !== 'undefined' && GAME_VERSION === '0.3.2') || GAIDEN.CONFIG.version === '0.3.2'));
+      ok('version 0.4.0', await E(page, () => (typeof GAME_VERSION !== 'undefined' && GAME_VERSION === '0.4.0') || GAIDEN.CONFIG.version === '0.4.0'));
       await ctx.close(); }
 
     // ---- world reachability / ability gating (static check over the stitched tile grid)
@@ -147,6 +147,19 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       await E(page, () => GAIDEN.gainAbility({ abil: 'phase', x: 100, y: 240 })); await sleep(300);
       const g1 = await E(page, () => { const R = GAIDEN.room; return R.grid[11 * R.cols]; });
       ok('spirit barrier closed without phase, open after the organ\'s gift', g0 !== 0 && g1 === 0, { g0, g1 }); await ctx.close(); }
+    // ---- v0.4: the two new areas are behind spirit barriers (theater: gallery ceiling, observatory: gear shaft) + skinned foes
+    { const { ctx, page } = await open(browser, '?room=gallery&x=36&y=11&abil=float,turbo,djump');
+      await waitFor(page, () => GAIDEN.state === 'play', 5000);
+      const t0 = await E(page, () => { const R = GAIDEN.room; return R.grid[0 * R.cols + 35]; });
+      await E(page, () => { GAIDEN.loadRoom('gearshaft', { start: true }); }); await sleep(200);
+      const s0 = await E(page, () => { const R = GAIDEN.room; return R.grid[12 * R.cols + R.cols - 1]; });
+      await E(page, () => { GAIDEN.gainAbility({ abil: 'phase', x: 100, y: 240 }); GAIDEN.loadRoom('gallery', { start: true }); }); await sleep(300);
+      const t1 = await E(page, () => { const R = GAIDEN.room; return R.grid[0 * R.cols + 35]; });
+      ok('v0.4: theater + observatory entrances are spirit barriers (need 霊体化)', t0 !== 0 && s0 !== 0 && t1 === 0, { t0, s0, t1 });
+      await E(page, () => GAIDEN.loadRoom('audience', { start: true })); await sleep(300);
+      ok('v0.4: theater foes wear their own skins (dancer / maskbat)', await E(page, () => GAIDEN.foes().some(e => e.skin === 'dancer') && GAIDEN.foes().some(e => e.skin === 'maskbat')));
+      ok('v0.4: area music + Vel line exist for both new areas', await E(page, () => GAIDEN.AREAS.theater.music === 'theater' && GAIDEN.AREAS.stars.music === 'stars' && !!GAIDEN.ROOM_BY_ID.lobby.vel && !!GAIDEN.ROOM_BY_ID.starhall.vel));
+      await ctx.close(); }
 
     // ---- v0.3: room entry safety (no stunlock at the door)
     { const { ctx, page } = await open(browser, '?room=pantry&x=1&y=16&god=0');

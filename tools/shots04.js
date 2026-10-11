@@ -13,8 +13,8 @@ const only = process.argv[2];
   const want = n => !only || n.includes(only);
   const ALL = 'float,turbo,djump,phase', ALL5 = ALL + ',tank';
   // ---- new areas (Vel greets you in the first room of each)
-  for (const [name, q, walk, ms] of [['v04_area_theater_lobby.png', '?room=lobby&x=30&y=16', 'ArrowRight', 500], ['v04_area_theater_audience.png', '?room=audience&x=40&y=16', 'ArrowRight', 600],
-    ['v04_area_stars_starhall.png', '?room=starhall&x=30&y=16', 'ArrowRight', 500], ['v04_area_stars_planetarium.png', '?room=planetarium&x=22&y=16', 'ArrowLeft', 500]]) {
+  for (const [name, q, walk, ms] of [['v04_area_theater_lobby.png', '?room=lobby&x=40&y=16', 'ArrowLeft', 300], ['v04_area_theater_audience.png', '?room=audience&x=40&y=16', 'ArrowRight', 600],
+    ['v04_area_stars_starhall.png', '?room=starhall&x=44&y=16', 'ArrowLeft', 300], ['v04_area_stars_planetarium.png', '?room=planetarium&x=22&y=16', 'ArrowLeft', 500]]) {
     if (!want(name)) continue; const { ctx, page } = await open(q + '&god=1&abil=' + ALL);
     await sleep(600); await page.keyboard.down(walk); await sleep(ms); await page.keyboard.up(walk); await sleep(1600); await snap(page, name); await ctx.close(); }
   // ---- Vel's dialogue (before Chronoa, at the top of the tower)
@@ -29,8 +29,9 @@ const only = process.argv[2];
     await page.waitForFunction(() => GAIDEN.boss && GAIDEN.boss.state !== 'sleep' && GAIDEN.boss.state !== 'intro', null, { timeout: 20000 });
     await page.waitForFunction(([s, t]) => GAIDEN.boss && GAIDEN.boss.state === s && GAIDEN.boss.t > t, [st, tt], { timeout: 60000, polling: 'raf' }).catch(e => console.log('wait', kind, e.message));
     await E(page, () => { window.__speed = 0; }); await sleep(150); await snap(page, name);
-    await E(page, () => { window.__speed = 3; }); await page.waitForFunction(() => GAIDEN.P.tug && GAIDEN.P.tug.boss && GAIDEN.P.tug.tugFrames > 20, null, { timeout: 120000, polling: 'raf' }).catch(() => console.log('no core tug', kind));
-    await E(page, () => { window.__speed = 0; }); await sleep(150); await snap(page, 'v04_boss_' + kind + '_core.png'); await ctx.close(); }
+    await ctx.close(); { const { ctx, page } = await open(`?room=${roomId}&x=2&y=16&god=1&abil=${ALL5}`); await E(page, BOT);
+    await E(page, () => { window.__speed = 4; }); await page.waitForFunction(() => GAIDEN.P.tug && GAIDEN.P.tug.boss && GAIDEN.P.tug.tugFrames > 20, null, { timeout: 120000, polling: 'raf' }).catch(() => console.log('no core tug', kind));
+    await E(page, () => { window.__speed = 0; }); await sleep(150); await snap(page, 'v04_boss_' + kind + '_core.png'); await ctx.close(); } }
   // ---- Chronoa's other moves (rage)
   for (const st of ['beam', 'slow', 'rewind']) { const name = 'v04_boss_chronoa_' + st + '.png'; if (!want(name)) continue;
     const { ctx, page } = await open(`?room=clockheart&x=2&y=16&god=1&abil=${ALL5}&bossatk=${st}`);

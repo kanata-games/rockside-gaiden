@@ -496,12 +496,12 @@ function renderMap() {
   const abW = k => 26 + (hasAbil(k) ? ABIL_INFO[k].jp.length : 3) * 10;
   let ax = 14; for (const k in ABIL_INFO) { drawAbilIcon(k, ax, by + 12, hasAbil(k)); ax += abW(k); }
   // area legend
-  let lx = 14; for (const k in AREAS) { g.fillStyle = AREAS[k].col; g.fillRect(lx, by + 40, 8, 8); rectLine(lx, by + 40, 8, 8, '#a8b8e8'); lx += 62; }
+  let lx = 14; for (const k in AREAS) { g.fillStyle = AREAS[k].col; g.fillRect(lx, by + 40, 8, 8); rectLine(lx, by + 40, 8, 8, '#a8b8e8'); lx += 46; }
   drawText('TAP / MAP: BACK', VW / 2, VH - 10, 'b', 1, 'c');
   blit();
   drawHiText((AREAS[room.def.area] || AREAS.east).jp + '　' + room.def.jp, VW / 2, 12, 10, '#fff4e0', '#1a0e28');
   ax = 14; for (const k in ABIL_INFO) { drawHiText(hasAbil(k) ? ABIL_INFO[k].jp : '？？？', ax + 13, by + 11, 6.5, hasAbil(k) ? ABIL_INFO[k].col : '#5a5488', null, 'left'); ax += abW(k); }
-  lx = 14; for (const k in AREAS) { drawHiText(AREAS[k].short, lx + 11, by + 39, 6, '#c8c0f0', null, 'left'); lx += 62; }
+  lx = 14; for (const k in AREAS) { drawHiText(AREAS[k].short, lx + 11, by + 39, 6, '#c8c0f0', null, 'left'); lx += 46; }
   drawHiText('■セーブ  B＝ボス  W＝ワープの間  ・光＝新しい力  黄色＝とびら' + (progress.hasKey ? '  舞踏会場の鍵あり' : ''), VW / 2, by + 54, 6.5, '#a8a0d8', null);
 }
 function renderPlayBase() { g.fillStyle = '#000'; g.fillRect(0, 0, VW, VH); g.drawImage(room.canvas, clamp(Math.round(cam.x), 0, room.W - VW), clamp(Math.round(cam.y), 0, room.H - VH), VW, VH, 0, 0, VW, VH); }

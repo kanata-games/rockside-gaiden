@@ -1,4 +1,4 @@
-# ROCKSIDE外伝 – 清掃員カナタ 〜幽霊屋敷のおそうじ〜 (v0.3.0)
+# ROCKSIDE外伝 – 清掃員カナタ 〜幽霊屋敷のおそうじ〜 (v0.4.0)
 
 A small SotN-style exploration game with a Luigi's-Mansion vacuum. It is a spin-off of ROCKSIDE.
 Play it here: https://kanata-games.github.io/rockside-gaiden/ (the page has noindex).
@@ -46,10 +46,10 @@ Normal enemies and ghosts appear together in the same rooms.
 | ふわり化 FLOAT | appears after the chandelier boss | Hold SPIT: the oldest stored object floats as a temporary platform (only usable from solid ground). Reaches higher ledges in the laundry area. |
 | ターボ吸引 TURBO | pantry | Longer, stronger suction. Lifts heavy objects, pulls levers, and drags the foyer wardrobe aside (→ garden). |
 | ゴーストステップ DOUBLE JUMP | garden tool shed | A second jump in mid-air. Reaches the dining-hall ceiling hole (→ attic & clock tower, chapel) and the greenhouse birdcage. |
-| 霊体化 PHASE | after the organ boss (chapel choir) | Walk through pale-blue spirit barriers: the clock-tower gearshaft (→ final boss), the reliquary secret and the well down to the grand bath. |
+| 霊体化 PHASE | after the organ boss (chapel choir) | Walk through pale-blue spirit barriers: the clock-tower gearshaft (→ clock tower, and on its right → the observatory), the gallery ceiling hole (→ puppet theater), the reliquary secret and the well down to the grand bath. |
 | 大容量タンク BIG TANK | after the serpent boss (grand bath) | The TANK holds 4 objects. |
 
-## Areas (6 areas, plus a warp room in each)
+## Areas (8 areas, plus a warp room in each)
 Each area has its own tiles, background and music.
 
 | area | rooms | boss |
@@ -57,15 +57,19 @@ Each area has its own tiles, background and music.
 | 幽霊屋敷 東棟 (East Wing) | 8 | 呪いのシャンデリア GRAND LUMIERE |
 | 地下 洗濯場と厨房 (Laundry & Kitchen) | 9 | リネン・ゴーレム LINEN GOLEM |
 | 月下の温室庭園 (Moonlit Garden) | 8 | 夜咲きの女王 マダム・ローズ MADAME ROSE |
-| 屋根裏と時計塔 (Attic & Clock Tower) | 7 | 大時計の番人 チクタク GRANDFATHER TICKTOCK (final) |
+| 屋根裏と時計塔 (Attic & Clock Tower) | 9 | 大時計の番人 チクタク GRANDFATHER TICKTOCK (midboss), then the TRUE final boss 時計塔管理人 クロノア CHRONOA |
 | 礼拝堂と地下墓所 (Chapel & Crypt), new in v0.3 | 6 | 呪いのパイプオルガン CURSED PIPE ORGAN |
 | 大浴場と貯水槽 (Grand Bath & Cistern), new in v0.3 (optional, behind a spirit barrier) | 6 | 大浴場の主 ユブネ BATHWATER SERPENT |
+| 人形劇場 (Puppet Theater), new in v0.4 (gallery ceiling, spirit barrier) | 5 | 人形座長 ストリングス MAESTRO STRINGS |
+| 星見の天文台 (Stargazing Observatory), new in v0.4 (gearshaft, spirit barrier) | 5 | 星喰いの天球儀 アストラ ASTRA |
+
+**v0.4 story.** The door behind the great clock carries three seals: the clock, the strings and the stars. Beat チクタク, Maestro Strings and Astra to open it. At the top of the tower waits クロノア, the clock tower's keeper and one of the thirteen mimic girls. Her mimic is the great clock face with the giant eye. Her attacks are clock hands, the pocket-watch pendulum, rewinding sand orbs, slow-time zones and the eye beam. When the eye shuts, its core is the weak point. ヴェル, the master's secretary, is never fought. She appears with one quiet line when you reach the new areas, after certain bosses and before Chronoa, and she returns for the ending.
 
 **Warp rooms.** Every area has a ワープの間 with a glowing circle. Step on it to open the destination menu, which lists every warp room you have found and shows them on the map (W). The map marks discovered warp rooms.
 
 Every boss telegraphs its attacks: floor marks, red flashes, HIGH/LOW guide lines, a dotted pendulum arc. Every 3rd attack (every 4th for the later bosses) is a long special move that leaves the boss stunned. Its ghost core pops out, and that core is the weak point: vacuum it and win the tug-of-war. The core breaks free after a capped amount of damage per opening. Spitting objects also deals damage. Below 50% HP the boss gets angry and gains phase-2 moves and combos: the golem's leap, the rose's garden of thorns, the organ's requiem, the clock's MIDNIGHT barrage. At 25% the clock goes into OVERDRIVE.
 
-Difficulty rises chandelier < golem < rose < organ ≈ serpent < clock (see the bot table in the release notes).
+Difficulty rises chandelier < golem < rose < organ ≈ serpent < strings < astra < clock < chronoa (see the bot table in the release notes). Since v0.3.2 every attack passes tools/avoid.js.
 
 Other features:
 - Save altars.
@@ -83,6 +87,7 @@ node tools/reach.js             # whole-mansion reachability + ability gating ch
 node tools/bossrun.js 5         # boss balance: the bot fights each boss 5x WITHOUT god mode
 node tools/rooms.js /tmp/rooms  # load + screenshot every room
 node tools/shots03.js           # phone screenshots -> screenshots/v03_*.png
+node tools/shots04.js           # v0.4 screenshots (new areas, bosses, Vel, ending, map) -> screenshots/v04_*.png
 node tools/doors.js             # audit: no enemies placed next to doors
 node tools/avoid.js [bosses] --reps=2   # fairness audit: for EVERY boss attack (normal + enraged), Kanata parked at 4 spots,
                                 # reacts after 18 frames (300 ms) and must reach a safe spot with real walk/jump/hover physics

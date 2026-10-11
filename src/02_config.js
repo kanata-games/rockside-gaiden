@@ -1,5 +1,5 @@
 // Version label (title screen + footer). Bump on every release.
-const GAME_VERSION = '0.3.2';
+const GAME_VERSION = '0.4.0';
 // =====================================================================
 //  ROCKSIDE外伝 清掃員カナタ  -  haunted-mansion exploration + vacuum action (prototype)
 //  All gameplay tuning lives in CONFIG. Units: pixels and frames @60Hz.
