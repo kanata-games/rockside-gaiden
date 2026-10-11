@@ -41,7 +41,7 @@ BOSS_DEFS.clock = { jp: '大時計の番人 チクタク', en: 'GRANDFATHER TICK
         if (b.t === 1) { b.pdir = pcx() < 192 ? 1 : -1; b.pend = -b.pdir * 1.25; sfx('warn'); }
         if (b.t < warn) { if (b.t % 12 === 0) sfx('tick'); break; }
         const k = Math.min(1, (b.t - warn) / 100); b.pendOut = k < 1; b.pend = -b.pdir * 1.25 * Math.cos(k * Math.PI);
-        if (b.pendOut) { const bb = D.bob(b); if (Math.hypot(pcx() - bb.x, clamp(bb.y, hurtBox().y0, hurtBox().y1) - bb.y) < 14 + (P.w / 2 - CONFIG.hurtInsetX)) hurtPlayer(C.pendDamage, bb.x, 'pendulum');
+        if (b.pendOut) { const bb = D.bob(b); if (overlapBox(bb.x - 13, bb.y - 13, bb.x + 13, bb.y + 13)) hurtPlayer(C.pendDamage, bb.x, 'pendulum');
           if (frame % 2 === 0) parts.push({ x: bb.x + rnd(-6, 6), y: bb.y + rnd(-6, 6), vx: 0, vy: 0, life: 12, col: '#ffe080', size: 2, glow: 1 }); }
         if (b.t === warn + 50) sfx('whoosh');
         if (b.rage && (b.t === warn + 24 || (b.over && b.t === warn + 64))) { b.marks = [clamp(pcx(), 16, room.W - 16)]; b.handT = b.t + bossP('handWarn') + 6; }   // combo: a hand stab during the swing
@@ -50,11 +50,13 @@ BOSS_DEFS.clock = { jp: '大時計の番人 チクタク', en: 'GRANDFATHER TICK
       case 'midnight': {
         const n = bossP('midStabs'), gap = C.midGap, w = C.midWarn;
         if (b.t === 1) { b.mids = []; sfx('bell'); cam.shake = 4; tip('midnight', '真夜中！ 針が追いかけてくる。止まらず走りつづけろ'); }
-        if (b.t >= 20 && (b.t - 20) % gap === 0 && (b.t - 20) / gap < n) { b.mids.push({ x: clamp(pcx() + P.vx * 8, 16, room.W - 16), t: b.t + w }); sfx('tick'); }
-        for (const m of b.mids) if (m.t === b.t) { ebullets.push({ kind: 'hand', x: m.x - 5, y: 2 * TS, w: 10, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: C.handDamage, life: 22, static: 1 }); sfx('thud'); cam.shake = 2; }
+        // v0.3.2: one chasing stab at a time, aimed at where Kanata IS (no lead) - always escapable by moving
+        if (b.t === 20) b.midN = 0;
+        if (b.t >= 20 && !b.mids.length && b.midN < n && b.t >= (b.midNext || 0)) { b.mids.push({ x: clamp(pcx(), 16, room.W - 16), t: b.t + w }); b.midN++; sfx('tick'); }
+        for (const m of b.mids) if (m.t === b.t) { ebullets.push({ kind: 'hand', x: m.x - 5, y: 2 * TS, w: 10, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: C.handDamage, life: 22, static: 1 }); sfx('thud'); cam.shake = 2; b.midNext = b.t + gap; }
         b.mids = b.mids.filter(m => m.t > b.t); b.marks = b.mids.map(m => m.x);
         if (b.over && (b.t === 30 || b.t === 80)) for (const d of [-1, 1]) ebullets.push({ kind: 'rgear', x: b.x + d * 26 - 7, y: FLOOR_Y - 14, w: 14, h: 14, vx: d * C.gearSpeed, vy: 0, g: 0, dmg: C.gearDamage, life: 400, static: 1, suckable: true, ammo: 'gear', bounces: 0, roll: 1 });
-        if (b.t >= 20 + n * gap + w + 20) { b.state = 'idle'; b.t = 0; b.marks = []; } break; }
+        if (b.midN >= n && !b.mids.length && b.t >= (b.midNext || 0) + 30) { b.state = 'idle'; b.t = 0; b.marks = []; } break; }
       case 'chime': {
         for (const k of [20, 44, 68]) if (b.t === k) { sfx('bell'); cam.shake = 5; b.ring = 1; }
         if (b.ring) b.ring++;

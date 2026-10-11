@@ -9,15 +9,16 @@ const CONFIG = {
 
   // ---- player (hitbox w x h; sprite is drawn feet-centred) ----
   playerW: 16, playerH: 50,
-  gravity: 0.28, maxFall: 6.5,
-  jumpVel: 6.6,            // apex ~ 78 px: a 4-tile step is comfortable
+  // v0.3.2 (playtest: bosses felt unavoidable): faster, snappier Kanata - same jump height, less hang time, quicker turns
+  gravity: 0.32, maxFall: 7.0,
+  jumpVel: 7.0,            // apex ~ 76 px: a 4-tile step is comfortable
   jumpCutVel: 1.6,         // releasing JUMP while rising clamps the upward speed (variable jump height)
-  walkSpeed: 1.7, accel: 0.35, airAccel: 0.25, decel: 0.5,
-  vacWalkSpeed: 0.7,       // move speed while the vacuum runs
+  walkSpeed: 2.4, accel: 0.55, airAccel: 0.42, decel: 0.8,
+  vacWalkSpeed: 0.95,       // move speed while the vacuum runs
   coyote: 6, jumpBuffer: 7,
   hoverFrames: 70,         // half-ghost float: hold JUMP while falling -> slow descent for this long (refills on the ground)
   hoverFall: 0.45,         // max fall speed while hovering
-  hurtInsetX: 3, hurtInsetTop: 12,  // damage hurtbox inset (see hurtBox())
+  hurtInsetX: 4, hurtInsetTop: 14,  // damage hurtbox inset (see hurtBox())
   foeRecoil: 60, foeEdge: 34,        // normal enemies back off this long after hitting Kanata; never closer than this to the room edge (doorways)
   entryGrace: 50, entrySafe: 112,     // after entering a room: no damage for N frames; enemies kept this far (px) from the entry point
   // v0.3: the mimic vacuum EATS tiny critters (rat, bat): +heal and +1 GABU gauge; a full gauge powers up the next SPIT
@@ -45,7 +46,7 @@ const CONFIG = {
 
   // ---- abilities found in the mansion ----
   turboRange: 1.18,                  // ターボ吸引: cone length multiplier; also lifts heavy objects, levers and wardrobes
-  djumpVel: 5.9,                     // 二段ジャンプ (ゴーストステップ): second jump in the air
+  djumpVel: 6.3,                     // 二段ジャンプ (ゴーストステップ): second jump in the air
   float: { holdFrames: 16, life: 330, max: 2, w: 26, h: 8 },   // ふわり化: hold SPIT -> the oldest stored object floats as a platform
 
   // ---- objects you can suck up and SPIT (dmg = damage to normal enemies; bosses take x bossMul) ----
@@ -106,7 +107,7 @@ const CONFIG = {
   // v0.3: noticeably stronger (faster, double slam + wall-bounce roll when angry, sock rain)
   // v0.3b (playtest: "手応えなし"): much stronger - more HP, faster/denser, combos, shorter + capped weak-point windows,
   //   phase-2 moves (leap / slam->sock combo)
-  golem: { hp: 185, idle: 40, idleRage: 26, walk: 1.0, walkRage: 1.4, slamWarn: 32, slamWarnRage: 26, waveSpeed: 3.2, slamDamage: 2,
+  golem: { hp: 185, idle: 40, idleRage: 26, walk: 1.0, walkRage: 1.4, slamWarn: 38, slamWarnRage: 34, waveSpeed: 3.2, slamDamage: 2,
     bubbles: 3, bubblesRage: 4, bubbleDamage: 1, bubbleSpeed: 1.0, spinWarn: 34, spinWarnRage: 28, spinSpeed: 4.6, spinDamage: 2, dizzy: 100, dizzyRage: 80,
     socks: 5, socksRage: 7, sockWarn: 36, sockWarnRage: 30, sockDamage: 1, leapWarn: 32, leapDamage: 2, contactDamage: 1, coreCap: 22 },
   // ---- boss 3: 夜咲きの女王 マダム・ローズ MADAME ROSE (greenhouse) ----

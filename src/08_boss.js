@@ -83,7 +83,7 @@ function chooseAttack(b, normal, special) {
   b.lastAtk = pick; b.state = pick; b.t = 0; return pick;
 }
 function bossReward(b, x) { popItems(['heart', 'heart', 'coin', 'coin', 'coin', 'coin', 'coin'], x, FLOOR_Y - 60); P.hp = progress.maxHP; }
-function overlapBox(x0, y0, x1, y1) { return hitsKanata(x0, y0, x1, y1); }
+function overlapBox(x0, y0, x1, y1) { hzLog(x0, y0, x1, y1); return hitsKanata(x0, y0, x1, y1); }
 
 // =====================================================================
 //  BOSS 1: 呪いのシャンデリア グラン・ルミエール (ballroom)
@@ -182,7 +182,7 @@ BOSS_DEFS.chandelier = { jp: '呪いのシャンデリア', en: 'GRAND LUMIERE',
     drawCore(b, lights, 'core');
   },
 };
-function overlapBossBody() { const b = boss; return hitsKanata(b.x - 50, b.y + 30, b.x + 50, b.y + 80); }
+function overlapBossBody() { const b = boss; hzLog(b.x - 50, b.y + 30, b.x + 50, b.y + 80); return hitsKanata(b.x - 50, b.y + 30, b.x + 50, b.y + 80); }
 function dropCandle(x) {
   const B = CONFIG.boss;
   ebullets.push({ kind: 'candle', x: x - 3, y: boss.y + 30, w: 6, h: 12, vx: 0, vy: 1, g: 0.22, dmg: B.candleDamage, life: 200, suckable: true,

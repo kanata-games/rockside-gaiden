@@ -33,14 +33,14 @@ BOSS_DEFS.serpent = { jp: '大浴場の主 ユブネ', en: 'BATHWATER SERPENT', 
         if (b.t >= warn + 70) { b.state = 'idle'; b.t = 0; } break; }
       case 'sweep': {
         const warn = bossP('sweepWarn');
-        if (b.t === 1) { b.petalHigh = Math.random() < 0.45; sfx('warn'); }
+        if (b.t === 1) { b.petalHigh = Math.random() < 0.45; b.sweepHold = 0; sfx('warn'); }
         const yy = b.petalHigh ? FLOOR_Y - 70 : FLOOR_Y - 16;
         if (b.t < warn) { b.hx += (D.BASE - 30 - b.hx) * 0.1; b.hy += (yy - b.hy) * 0.1; if (b.t % 12 === 0) sfx('warn'); break; }
         if (b.t === warn) { b.sweepVx = -bossP('sweepSpeed'); sfx('whoosh'); }
+        if (b.sweepHold) { b.hy += (yy - b.hy) * 0.15; if (b.t >= b.sweepHold) { b.sweepHold = 0; b.sweepVx = bossP('sweepSpeed') * 0.9; sfx('whoosh'); } break; } // v0.3.2: telegraphed return
         b.hx += b.sweepVx; b.hy = yy + Math.sin(b.t * 0.3) * 2; b.sweepX = b.hx;
-        if (b.hx < 26 && b.sweepVx < 0) { b.sweepVx = b.rage ? bossP('sweepSpeed') * 0.9 : 0; if (b.rage) { b.petalHigh = !b.petalHigh; sfx('warn'); } }
+        if (b.hx < 26 && b.sweepVx < 0) { b.hx = 26; if (b.rage) { b.sweepVx = 0; b.sweepHold = b.t + 30; b.petalHigh = !b.petalHigh; sfx('warn'); break; } b.sweepVx = 0; }
         if (b.sweepVx === 0 || b.hx > D.BASE - 30) { b.sweepX = undefined; b.state = 'idle'; b.t = 0; }
-        if (b.sweepVx === 0) b.hx = 26;
         break; }
       case 'rain': {
         const warn = bossP('rainWarn'); D.home(b);
@@ -66,7 +66,7 @@ BOSS_DEFS.serpent = { jp: '大浴場の主 ユブネ', en: 'BATHWATER SERPENT', 
       case 'dizzy': coreBob(b, b.hx - 40, FLOOR_Y - 30); if (coreWindowOver(b)) { b.state = 'return'; b.t = 0; } break;
       case 'return': b.hx += (D.BASE - 22 - b.hx) * 0.05; b.hy += (FLOOR_Y - 112 - b.hy) * 0.05; if (b.t > 70) { b.state = 'idle'; b.t = 0; } break;
     }
-    if (!b.hidden && (b.state === 'sweep' || b.state === 'idle' || b.state === 'arcs' || b.state === 'rain') && overlapBox(b.hx - 18, b.hy - 14, b.hx + 18, b.hy + 14)) hurtPlayer(b.state === 'sweep' ? C.sweepDamage : C.contactDamage, b.hx, 'serpent');
+    if (!b.hidden && ((b.state === 'sweep' && b.t >= bossP('sweepWarn')) || b.state === 'idle' || b.state === 'arcs' || b.state === 'rain') && overlapBox(b.hx - 18, b.hy - 14, b.hx + 18, b.hy + 14)) hurtPlayer(b.state === 'sweep' ? C.sweepDamage : C.contactDamage, b.hx, 'serpent');
   },
   dying(b) { b.hy += 0.4; },
   onDefeat(b) { bossReward(b, 180); say('……お湯、ぬるくなった。……いいお湯だった', 200); tip('serpentDown', '大浴場の主ユブネをやっつけた！', true); },

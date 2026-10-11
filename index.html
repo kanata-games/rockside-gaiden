@@ -75,15 +75,16 @@ const CONFIG = {
 
   // ---- player (hitbox w x h; sprite is drawn feet-centred) ----
   playerW: 16, playerH: 50,
-  gravity: 0.28, maxFall: 6.5,
-  jumpVel: 6.6,            // apex ~ 78 px: a 4-tile step is comfortable
+  // v0.3.2 (playtest: bosses felt unavoidable): faster, snappier Kanata - same jump height, less hang time, quicker turns
+  gravity: 0.32, maxFall: 7.0,
+  jumpVel: 7.0,            // apex ~ 76 px: a 4-tile step is comfortable
   jumpCutVel: 1.6,         // releasing JUMP while rising clamps the upward speed (variable jump height)
-  walkSpeed: 1.7, accel: 0.35, airAccel: 0.25, decel: 0.5,
-  vacWalkSpeed: 0.7,       // move speed while the vacuum runs
+  walkSpeed: 2.4, accel: 0.55, airAccel: 0.42, decel: 0.8,
+  vacWalkSpeed: 0.95,       // move speed while the vacuum runs
   coyote: 6, jumpBuffer: 7,
   hoverFrames: 70,         // half-ghost float: hold JUMP while falling -> slow descent for this long (refills on the ground)
   hoverFall: 0.45,         // max fall speed while hovering
-  hurtInsetX: 3, hurtInsetTop: 12,  // damage hurtbox inset (see hurtBox())
+  hurtInsetX: 4, hurtInsetTop: 14,  // damage hurtbox inset (see hurtBox())
   foeRecoil: 60, foeEdge: 34,        // normal enemies back off this long after hitting Kanata; never closer than this to the room edge (doorways)
   entryGrace: 50, entrySafe: 112,     // after entering a room: no damage for N frames; enemies kept this far (px) from the entry point
   // v0.3: the mimic vacuum EATS tiny critters (rat, bat): +heal and +1 GABU gauge; a full gauge powers up the next SPIT
@@ -111,7 +112,7 @@ const CONFIG = {
 
   // ---- abilities found in the mansion ----
   turboRange: 1.18,                  // ターボ吸引: cone length multiplier; also lifts heavy objects, levers and wardrobes
-  djumpVel: 5.9,                     // 二段ジャンプ (ゴーストステップ): second jump in the air
+  djumpVel: 6.3,                     // 二段ジャンプ (ゴーストステップ): second jump in the air
   float: { holdFrames: 16, life: 330, max: 2, w: 26, h: 8 },   // ふわり化: hold SPIT -> the oldest stored object floats as a platform
 
   // ---- objects you can suck up and SPIT (dmg = damage to normal enemies; bosses take x bossMul) ----
@@ -172,7 +173,7 @@ const CONFIG = {
   // v0.3: noticeably stronger (faster, double slam + wall-bounce roll when angry, sock rain)
   // v0.3b (playtest: "手応えなし"): much stronger - more HP, faster/denser, combos, shorter + capped weak-point windows,
   //   phase-2 moves (leap / slam->sock combo)
-  golem: { hp: 185, idle: 40, idleRage: 26, walk: 1.0, walkRage: 1.4, slamWarn: 32, slamWarnRage: 26, waveSpeed: 3.2, slamDamage: 2,
+  golem: { hp: 185, idle: 40, idleRage: 26, walk: 1.0, walkRage: 1.4, slamWarn: 38, slamWarnRage: 34, waveSpeed: 3.2, slamDamage: 2,
     bubbles: 3, bubblesRage: 4, bubbleDamage: 1, bubbleSpeed: 1.0, spinWarn: 34, spinWarnRage: 28, spinSpeed: 4.6, spinDamage: 2, dizzy: 100, dizzyRage: 80,
     socks: 5, socksRage: 7, sockWarn: 36, sockWarnRage: 30, sockDamage: 1, leapWarn: 32, leapDamage: 2, contactDamage: 1, coreCap: 22 },
   // ---- boss 3: 夜咲きの女王 マダム・ローズ MADAME ROSE (greenhouse) ----
@@ -1299,6 +1300,9 @@ const playerShots = [], ebullets = [], items = [], parts = [], floats = [];
 const pcx = () => P.x + P.w / 2, pcy = () => P.y + P.h / 2;
 // damage hurtbox: a bit smaller than the 16x50 body (the sprite is drawn even bigger), so near-misses feel fair
 const hurtBox = () => ({ x0: P.x + CONFIG.hurtInsetX, x1: P.x + P.w - CONFIG.hurtInsetX, y0: P.y + CONFIG.hurtInsetTop, y1: P.y + P.h - 1 });
+// v0.3.2 avoidability audit (tools/avoid.js): when window.__hz is set, every boss/bullet damage test logs its rectangle per frame
+function hzLog(x0, y0, x1, y1, groundOnly, src) { const H = window.__hz; if (!H || !H.length) return; if (src && src.__hzB === undefined) src.__hzB = H.length - 1;
+  H[H.length - 1].push([Math.round(x0), Math.round(y0), Math.round(x1), Math.round(y1), groundOnly ? 1 : 0, src ? src.__hzB : -1]); }
 function hitsKanata(x0, y0, x1, y1) { const h = hurtBox(); return h.x0 < x1 && h.x1 > x0 && h.y0 < y1 && h.y1 > y0; }
 function nozzle() { const V = CONFIG.vac; return { x: pcx() + P.face * V.nozzleX, y: P.y + P.h - V.nozzleY }; }
 const vacRange = () => CONFIG.vac.range * (hasAbil('turbo') ? CONFIG.turboRange : 1);
@@ -1878,6 +1882,7 @@ function updateEBullets() {
       else { const col = b.kind === 'plate' ? '#f4f4fc' : b.kind === 'needle' ? '#e8e8f0' : '#a8e0ff'; for (let i = 0; i < 6; i++) parts.push({ x: b.x + b.w / 2, y: b.y + b.h / 2, vx: rnd(-1.5, 1.5), vy: rnd(-2, 0), life: 18, col, size: 2, grav: 1 }); sfx('tink'); }
       continue;
     }
+    if (!b.home) hzLog(b.x, b.y, b.x + b.w, b.y + b.h, b.kind === 'firepatch' || b.kind === 'puddle', b);
     if (!P.dead && hitsKanata(b.x, b.y, b.x + b.w, b.y + b.h)) {
       if ((b.kind !== 'firepatch' && b.kind !== 'puddle') || P.onGround) { if (hurtPlayer(b.dmg, b.x + b.w / 2, b.kind) && !PERSIST_BULLETS.has(b.kind)) b.dead = true; }
     }
@@ -2319,7 +2324,7 @@ function chooseAttack(b, normal, special) {
   b.lastAtk = pick; b.state = pick; b.t = 0; return pick;
 }
 function bossReward(b, x) { popItems(['heart', 'heart', 'coin', 'coin', 'coin', 'coin', 'coin'], x, FLOOR_Y - 60); P.hp = progress.maxHP; }
-function overlapBox(x0, y0, x1, y1) { return hitsKanata(x0, y0, x1, y1); }
+function overlapBox(x0, y0, x1, y1) { hzLog(x0, y0, x1, y1); return hitsKanata(x0, y0, x1, y1); }
 
 // =====================================================================
 //  BOSS 1: 呪いのシャンデリア グラン・ルミエール (ballroom)
@@ -2418,7 +2423,7 @@ BOSS_DEFS.chandelier = { jp: '呪いのシャンデリア', en: 'GRAND LUMIERE',
     drawCore(b, lights, 'core');
   },
 };
-function overlapBossBody() { const b = boss; return hitsKanata(b.x - 50, b.y + 30, b.x + 50, b.y + 80); }
+function overlapBossBody() { const b = boss; hzLog(b.x - 50, b.y + 30, b.x + 50, b.y + 80); return hitsKanata(b.x - 50, b.y + 30, b.x + 50, b.y + 80); }
 function dropCandle(x) {
   const B = CONFIG.boss;
   ebullets.push({ kind: 'candle', x: x - 3, y: boss.y + 30, w: 6, h: 12, vx: 0, vy: 1, g: 0.22, dmg: B.candleDamage, life: 200, suckable: true,
@@ -2697,7 +2702,7 @@ BOSS_DEFS.clock = { jp: '大時計の番人 チクタク', en: 'GRANDFATHER TICK
         if (b.t === 1) { b.pdir = pcx() < 192 ? 1 : -1; b.pend = -b.pdir * 1.25; sfx('warn'); }
         if (b.t < warn) { if (b.t % 12 === 0) sfx('tick'); break; }
         const k = Math.min(1, (b.t - warn) / 100); b.pendOut = k < 1; b.pend = -b.pdir * 1.25 * Math.cos(k * Math.PI);
-        if (b.pendOut) { const bb = D.bob(b); if (Math.hypot(pcx() - bb.x, clamp(bb.y, hurtBox().y0, hurtBox().y1) - bb.y) < 14 + (P.w / 2 - CONFIG.hurtInsetX)) hurtPlayer(C.pendDamage, bb.x, 'pendulum');
+        if (b.pendOut) { const bb = D.bob(b); if (overlapBox(bb.x - 13, bb.y - 13, bb.x + 13, bb.y + 13)) hurtPlayer(C.pendDamage, bb.x, 'pendulum');
           if (frame % 2 === 0) parts.push({ x: bb.x + rnd(-6, 6), y: bb.y + rnd(-6, 6), vx: 0, vy: 0, life: 12, col: '#ffe080', size: 2, glow: 1 }); }
         if (b.t === warn + 50) sfx('whoosh');
         if (b.rage && (b.t === warn + 24 || (b.over && b.t === warn + 64))) { b.marks = [clamp(pcx(), 16, room.W - 16)]; b.handT = b.t + bossP('handWarn') + 6; }   // combo: a hand stab during the swing
@@ -2706,11 +2711,13 @@ BOSS_DEFS.clock = { jp: '大時計の番人 チクタク', en: 'GRANDFATHER TICK
       case 'midnight': {
         const n = bossP('midStabs'), gap = C.midGap, w = C.midWarn;
         if (b.t === 1) { b.mids = []; sfx('bell'); cam.shake = 4; tip('midnight', '真夜中！ 針が追いかけてくる。止まらず走りつづけろ'); }
-        if (b.t >= 20 && (b.t - 20) % gap === 0 && (b.t - 20) / gap < n) { b.mids.push({ x: clamp(pcx() + P.vx * 8, 16, room.W - 16), t: b.t + w }); sfx('tick'); }
-        for (const m of b.mids) if (m.t === b.t) { ebullets.push({ kind: 'hand', x: m.x - 5, y: 2 * TS, w: 10, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: C.handDamage, life: 22, static: 1 }); sfx('thud'); cam.shake = 2; }
+        // v0.3.2: one chasing stab at a time, aimed at where Kanata IS (no lead) - always escapable by moving
+        if (b.t === 20) b.midN = 0;
+        if (b.t >= 20 && !b.mids.length && b.midN < n && b.t >= (b.midNext || 0)) { b.mids.push({ x: clamp(pcx(), 16, room.W - 16), t: b.t + w }); b.midN++; sfx('tick'); }
+        for (const m of b.mids) if (m.t === b.t) { ebullets.push({ kind: 'hand', x: m.x - 5, y: 2 * TS, w: 10, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: C.handDamage, life: 22, static: 1 }); sfx('thud'); cam.shake = 2; b.midNext = b.t + gap; }
         b.mids = b.mids.filter(m => m.t > b.t); b.marks = b.mids.map(m => m.x);
         if (b.over && (b.t === 30 || b.t === 80)) for (const d of [-1, 1]) ebullets.push({ kind: 'rgear', x: b.x + d * 26 - 7, y: FLOOR_Y - 14, w: 14, h: 14, vx: d * C.gearSpeed, vy: 0, g: 0, dmg: C.gearDamage, life: 400, static: 1, suckable: true, ammo: 'gear', bounces: 0, roll: 1 });
-        if (b.t >= 20 + n * gap + w + 20) { b.state = 'idle'; b.t = 0; b.marks = []; } break; }
+        if (b.midN >= n && !b.mids.length && b.t >= (b.midNext || 0) + 30) { b.state = 'idle'; b.t = 0; b.marks = []; } break; }
       case 'chime': {
         for (const k of [20, 44, 68]) if (b.t === k) { sfx('bell'); cam.shake = 5; b.ring = 1; }
         if (b.ring) b.ring++;
@@ -2785,12 +2792,15 @@ BOSS_DEFS.organ = { jp: '呪いのパイプオルガン', en: 'CURSED PIPE ORGAN
         if (b.t === warn) { for (const mx of b.marks) ebullets.push({ kind: 'blast', x: mx - 11, y: 2 * TS, w: 22, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: C.pipeDamage, life: 30, static: 1 }); b.marks = []; sfx('whoosh'); cam.shake = 5; }
         if (b.t >= warn + 34) { if (b.wave < (b.rage ? 2 : 1)) { b.wave++; b.t = b.retgt = 4; } else { b.state = b.rage ? 'chord' : 'idle'; b.t = 0; b.retgt = -1; } } break; }
       case 'requiem': { // v0.3b phase 2: blasts over the whole floor except one "rest" gap - run to it (twice)
-        const warn = 42, T2 = warn + 36;
-        if (b.t === 1 || b.t === T2 || (b.rage && b.t === 2 * T2)) { const slots = []; for (let x = 20; x < b.x - 70; x += 36) slots.push(x);
-          let gi = Math.floor(Math.random() * (slots.length - 1)); if (b.t > 1 && Math.abs(slots[gi] - pcx()) < 60) gi = (gi + 3) % (slots.length - 1);
-          b.gap = (slots[gi] + slots[gi + 1]) / 2; b.marks = slots.filter((x, i) => i !== gi && i !== gi + 1); b.rT = b.t; sfx('bell'); tip('requiem', 'レクイエム！ 印のない「休符」に逃げこめ'); }
-        if (b.t === b.rT + warn) { for (const mx of b.marks) ebullets.push({ kind: 'blast', x: mx - 11, y: 2 * TS, w: 22, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: C.pipeDamage, life: 30, static: 1 }); b.marks = []; sfx('whoosh'); cam.shake = 7; }
-        if (b.t >= (b.rage ? 2 * T2 : T2) + warn + 36) { b.state = 'idle'; b.t = 0; }
+        const T2 = 50 + 36, T3 = T2 + 56 + 36;
+        if (b.t === 1 || b.t === T2 || (b.rage && b.t === T3)) { const slots = []; for (let x = 20; x < b.x - 70; x += 36) slots.push(x);
+          // v0.3.2: the rest gap is always within reach (<= 70px); later rounds force a short move (>= 30px)
+          const cand = []; for (let i = 0; i < slots.length - 1; i++) { const d = Math.abs((slots[i] + slots[i + 1]) / 2 - pcx()); if (d <= 70 && (b.t === 1 || d >= 30)) cand.push(i); }
+          if (!cand.length) { let bi = 0, bd = 1e9; for (let i = 0; i < slots.length - 1; i++) { const d = Math.abs((slots[i] + slots[i + 1]) / 2 - pcx()); if (d < bd) { bd = d; bi = i; } } cand.push(bi); }
+          const gi = cand[Math.floor(Math.random() * cand.length)];
+          b.gap = (slots[gi] + slots[gi + 1]) / 2; b.marks = slots.filter((x, i) => i !== gi && i !== gi + 1); b.rT = b.t; b.rWarn = b.t === 1 ? 50 : 56; sfx('bell'); tip('requiem', 'レクイエム！ 印のない「休符」に逃げこめ'); }
+        if (b.t === b.rT + b.rWarn) { for (const mx of b.marks) ebullets.push({ kind: 'blast', x: mx - 11, y: 2 * TS, w: 22, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: C.pipeDamage, life: 30, static: 1 }); b.marks = []; sfx('whoosh'); cam.shake = 7; }
+        if (b.t >= (b.rage ? T3 : T2) + 56 + 36) { b.state = 'idle'; b.t = 0; }
         break; }
       case 'chord': {
         const warn = bossP('chordWarn');
@@ -2818,7 +2828,7 @@ BOSS_DEFS.organ = { jp: '呪いのパイプオルガン', en: 'CURSED PIPE ORGAN
   onDefeat(b) { bossReward(b, b.x - 80); say('……しずかになった。……耳が、きーんってする', 200); tip('organDown', '呪いのパイプオルガンをやっつけた！ 祭壇に新しい力が…', true); },
   draw(b, lights) {
     const x = Math.round(b.x - cam.x), y = Math.round(FLOOR_Y - cam.y);
-    if (b.state === 'requiem' && b.marks.length) { const k = Math.min(1, (b.t - b.rT) / 42); for (const mx of b.marks) { drawFloorMark(mx, k, 'rgba(200,140,255,0.85)'); g.fillStyle = 'rgba(200,160,255,' + (0.06 + k * 0.16) + ')'; g.fillRect(Math.round(mx - 11 - cam.x), Math.round(2 * TS - cam.y), 22, FLOOR_Y - 2 * TS); }
+    if (b.state === 'requiem' && b.marks.length) { const k = Math.min(1, (b.t - b.rT) / (b.rWarn || 50)); for (const mx of b.marks) { drawFloorMark(mx, k, 'rgba(200,140,255,0.85)'); g.fillStyle = 'rgba(200,160,255,' + (0.06 + k * 0.16) + ')'; g.fillRect(Math.round(mx - 11 - cam.x), Math.round(2 * TS - cam.y), 22, FLOOR_Y - 2 * TS); }
       if (frame & 8) drawTextShadow('REST', Math.round(b.gap - cam.x), Math.round(FLOOR_Y - cam.y - 40), 'y', 1, 'c'); }
     if (b.state === 'pipes' && b.marks.length) { const k = Math.min(1, (b.t - (b.wave ? 4 : 0)) / bossP('pipeWarn')); for (const mx of b.marks) { drawFloorMark(mx, k, 'rgba(200,140,255,0.8)');
       g.fillStyle = 'rgba(200,160,255,' + (0.08 + k * 0.18) + ')'; g.fillRect(Math.round(mx - 11 - cam.x), Math.round(2 * TS - cam.y), 22, FLOOR_Y - 2 * TS); } }
@@ -2870,14 +2880,14 @@ BOSS_DEFS.serpent = { jp: '大浴場の主 ユブネ', en: 'BATHWATER SERPENT', 
         if (b.t >= warn + 70) { b.state = 'idle'; b.t = 0; } break; }
       case 'sweep': {
         const warn = bossP('sweepWarn');
-        if (b.t === 1) { b.petalHigh = Math.random() < 0.45; sfx('warn'); }
+        if (b.t === 1) { b.petalHigh = Math.random() < 0.45; b.sweepHold = 0; sfx('warn'); }
         const yy = b.petalHigh ? FLOOR_Y - 70 : FLOOR_Y - 16;
         if (b.t < warn) { b.hx += (D.BASE - 30 - b.hx) * 0.1; b.hy += (yy - b.hy) * 0.1; if (b.t % 12 === 0) sfx('warn'); break; }
         if (b.t === warn) { b.sweepVx = -bossP('sweepSpeed'); sfx('whoosh'); }
+        if (b.sweepHold) { b.hy += (yy - b.hy) * 0.15; if (b.t >= b.sweepHold) { b.sweepHold = 0; b.sweepVx = bossP('sweepSpeed') * 0.9; sfx('whoosh'); } break; } // v0.3.2: telegraphed return
         b.hx += b.sweepVx; b.hy = yy + Math.sin(b.t * 0.3) * 2; b.sweepX = b.hx;
-        if (b.hx < 26 && b.sweepVx < 0) { b.sweepVx = b.rage ? bossP('sweepSpeed') * 0.9 : 0; if (b.rage) { b.petalHigh = !b.petalHigh; sfx('warn'); } }
+        if (b.hx < 26 && b.sweepVx < 0) { b.hx = 26; if (b.rage) { b.sweepVx = 0; b.sweepHold = b.t + 30; b.petalHigh = !b.petalHigh; sfx('warn'); break; } b.sweepVx = 0; }
         if (b.sweepVx === 0 || b.hx > D.BASE - 30) { b.sweepX = undefined; b.state = 'idle'; b.t = 0; }
-        if (b.sweepVx === 0) b.hx = 26;
         break; }
       case 'rain': {
         const warn = bossP('rainWarn'); D.home(b);
@@ -2903,7 +2913,7 @@ BOSS_DEFS.serpent = { jp: '大浴場の主 ユブネ', en: 'BATHWATER SERPENT', 
       case 'dizzy': coreBob(b, b.hx - 40, FLOOR_Y - 30); if (coreWindowOver(b)) { b.state = 'return'; b.t = 0; } break;
       case 'return': b.hx += (D.BASE - 22 - b.hx) * 0.05; b.hy += (FLOOR_Y - 112 - b.hy) * 0.05; if (b.t > 70) { b.state = 'idle'; b.t = 0; } break;
     }
-    if (!b.hidden && (b.state === 'sweep' || b.state === 'idle' || b.state === 'arcs' || b.state === 'rain') && overlapBox(b.hx - 18, b.hy - 14, b.hx + 18, b.hy + 14)) hurtPlayer(b.state === 'sweep' ? C.sweepDamage : C.contactDamage, b.hx, 'serpent');
+    if (!b.hidden && ((b.state === 'sweep' && b.t >= bossP('sweepWarn')) || b.state === 'idle' || b.state === 'arcs' || b.state === 'rain') && overlapBox(b.hx - 18, b.hy - 14, b.hx + 18, b.hy + 14)) hurtPlayer(b.state === 'sweep' ? C.sweepDamage : C.contactDamage, b.hx, 'serpent');
   },
   dying(b) { b.hy += 0.4; },
   onDefeat(b) { bossReward(b, 180); say('……お湯、ぬるくなった。……いいお湯だった', 200); tip('serpentDown', '大浴場の主ユブネをやっつけた！', true); },

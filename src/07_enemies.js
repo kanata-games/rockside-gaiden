@@ -212,6 +212,7 @@ function updateEBullets() {
       else { const col = b.kind === 'plate' ? '#f4f4fc' : b.kind === 'needle' ? '#e8e8f0' : '#a8e0ff'; for (let i = 0; i < 6; i++) parts.push({ x: b.x + b.w / 2, y: b.y + b.h / 2, vx: rnd(-1.5, 1.5), vy: rnd(-2, 0), life: 18, col, size: 2, grav: 1 }); sfx('tink'); }
       continue;
     }
+    if (!b.home) hzLog(b.x, b.y, b.x + b.w, b.y + b.h, b.kind === 'firepatch' || b.kind === 'puddle', b);
     if (!P.dead && hitsKanata(b.x, b.y, b.x + b.w, b.y + b.h)) {
       if ((b.kind !== 'firepatch' && b.kind !== 'puddle') || P.onGround) { if (hurtPlayer(b.dmg, b.x + b.w / 2, b.kind) && !PERSIST_BULLETS.has(b.kind)) b.dead = true; }
     }

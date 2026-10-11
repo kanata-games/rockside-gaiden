@@ -33,12 +33,15 @@ BOSS_DEFS.organ = { jp: '呪いのパイプオルガン', en: 'CURSED PIPE ORGAN
         if (b.t === warn) { for (const mx of b.marks) ebullets.push({ kind: 'blast', x: mx - 11, y: 2 * TS, w: 22, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: C.pipeDamage, life: 30, static: 1 }); b.marks = []; sfx('whoosh'); cam.shake = 5; }
         if (b.t >= warn + 34) { if (b.wave < (b.rage ? 2 : 1)) { b.wave++; b.t = b.retgt = 4; } else { b.state = b.rage ? 'chord' : 'idle'; b.t = 0; b.retgt = -1; } } break; }
       case 'requiem': { // v0.3b phase 2: blasts over the whole floor except one "rest" gap - run to it (twice)
-        const warn = 42, T2 = warn + 36;
-        if (b.t === 1 || b.t === T2 || (b.rage && b.t === 2 * T2)) { const slots = []; for (let x = 20; x < b.x - 70; x += 36) slots.push(x);
-          let gi = Math.floor(Math.random() * (slots.length - 1)); if (b.t > 1 && Math.abs(slots[gi] - pcx()) < 60) gi = (gi + 3) % (slots.length - 1);
-          b.gap = (slots[gi] + slots[gi + 1]) / 2; b.marks = slots.filter((x, i) => i !== gi && i !== gi + 1); b.rT = b.t; sfx('bell'); tip('requiem', 'レクイエム！ 印のない「休符」に逃げこめ'); }
-        if (b.t === b.rT + warn) { for (const mx of b.marks) ebullets.push({ kind: 'blast', x: mx - 11, y: 2 * TS, w: 22, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: C.pipeDamage, life: 30, static: 1 }); b.marks = []; sfx('whoosh'); cam.shake = 7; }
-        if (b.t >= (b.rage ? 2 * T2 : T2) + warn + 36) { b.state = 'idle'; b.t = 0; }
+        const T2 = 50 + 36, T3 = T2 + 56 + 36;
+        if (b.t === 1 || b.t === T2 || (b.rage && b.t === T3)) { const slots = []; for (let x = 20; x < b.x - 70; x += 36) slots.push(x);
+          // v0.3.2: the rest gap is always within reach (<= 70px); later rounds force a short move (>= 30px)
+          const cand = []; for (let i = 0; i < slots.length - 1; i++) { const d = Math.abs((slots[i] + slots[i + 1]) / 2 - pcx()); if (d <= 70 && (b.t === 1 || d >= 30)) cand.push(i); }
+          if (!cand.length) { let bi = 0, bd = 1e9; for (let i = 0; i < slots.length - 1; i++) { const d = Math.abs((slots[i] + slots[i + 1]) / 2 - pcx()); if (d < bd) { bd = d; bi = i; } } cand.push(bi); }
+          const gi = cand[Math.floor(Math.random() * cand.length)];
+          b.gap = (slots[gi] + slots[gi + 1]) / 2; b.marks = slots.filter((x, i) => i !== gi && i !== gi + 1); b.rT = b.t; b.rWarn = b.t === 1 ? 50 : 56; sfx('bell'); tip('requiem', 'レクイエム！ 印のない「休符」に逃げこめ'); }
+        if (b.t === b.rT + b.rWarn) { for (const mx of b.marks) ebullets.push({ kind: 'blast', x: mx - 11, y: 2 * TS, w: 22, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: C.pipeDamage, life: 30, static: 1 }); b.marks = []; sfx('whoosh'); cam.shake = 7; }
+        if (b.t >= (b.rage ? T3 : T2) + 56 + 36) { b.state = 'idle'; b.t = 0; }
         break; }
       case 'chord': {
         const warn = bossP('chordWarn');
@@ -66,7 +69,7 @@ BOSS_DEFS.organ = { jp: '呪いのパイプオルガン', en: 'CURSED PIPE ORGAN
   onDefeat(b) { bossReward(b, b.x - 80); say('……しずかになった。……耳が、きーんってする', 200); tip('organDown', '呪いのパイプオルガンをやっつけた！ 祭壇に新しい力が…', true); },
   draw(b, lights) {
     const x = Math.round(b.x - cam.x), y = Math.round(FLOOR_Y - cam.y);
-    if (b.state === 'requiem' && b.marks.length) { const k = Math.min(1, (b.t - b.rT) / 42); for (const mx of b.marks) { drawFloorMark(mx, k, 'rgba(200,140,255,0.85)'); g.fillStyle = 'rgba(200,160,255,' + (0.06 + k * 0.16) + ')'; g.fillRect(Math.round(mx - 11 - cam.x), Math.round(2 * TS - cam.y), 22, FLOOR_Y - 2 * TS); }
+    if (b.state === 'requiem' && b.marks.length) { const k = Math.min(1, (b.t - b.rT) / (b.rWarn || 50)); for (const mx of b.marks) { drawFloorMark(mx, k, 'rgba(200,140,255,0.85)'); g.fillStyle = 'rgba(200,160,255,' + (0.06 + k * 0.16) + ')'; g.fillRect(Math.round(mx - 11 - cam.x), Math.round(2 * TS - cam.y), 22, FLOOR_Y - 2 * TS); }
       if (frame & 8) drawTextShadow('REST', Math.round(b.gap - cam.x), Math.round(FLOOR_Y - cam.y - 40), 'y', 1, 'c'); }
     if (b.state === 'pipes' && b.marks.length) { const k = Math.min(1, (b.t - (b.wave ? 4 : 0)) / bossP('pipeWarn')); for (const mx of b.marks) { drawFloorMark(mx, k, 'rgba(200,140,255,0.8)');
       g.fillStyle = 'rgba(200,160,255,' + (0.08 + k * 0.18) + ')'; g.fillRect(Math.round(mx - 11 - cam.x), Math.round(2 * TS - cam.y), 22, FLOOR_Y - 2 * TS); } }

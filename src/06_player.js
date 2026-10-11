@@ -10,6 +10,9 @@ const playerShots = [], ebullets = [], items = [], parts = [], floats = [];
 const pcx = () => P.x + P.w / 2, pcy = () => P.y + P.h / 2;
 // damage hurtbox: a bit smaller than the 16x50 body (the sprite is drawn even bigger), so near-misses feel fair
 const hurtBox = () => ({ x0: P.x + CONFIG.hurtInsetX, x1: P.x + P.w - CONFIG.hurtInsetX, y0: P.y + CONFIG.hurtInsetTop, y1: P.y + P.h - 1 });
+// v0.3.2 avoidability audit (tools/avoid.js): when window.__hz is set, every boss/bullet damage test logs its rectangle per frame
+function hzLog(x0, y0, x1, y1, groundOnly, src) { const H = window.__hz; if (!H || !H.length) return; if (src && src.__hzB === undefined) src.__hzB = H.length - 1;
+  H[H.length - 1].push([Math.round(x0), Math.round(y0), Math.round(x1), Math.round(y1), groundOnly ? 1 : 0, src ? src.__hzB : -1]); }
 function hitsKanata(x0, y0, x1, y1) { const h = hurtBox(); return h.x0 < x1 && h.x1 > x0 && h.y0 < y1 && h.y1 > y0; }
 function nozzle() { const V = CONFIG.vac; return { x: pcx() + P.face * V.nozzleX, y: P.y + P.h - V.nozzleY }; }
 const vacRange = () => CONFIG.vac.range * (hasAbil('turbo') ? CONFIG.turboRange : 1);
