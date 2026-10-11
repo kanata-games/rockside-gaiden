@@ -107,24 +107,25 @@ const CONFIG = {
   // v0.3: noticeably stronger (faster, double slam + wall-bounce roll when angry, sock rain)
   // v0.3b (playtest: "手応えなし"): much stronger - more HP, faster/denser, combos, shorter + capped weak-point windows,
   //   phase-2 moves (leap / slam->sock combo)
-  golem: { hp: 185, idle: 40, idleRage: 26, walk: 1.0, walkRage: 1.4, slamWarn: 38, slamWarnRage: 34, waveSpeed: 3.2, slamDamage: 2,
-    bubbles: 3, bubblesRage: 4, bubbleDamage: 1, bubbleSpeed: 1.0, spinWarn: 34, spinWarnRage: 28, spinSpeed: 4.6, spinDamage: 2, dizzy: 100, dizzyRage: 80,
-    socks: 5, socksRage: 7, sockWarn: 36, sockWarnRage: 30, sockDamage: 1, leapWarn: 32, leapDamage: 2, contactDamage: 1, coreCap: 22 },
+  golem: { hp: 120, idle: 44, idleRage: 32, walk: 1.0, walkRage: 1.4, slamWarn: 38, slamWarnRage: 34, waveSpeed: 3.2, slamDamage: 2,
+    bubbles: 3, bubblesRage: 4, bubbleDamage: 1, bubbleSpeed: 1.0, spinWarn: 34, spinWarnRage: 28, spinSpeed: 4.6, spinDamage: 2, dizzy: 130, dizzyRage: 110,
+    socks: 5, socksRage: 7, sockWarn: 36, sockWarnRage: 30, sockDamage: 1, leapWarn: 32, leapDamage: 2, contactDamage: 1, coreCap: 30 },
   // ---- boss 3: 夜咲きの女王 マダム・ローズ MADAME ROSE (greenhouse) ----
   // v0.3b: stronger than the golem - 3 thorn waves, faster petals, root-chase + garden-of-thorns phase-2 moves, special every 4th
-  rose: { hp: 310, idle: 38, idleRage: 28, thornWarn: 38, thornWarnRage: 32, thorns: 5, thornsRage: 6, thornGap: 50, thornDamage: 2,
-    seeds: 4, seedsRage: 6, seedDamage: 1, petalWarn: 36, petalWarnRage: 30, petalSpeed: 3.4, petalDamage: 1, bloom: 110, bloomRage: 90, burnBonus: 2,
-    rootWarn: 30, rootSpeed: 3.0, rootDamage: 2, gardenWarn: 36, contactDamage: 2, coreCap: 20, specialEvery: 4 },
+  rose: { hp: 150, idle: 42, idleRage: 32, thornWarn: 38, thornWarnRage: 32, thorns: 5, thornsRage: 6, thornGap: 50, thornDamage: 1,
+    seeds: 4, seedsRage: 6, seedDamage: 1, petalWarn: 36, petalWarnRage: 30, petalSpeed: 3.4, petalDamage: 1, bloom: 140, bloomRage: 120, burnBonus: 2,
+    rootWarn: 30, rootSpeed: 3.0, rootDamage: 2, gardenWarn: 36, contactDamage: 1, coreCap: 30, specialEvery: 3 },
   // ---- v0.3 boss: 呪いのパイプオルガン CURSED PIPE ORGAN (chapel) ----
-  organ: { hp: 270, idle: 34, idleRage: 24, noteWarn: 26, notes: 6, notesRage: 8, noteSpeed: 1.8, noteDamage: 1, pipeWarn: 38, pipeWarnRage: 32, pipes: 4, pipesRage: 5, pipeDamage: 2,
-    chordWarn: 40, chordWarnRage: 34, chordSpeed: 3.2, chordDamage: 1, books: 0, booksRage: 1, stun: 100, stunRage: 84, contactDamage: 1, coreCap: 20, specialEvery: 4 },
+  organ: { hp: 195, idle: 34, idleRage: 26, noteWarn: 26, notes: 6, notesRage: 8, noteSpeed: 2.0, noteDamage: 1, pipeWarn: 38, pipeWarnRage: 32, pipes: 4, pipesRage: 5, pipeDamage: 2,
+    chordWarn: 40, chordWarnRage: 34, chordSpeed: 3.2, chordDamage: 1, books: 0, booksRage: 1, stun: 120, stunRage: 100, contactDamage: 1, coreCap: 30, specialEvery: 3 },
   // ---- v0.3 boss: 大浴場の主 ユブネ BATHWATER SERPENT (grand bath) ----
-  serpent: { hp: 200, idle: 54, idleRage: 42, arcWarn: 42, arcs: 3, arcsRage: 4, arcDamage: 1, puddle: 80, puddleDamage: 1, sweepWarn: 44, sweepWarnRage: 36, sweepSpeed: 3.0, sweepDamage: 1,
+  serpent: { hp: 175, idle: 56, idleRage: 46, arcWarn: 42, arcs: 3, arcsRage: 4, arcDamage: 1, puddle: 80, puddleDamage: 1, sweepWarn: 44, sweepWarnRage: 36, sweepSpeed: 3.0, sweepDamage: 1,
     rainWarn: 40, rainWarnRage: 32, drops: 4, dropsRage: 6, dropDamage: 1, geyserWarn: 48, dizzy: 160, dizzyRage: 130, contactDamage: 1 },
   // ---- boss 4: 大時計の番人 グランドファーザー・チクタク GRANDFATHER TICKTOCK (clock tower) ----
+  // v0.3.2 (playtest: "too strong / unavoidable"): lower HP, longer + bigger stop windows, every attack passes tools/avoid.js
   // v0.3b: the final boss, hardest by a clear margin - 3 phases (rage at 50%, OVERDRIVE at 25%), hand barrages,
   //   pendulum + hands combo, MIDNIGHT (chasing hand barrage + gears), short + capped stop windows, special every 4th
-  clock: { hp: 300, spitMul: 1.0, idle: 34, idleRage: 24, idleOver: 16, handWarn: 34, handWarnRage: 30, handWarnOver: 26, hands: 5, handsRage: 6, handDamage: 2,
-    gears: 7, gearsRage: 9, gearSpeed: 3.4, gearDamage: 1, pendWarn: 34, pendWarnRage: 28, pendDamage: 2, chime: 100, chimeRage: 84, chimeOver: 70,
-    midWarn: 30, midStabs: 6, midStabsOver: 9, midGap: 16, contactDamage: 2, coreCap: 18, specialEvery: 4, phase3: 0.25 },
+  clock: { hp: 240, spitMul: 1.0, idle: 36, idleRage: 26, idleOver: 20, handWarn: 34, handWarnRage: 30, handWarnOver: 26, hands: 5, handsRage: 6, handDamage: 1,
+    gears: 7, gearsRage: 9, gearSpeed: 3.4, gearDamage: 1, pendWarn: 34, pendWarnRage: 28, pendDamage: 2, chime: 130, chimeRage: 115, chimeOver: 100,
+    midWarn: 30, midStabs: 6, midStabsOver: 9, midGap: 16, contactDamage: 2, coreCap: 26, specialEvery: 3, phase3: 0.25 },
 };
