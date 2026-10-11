@@ -85,11 +85,16 @@ function drawStoryBox() {
   g.save(); g.globalAlpha = a; g.fillStyle = 'rgba(10,8,22,0.88)'; g.fillRect(6, 22, VW - 12, 58); g.strokeStyle = Sp.col; g.lineWidth = 1; g.strokeRect(6.5, 22.5, VW - 13, 57);
   g.fillStyle = '#000000'; g.fillRect(10, 27, 50, 50); spr('chars', Sp.portrait, 11, 28); g.strokeStyle = '#5a4a7a'; g.strokeRect(10.5, 27.5, 49, 49); g.restore();
 }
+const STORY_TEXT_W = VW - 68 - 18;   // text starts at x=68; the box's inner edge is at VW-7 -> ~11px right margin
+// test hook: how a dialogue line lays out in the box at the current screen size
+function storyFit(text) { const s = hiS(); sctx.save(); sctx.font = '700 ' + fontPx(8.5) + 'px ' + JP_FONT; const lines = wrapText(text, STORY_TEXT_W * s, true);
+  const w = Math.max(...lines.map(l => sctx.measureText(l).width)); sctx.restore(); return { lines: lines.length, w: Math.round(w), limit: Math.round(STORY_TEXT_W * s), boxRight: Math.round((VW - 7) * s), x0: Math.round(68 * s), bad: lines.slice(1).filter(l => NO_LINE_START.includes(l[0]) || l.length < 3).length }; }
 function drawStoryText() {
   const B = STORY.box; if (!B) return;
   const Sp = SPEAKERS[B.who], a = Math.min(1, B.t / 14, (B.T - B.t) / 10), shown = Math.min(B.text.length, Math.floor((B.T - B.t) / 2) + 1);
   drawHiText(Sp.name, 68, 27, 8, Sp.col, '#0a0816', 'left', a);
   const s = hiS(), fs = fontPx(8.5); sctx.save(); sctx.globalAlpha = a; sctx.font = '700 ' + fs + 'px ' + JP_FONT;
-  const lines = wrapText(B.text.slice(0, shown), (VW - 82) * s); sctx.fillStyle = '#f4f0ff'; sctx.textAlign = 'left'; sctx.textBaseline = 'top';
-  lines.slice(0, 3).forEach((l, i) => sctx.fillText(l, 68 * s, (41 + i * 12) * s)); sctx.restore();
+  // v0.4.1: wrap the WHOLE line once (stable layout while it types out) to the box's inner width, then reveal it char by char
+  const lines = wrapText(B.text, STORY_TEXT_W * s, true); sctx.fillStyle = '#f4f0ff'; sctx.textAlign = 'left'; sctx.textBaseline = 'top';
+  let left = shown; lines.slice(0, 3).forEach((l, i) => { if (left > 0) sctx.fillText(l.slice(0, left), 68 * s, (41 + i * 12) * s); left -= l.length; }); sctx.restore();
 }

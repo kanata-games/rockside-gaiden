@@ -279,6 +279,6 @@ function tip(id, text, force) {
   tipBox.text = text; tipBox.t = 240; stats.tips.push(id);
 }
 function updateTips() {
-  if (banner.t > 0) banner.t--;
+  if (banner.t > 0 && !STORY.box && !STORY.pending) banner.t--;   // v0.4.1: the room banner waits until Vel / Chronoa finish speaking
   if (tipBox.t > 0) { tipBox.t--; if (tipBox.t === 0 && tipBox.queue.length) { tipBox.text = tipBox.queue.shift(); tipBox.t = 220; } }
 }

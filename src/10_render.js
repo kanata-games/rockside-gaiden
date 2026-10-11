@@ -471,7 +471,7 @@ function renderPlay() {
   if (P.dead) { const k = Math.min(1, P.deadT / 60); g.fillStyle = 'rgba(10,4,20,' + k * 0.6 + ')'; g.fillRect(0, 0, VW, VH); }
   blit();
   // hi-res overlays
-  if (banner.t > 0) { const a = Math.min(1, banner.t / 20, (170 - banner.t) / 15); drawHiText(banner.text, VW / 2, 52, 15, '#fff4e0', '#1a0e28', 'center', a); drawHiText(banner.en, VW / 2, 72, 7, '#c8b8ff', '#1a0e28', 'center', a); }
+  if (banner.t > 0 && !STORY.box) { const a = Math.min(1, banner.t / 20, (170 - banner.t) / 15); /* v0.4.1: held back while a portrait dialogue is up */ drawHiText(banner.text, VW / 2, 52, 15, '#fff4e0', '#1a0e28', 'center', a); drawHiText(banner.en, VW / 2, 72, 7, '#c8b8ff', '#1a0e28', 'center', a); }
   if (tipBox.t > 0 && !layout.portrait) { const a = Math.min(1, tipBox.t / 15, (240 - tipBox.t) / 10 + 0.2); drawDialogue('', '#8fe8ff', tipBox.text, a); }
   drawStoryText();
   if (talk.t > 0 && talk.text) drawBubble(pcx() - cam.x, P.y - cam.y - 6, talk.text, Math.min(1, talk.t / 15));
@@ -597,7 +597,7 @@ requestAnimationFrame(loop);
 window.GAIDEN = { CONFIG, P, cam, layout, stats, progress, ents, items, ebullets, playerShots, parts, ROOM_DEFS, CELL_ROOM,
   get state() { return state; }, get stateT() { return stateT; }, get room() { return room; }, get boss() { return boss; }, get frame() { return frame; }, get tipBox() { return tipBox; },
   get music() { return Music; }, nozzle, inCone, loadRoom, placePlayer, startNewGame, continueGame, enterGame, eraseSave, saveGame, loadSave, mapPercent, setState, snapCamera, buildRoomGrid, roomOpenings,
-  spawnItem, makeGhost, startTug, STORY, velAppear, startEnding, storySay, checkBossGates, floats, foes: () => ents.filter(e => FOE_SIZE[e.type]), hasAbil, openGate, gainAbility, AREAS, ROOM_BY_ID, TOTAL_CELLS, makeFoe, BOSS_DEFS, entrySafety, openWarpMenu, warpTo,
+  spawnItem, makeGhost, startTug, STORY, velAppear, startEnding, storySay, checkBossGates, storyFit, VEL_LINES, get banner() { return banner; }, floats, foes: () => ents.filter(e => FOE_SIZE[e.type]), hasAbil, openGate, gainAbility, AREAS, ROOM_BY_ID, TOTAL_CELLS, makeFoe, BOSS_DEFS, entrySafety, openWarpMenu, warpTo,
   get debugBossAtk() { return QS.get('bossatk'); }, _test: { keys, inp, touch } };
 </script>
 </body>

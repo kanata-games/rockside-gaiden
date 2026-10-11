@@ -68,11 +68,19 @@ function drawTextShadow(str, x, y, col, s, align) { drawText(str, x + s, y + s, 
 const JP_FONT = '"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP","Noto Sans CJK JP","Yu Gothic UI","Yu Gothic","Meiryo",sans-serif';
 function hiS() { return screen.width / VW; }
 const wrapCache = new Map();
-function wrapText(text, maxW) {
-  const key = sctx.font + '|' + maxW + '|' + text; let lines = wrapCache.get(key);
+const NO_LINE_START = '、。，．…」』）！？ーぁぃぅぇぉっゃゅょァィゥェォッャュョ';
+function wrapText(text, maxW, soft) {
+  const key = sctx.font + '|' + maxW + '|' + (soft ? 's|' : '') + text; let lines = wrapCache.get(key);
   if (lines) return lines;
   lines = []; let cur = '';
-  for (const ch of text) { if (ch === '\n') { lines.push(cur); cur = ''; continue; } if (cur && sctx.measureText(cur + ch).width > maxW) { lines.push(cur); cur = ch; } else cur += ch; }
+  for (const ch of text) { if (ch === '\n') { lines.push(cur); cur = ''; continue; }
+    if (cur && sctx.measureText(cur + ch).width > maxW) {
+      // kinsoku: never start a line with closing punctuation / a split ellipsis - carry the last char(s) down with it
+      let carry = ''; if (NO_LINE_START.includes(ch) && cur.length > 2) { carry = cur.slice(-1); if (carry === '…' && cur.slice(-2, -1) === '…') carry = '……'; }
+      if (soft) { // dialogue: prefer breaking right after the last 、/。 in the second half of the line (no orphaned syllables)
+        let k = -1; for (let i = cur.length - 1; i >= cur.length * 0.5; i--) if ('、。」！？'.includes(cur[i])) { k = i; break; }
+        if (k >= 0 && k < cur.length - 1) carry = cur.slice(k + 1); }
+      lines.push(cur.slice(0, cur.length - carry.length)); cur = carry + ch; } else cur += ch; }
   if (cur) lines.push(cur);
   wrapCache.set(key, lines); return lines;
 }
