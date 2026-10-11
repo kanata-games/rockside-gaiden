@@ -22,11 +22,11 @@ const CONFIG = {
   // ---- vacuum (Luigi's Mansion style) ----
   vac: {
     nozzleX: 40, nozzleY: 26,         // nozzle mouth relative to the feet centre (suck pose, facing right)
-    range: 104, spreadNear: 8, spreadFar: 34,   // cone: length, half height at the nozzle / at full range
+    range: 108, spreadNear: 12, spreadFar: 38,   // cone: length, half height at the nozzle / at full range
     itemPull: 0.55,                    // accel on loose items in the cone
     catchFrames: 26, catchFramesStunned: 4,     // frames a ghost must stay in the cone before it is caught
-    tugBaseDrain: 0.28,                // ghost HP lost per frame while caught
-    tugPullDrain: 1.15,                // ... while holding the direction AWAY from the ghost
+    tugBaseDrain: 0.18,                // ghost HP lost per frame while caught
+    tugPullDrain: 0.72,                // ... while holding the direction AWAY from the ghost
     tugYankBonus: 1.6,                 // multiplier while resisting a yank
     tugDrag: 0.55,                     // how hard a caught ghost drags Kanata toward it
     tugPullSpeed: 0.55,                // Kanata's speed while pulling away
@@ -48,9 +48,9 @@ const CONFIG = {
     candleWarn: 46, candleWarnRage: 36, candles: 3, candlesRage: 4, candleFire: 110, candleDamage: 1, fireDamage: 1,
     wispCount: 2, wispCountRage: 3, wispLife: 420, wispSpeed: 0.55, wispHp: 34, wispDamage: 1,
     shardWarn: 38, shardWarnRage: 30, shards: 5, shardsRage: 7, shardDamage: 1,
-    crashTrack: 64, crashTrackRage: 52, crashLock: 16, crashDamage: 3, waveDamage: 1, waveSpeed: 2.4,
+    crashTrack: 64, crashTrackRage: 52, crashLock: 30, crashDamage: 2, crashFollow: 1.2, waveDamage: 1, waveSpeed: 2.4,
     stuck: 170, stuckRage: 140, coreHp: 70,
-    coreBaseDrain: 0.08, corePullDrain: 0.26,  // boss HP per frame while the core is in a tug-of-war
+    coreCap: 25, coreBaseDrain: 0.06, corePullDrain: 0.18,  // boss HP per frame while the core is in a tug-of-war
     spitDamage: 4, fireballDamage: 7, contactDamage: 2,
   },
 };

@@ -80,11 +80,11 @@ const CONFIG = {
   // ---- vacuum (Luigi's Mansion style) ----
   vac: {
     nozzleX: 40, nozzleY: 26,         // nozzle mouth relative to the feet centre (suck pose, facing right)
-    range: 104, spreadNear: 8, spreadFar: 34,   // cone: length, half height at the nozzle / at full range
+    range: 108, spreadNear: 12, spreadFar: 38,   // cone: length, half height at the nozzle / at full range
     itemPull: 0.55,                    // accel on loose items in the cone
     catchFrames: 26, catchFramesStunned: 4,     // frames a ghost must stay in the cone before it is caught
-    tugBaseDrain: 0.28,                // ghost HP lost per frame while caught
-    tugPullDrain: 1.15,                // ... while holding the direction AWAY from the ghost
+    tugBaseDrain: 0.18,                // ghost HP lost per frame while caught
+    tugPullDrain: 0.72,                // ... while holding the direction AWAY from the ghost
     tugYankBonus: 1.6,                 // multiplier while resisting a yank
     tugDrag: 0.55,                     // how hard a caught ghost drags Kanata toward it
     tugPullSpeed: 0.55,                // Kanata's speed while pulling away
@@ -106,15 +106,15 @@ const CONFIG = {
     candleWarn: 46, candleWarnRage: 36, candles: 3, candlesRage: 4, candleFire: 110, candleDamage: 1, fireDamage: 1,
     wispCount: 2, wispCountRage: 3, wispLife: 420, wispSpeed: 0.55, wispHp: 34, wispDamage: 1,
     shardWarn: 38, shardWarnRage: 30, shards: 5, shardsRage: 7, shardDamage: 1,
-    crashTrack: 64, crashTrackRage: 52, crashLock: 16, crashDamage: 3, waveDamage: 1, waveSpeed: 2.4,
+    crashTrack: 64, crashTrackRage: 52, crashLock: 30, crashDamage: 2, crashFollow: 1.2, waveDamage: 1, waveSpeed: 2.4,
     stuck: 170, stuckRage: 140, coreHp: 70,
-    coreBaseDrain: 0.08, corePullDrain: 0.26,  // boss HP per frame while the core is in a tug-of-war
+    coreCap: 25, coreBaseDrain: 0.06, corePullDrain: 0.18,  // boss HP per frame while the core is in a tug-of-war
     spitDamage: 4, fireballDamage: 7, contactDamage: 2,
   },
 };
 
 // ---- sprite metadata embedded at build time (tools/build.py) ----
-const EMBEDDED_META = {"bg":{"wall_foyer":{"x":0,"y":0,"w":32,"h":32},"wain_foyer":{"x":33,"y":0,"w":32,"h":24},"pillar_foyer":{"x":66,"y":0,"w":16,"h":32},"mold_foyer":{"x":83,"y":0,"w":32,"h":10},"wall_gallery":{"x":116,"y":0,"w":32,"h":32},"wain_gallery":{"x":149,"y":0,"w":32,"h":24},"pillar_gallery":{"x":182,"y":0,"w":16,"h":32},"mold_gallery":{"x":199,"y":0,"w":32,"h":10},"wall_library":{"x":232,"y":0,"w":32,"h":32},"wain_library":{"x":265,"y":0,"w":32,"h":24},"pillar_library":{"x":298,"y":0,"w":16,"h":32},"mold_library":{"x":315,"y":0,"w":32,"h":10},"wall_dining":{"x":348,"y":0,"w":32,"h":32},"wain_dining":{"x":381,"y":0,"w":32,"h":24},"pillar_dining":{"x":414,"y":0,"w":16,"h":32},"mold_dining":{"x":431,"y":0,"w":32,"h":10},"wall_cellar":{"x":464,"y":0,"w":32,"h":32},"wain_cellar":{"x":0,"y":33,"w":32,"h":24},"pillar_cellar":{"x":33,"y":33,"w":16,"h":32},"mold_cellar":{"x":50,"y":33,"w":32,"h":10},"wall_vault":{"x":83,"y":33,"w":32,"h":32},"wain_vault":{"x":116,"y":33,"w":32,"h":24},"pillar_vault":{"x":149,"y":33,"w":16,"h":32},"mold_vault":{"x":166,"y":33,"w":32,"h":10},"wall_ballroom":{"x":199,"y":33,"w":32,"h":32},"wain_ballroom":{"x":232,"y":33,"w":32,"h":24},"pillar_ballroom":{"x":265,"y":33,"w":16,"h":32},"mold_ballroom":{"x":282,"y":33,"w":32,"h":10}},"boss":{"chandelier":{"x":0,"y":0,"w":128,"h":84,"ax":64,"ay":0},"chandelier_cracked":{"x":129,"y":0,"w":128,"h":84,"ax":64,"ay":0},"core_normal":{"x":258,"y":0,"w":30,"h":30},"core_angry":{"x":289,"y":0,"w":30,"h":30},"core_tug":{"x":320,"y":0,"w":30,"h":30},"core_dizzy":{"x":351,"y":0,"w":30,"h":30},"chain":{"x":382,"y":0,"w":6,"h":10}},"enemies":{"puff0":{"x":0,"y":0,"w":26,"h":26},"puff1":{"x":27,"y":0,"w":26,"h":26},"puff2":{"x":54,"y":0,"w":26,"h":26},"puff3":{"x":81,"y":0,"w":26,"h":26},"puff_tug":{"x":108,"y":0,"w":26,"h":26},"puff_angry":{"x":135,"y":0,"w":26,"h":26},"dish0":{"x":162,"y":0,"w":30,"h":30},"dish1":{"x":193,"y":0,"w":30,"h":30},"dish2":{"x":224,"y":0,"w":30,"h":30},"dish_throw":{"x":255,"y":0,"w":30,"h":30},"dish_tug":{"x":286,"y":0,"w":30,"h":30},"armor0":{"x":317,"y":0,"w":28,"h":52},"armor1":{"x":346,"y":0,"w":28,"h":52},"armor_shell":{"x":375,"y":0,"w":28,"h":52},"helmet":{"x":404,"y":0,"w":12,"h":12},"firewisp0":{"x":417,"y":0,"w":16,"h":18},"firewisp1":{"x":434,"y":0,"w":16,"h":18},"firewisp2":{"x":451,"y":0,"w":16,"h":18}},"items":{"coin0":{"x":0,"y":0,"w":10,"h":10},"coin1":{"x":11,"y":0,"w":10,"h":10},"coin2":{"x":22,"y":0,"w":10,"h":10},"coin3":{"x":33,"y":0,"w":10,"h":10},"heart":{"x":44,"y":0,"w":11,"h":10},"heartbig":{"x":56,"y":0,"w":18,"h":16},"plate":{"x":75,"y":0,"w":14,"h":6},"book":{"x":90,"y":0,"w":12,"h":10},"candle":{"x":103,"y":0,"w":6,"h":12},"dustball":{"x":110,"y":0,"w":10,"h":8},"crystal":{"x":121,"y":0,"w":12,"h":12},"spark":{"x":134,"y":0,"w":10,"h":10},"key":{"x":145,"y":0,"w":14,"h":10},"fireball":{"x":160,"y":0,"w":12,"h":12}},"kanata":{"frameWidth":106,"frameHeight":70,"anchorX":46,"anchorY":69,"targetHeight":68,"frames":[{"i":0,"sheet":"a","pose":"idle"},{"i":1,"sheet":"a","pose":"blink"},{"i":2,"sheet":"a","pose":"move1"},{"i":3,"sheet":"a","pose":"move2"},{"i":4,"sheet":"a","pose":"suck"},{"i":5,"sheet":"a","pose":"spit"},{"i":6,"sheet":"a","pose":"hurt"},{"i":7,"sheet":"a","pose":"down"},{"i":8,"sheet":"b","pose":"idle"},{"i":9,"sheet":"b","pose":"blink"},{"i":10,"sheet":"b","pose":"move1"},{"i":11,"sheet":"b","pose":"move2"},{"i":12,"sheet":"b","pose":"suck"},{"i":13,"sheet":"b","pose":"spit"},{"i":14,"sheet":"b","pose":"hurt"},{"i":15,"sheet":"b","pose":"down"}],"poses":{"idle":[0,8],"blink":[1,9],"move1":[2,10],"move2":[3,11],"suck":[4,12],"spit":[5,13],"hurt":[6,14],"down":[7,15]}},"props":{"window":{"x":0,"y":0,"w":40,"h":76},"window_wide":{"x":41,"y":0,"w":56,"h":84},"portrait_lord":{"x":98,"y":0,"w":28,"h":36},"portrait_lady":{"x":127,"y":0,"w":28,"h":36},"portrait_land":{"x":156,"y":0,"w":44,"h":32},"portrait_big":{"x":201,"y":0,"w":44,"h":56},"sconce":{"x":246,"y":0,"w":12,"h":22},"flame0":{"x":259,"y":0,"w":6,"h":8},"flame1":{"x":266,"y":0,"w":6,"h":8},"flame2":{"x":273,"y":0,"w":6,"h":8},"flame3":{"x":280,"y":0,"w":6,"h":8},"bflame0":{"x":287,"y":0,"w":8,"h":10},"bflame1":{"x":296,"y":0,"w":8,"h":10},"bflame2":{"x":305,"y":0,"w":8,"h":10},"bflame3":{"x":314,"y":0,"w":8,"h":10},"curtain":{"x":323,"y":0,"w":32,"h":72},"curtain_rod":{"x":356,"y":0,"w":32,"h":4},"dust0":{"x":389,"y":0,"w":20,"h":10},"dust1":{"x":410,"y":0,"w":20,"h":10},"dust2":{"x":431,"y":0,"w":20,"h":10},"cobweb":{"x":452,"y":0,"w":20,"h":20},"vase":{"x":473,"y":0,"w":14,"h":22},"table":{"x":0,"y":85,"w":80,"h":30},"chair":{"x":81,"y":85,"w":16,"h":30},"candelabra":{"x":98,"y":85,"w":24,"h":18},"bookshelf":{"x":123,"y":85,"w":40,"h":72},"clock":{"x":164,"y":85,"w":22,"h":64},"barrel":{"x":187,"y":85,"w":26,"h":26},"save":{"x":214,"y":85,"w":28,"h":40},"doorframe":{"x":243,"y":85,"w":20,"h":64},"door":{"x":264,"y":85,"w":10,"h":48},"chandelier_deco":{"x":275,"y":85,"w":48,"h":30},"rail":{"x":324,"y":85,"w":16,"h":24},"rug":{"x":341,"y":85,"w":96,"h":4},"winerack":{"x":438,"y":85,"w":40,"h":40},"pedestal":{"x":479,"y":85,"w":28,"h":34}},"tiles":{"brick0":{"x":0,"y":0,"w":16,"h":16},"brick1":{"x":17,"y":0,"w":16,"h":16},"top0":{"x":34,"y":0,"w":16,"h":16},"top1":{"x":51,"y":0,"w":16,"h":16},"secret":{"x":68,"y":0,"w":16,"h":16},"cbrick0":{"x":85,"y":0,"w":16,"h":16},"cbrick1":{"x":102,"y":0,"w":16,"h":16},"ctop0":{"x":119,"y":0,"w":16,"h":16},"ctop1":{"x":136,"y":0,"w":16,"h":16},"platL":{"x":153,"y":0,"w":16,"h":16},"platM":{"x":170,"y":0,"w":16,"h":16},"platR":{"x":187,"y":0,"w":16,"h":16},"shelf":{"x":204,"y":0,"w":16,"h":16}}};
+const EMBEDDED_META = {"bg":{"wall_foyer":{"x":0,"y":0,"w":32,"h":32},"wain_foyer":{"x":33,"y":0,"w":32,"h":24},"pillar_foyer":{"x":66,"y":0,"w":16,"h":32},"mold_foyer":{"x":83,"y":0,"w":32,"h":10},"wall_gallery":{"x":116,"y":0,"w":32,"h":32},"wain_gallery":{"x":149,"y":0,"w":32,"h":24},"pillar_gallery":{"x":182,"y":0,"w":16,"h":32},"mold_gallery":{"x":199,"y":0,"w":32,"h":10},"wall_library":{"x":232,"y":0,"w":32,"h":32},"wain_library":{"x":265,"y":0,"w":32,"h":24},"pillar_library":{"x":298,"y":0,"w":16,"h":32},"mold_library":{"x":315,"y":0,"w":32,"h":10},"wall_dining":{"x":348,"y":0,"w":32,"h":32},"wain_dining":{"x":381,"y":0,"w":32,"h":24},"pillar_dining":{"x":414,"y":0,"w":16,"h":32},"mold_dining":{"x":431,"y":0,"w":32,"h":10},"wall_cellar":{"x":464,"y":0,"w":32,"h":32},"wain_cellar":{"x":0,"y":33,"w":32,"h":24},"pillar_cellar":{"x":33,"y":33,"w":16,"h":32},"mold_cellar":{"x":50,"y":33,"w":32,"h":10},"wall_vault":{"x":83,"y":33,"w":32,"h":32},"wain_vault":{"x":116,"y":33,"w":32,"h":24},"pillar_vault":{"x":149,"y":33,"w":16,"h":32},"mold_vault":{"x":166,"y":33,"w":32,"h":10},"wall_ballroom":{"x":199,"y":33,"w":32,"h":32},"wain_ballroom":{"x":232,"y":33,"w":32,"h":24},"pillar_ballroom":{"x":265,"y":33,"w":16,"h":32},"mold_ballroom":{"x":282,"y":33,"w":32,"h":10}},"boss":{"chandelier":{"x":0,"y":0,"w":128,"h":84,"ax":64,"ay":0},"chandelier_cracked":{"x":129,"y":0,"w":128,"h":84,"ax":64,"ay":0},"core_normal":{"x":258,"y":0,"w":30,"h":30},"core_angry":{"x":289,"y":0,"w":30,"h":30},"core_tug":{"x":320,"y":0,"w":30,"h":30},"core_dizzy":{"x":351,"y":0,"w":30,"h":30},"chain":{"x":382,"y":0,"w":6,"h":10}},"enemies":{"puff0":{"x":0,"y":0,"w":32,"h":32},"puff1":{"x":33,"y":0,"w":32,"h":32},"puff2":{"x":66,"y":0,"w":32,"h":32},"puff3":{"x":99,"y":0,"w":32,"h":32},"puff_tug":{"x":132,"y":0,"w":32,"h":32},"puff_angry":{"x":165,"y":0,"w":32,"h":32},"dish0":{"x":198,"y":0,"w":36,"h":36},"dish1":{"x":235,"y":0,"w":36,"h":36},"dish2":{"x":272,"y":0,"w":36,"h":36},"dish_throw":{"x":309,"y":0,"w":36,"h":36},"dish_tug":{"x":346,"y":0,"w":36,"h":36},"armor0":{"x":383,"y":0,"w":28,"h":52},"armor1":{"x":412,"y":0,"w":28,"h":52},"armor_shell":{"x":441,"y":0,"w":28,"h":52},"helmet":{"x":470,"y":0,"w":12,"h":12},"firewisp0":{"x":483,"y":0,"w":16,"h":18},"firewisp1":{"x":0,"y":53,"w":16,"h":18},"firewisp2":{"x":17,"y":53,"w":16,"h":18}},"items":{"coin0":{"x":0,"y":0,"w":10,"h":10},"coin1":{"x":11,"y":0,"w":10,"h":10},"coin2":{"x":22,"y":0,"w":10,"h":10},"coin3":{"x":33,"y":0,"w":10,"h":10},"heart":{"x":44,"y":0,"w":11,"h":10},"heartbig":{"x":56,"y":0,"w":18,"h":16},"plate":{"x":75,"y":0,"w":14,"h":6},"book":{"x":90,"y":0,"w":12,"h":10},"candle":{"x":103,"y":0,"w":6,"h":12},"dustball":{"x":110,"y":0,"w":10,"h":8},"crystal":{"x":121,"y":0,"w":12,"h":12},"spark":{"x":134,"y":0,"w":10,"h":10},"key":{"x":145,"y":0,"w":14,"h":10},"fireball":{"x":160,"y":0,"w":12,"h":12}},"kanata":{"frameWidth":106,"frameHeight":70,"anchorX":46,"anchorY":69,"targetHeight":68,"frames":[{"i":0,"sheet":"a","pose":"idle"},{"i":1,"sheet":"a","pose":"blink"},{"i":2,"sheet":"a","pose":"move1"},{"i":3,"sheet":"a","pose":"move2"},{"i":4,"sheet":"a","pose":"suck"},{"i":5,"sheet":"a","pose":"spit"},{"i":6,"sheet":"a","pose":"hurt"},{"i":7,"sheet":"a","pose":"down"},{"i":8,"sheet":"b","pose":"idle"},{"i":9,"sheet":"b","pose":"blink"},{"i":10,"sheet":"b","pose":"move1"},{"i":11,"sheet":"b","pose":"move2"},{"i":12,"sheet":"b","pose":"suck"},{"i":13,"sheet":"b","pose":"spit"},{"i":14,"sheet":"b","pose":"hurt"},{"i":15,"sheet":"b","pose":"down"}],"poses":{"idle":[0,8],"blink":[1,9],"move1":[2,10],"move2":[3,11],"suck":[4,12],"spit":[5,13],"hurt":[6,14],"down":[7,15]}},"props":{"window":{"x":0,"y":0,"w":40,"h":76},"window_wide":{"x":41,"y":0,"w":56,"h":84},"portrait_lord":{"x":98,"y":0,"w":28,"h":36},"portrait_lady":{"x":127,"y":0,"w":28,"h":36},"portrait_land":{"x":156,"y":0,"w":44,"h":32},"portrait_big":{"x":201,"y":0,"w":44,"h":56},"sconce":{"x":246,"y":0,"w":12,"h":22},"flame0":{"x":259,"y":0,"w":6,"h":8},"flame1":{"x":266,"y":0,"w":6,"h":8},"flame2":{"x":273,"y":0,"w":6,"h":8},"flame3":{"x":280,"y":0,"w":6,"h":8},"bflame0":{"x":287,"y":0,"w":8,"h":10},"bflame1":{"x":296,"y":0,"w":8,"h":10},"bflame2":{"x":305,"y":0,"w":8,"h":10},"bflame3":{"x":314,"y":0,"w":8,"h":10},"curtain":{"x":323,"y":0,"w":32,"h":72},"curtain_rod":{"x":356,"y":0,"w":32,"h":4},"dust0":{"x":389,"y":0,"w":20,"h":10},"dust1":{"x":410,"y":0,"w":20,"h":10},"dust2":{"x":431,"y":0,"w":20,"h":10},"cobweb":{"x":452,"y":0,"w":20,"h":20},"vase":{"x":473,"y":0,"w":14,"h":22},"table":{"x":0,"y":85,"w":80,"h":30},"chair":{"x":81,"y":85,"w":16,"h":30},"candelabra":{"x":98,"y":85,"w":24,"h":18},"bookshelf":{"x":123,"y":85,"w":40,"h":72},"clock":{"x":164,"y":85,"w":22,"h":64},"barrel":{"x":187,"y":85,"w":26,"h":26},"save":{"x":214,"y":85,"w":28,"h":40},"doorframe":{"x":243,"y":85,"w":20,"h":64},"door":{"x":264,"y":85,"w":10,"h":48},"chandelier_deco":{"x":275,"y":85,"w":48,"h":30},"rail":{"x":324,"y":85,"w":16,"h":24},"rug":{"x":341,"y":85,"w":96,"h":4},"winerack":{"x":438,"y":85,"w":40,"h":40},"pedestal":{"x":479,"y":85,"w":28,"h":34}},"tiles":{"brick0":{"x":0,"y":0,"w":16,"h":16},"brick1":{"x":17,"y":0,"w":16,"h":16},"top0":{"x":34,"y":0,"w":16,"h":16},"top1":{"x":51,"y":0,"w":16,"h":16},"secret":{"x":68,"y":0,"w":16,"h":16},"cbrick0":{"x":85,"y":0,"w":16,"h":16},"cbrick1":{"x":102,"y":0,"w":16,"h":16},"ctop0":{"x":119,"y":0,"w":16,"h":16},"ctop1":{"x":136,"y":0,"w":16,"h":16},"platL":{"x":153,"y":0,"w":16,"h":16},"platM":{"x":170,"y":0,"w":16,"h":16},"platR":{"x":187,"y":0,"w":16,"h":16},"shelf":{"x":204,"y":0,"w":16,"h":16}}};
 
 // =====================================================================
 //  Core: canvas, pixel font, hi-res Japanese text, assets, sound effects, input, layout
@@ -208,7 +208,7 @@ function drawHiText(text, gx, gy, gsize, color, outline, align, alpha) {
 }
 // dialogue box (speaker name + wrapped text), top y in game px (default: along the bottom)
 function drawDialogue(name, nameColor, text, alpha, topY) {
-  const s = hiS(), fs = fontPx(9), nfs = Math.round(fs * 0.85), pad = Math.round(fs * 0.7);
+  const s = hiS(), fs = fontPx(8), nfs = Math.round(fs * 0.85), pad = Math.round(fs * 0.7);
   const bx = Math.round(10 * s), bw = Math.round((VW - 20) * s);
   sctx.save(); sctx.globalAlpha = alpha === undefined ? 1 : alpha;
   sctx.font = '700 ' + fs + 'px ' + JP_FONT;
@@ -1027,7 +1027,10 @@ function doSpit() {
   P.spitPose = 16;
   if (P.tank.length) {
     const kind = P.tank.shift(), inf = SHOT_INFO[kind] || SHOT_INFO.book;
-    playerShots.push({ kind, x: n.x - inf.w / 2, y: n.y - 10 - inf.h / 2, w: inf.w, h: inf.h, vx: P.face * S.speed, vy: -0.6, dmg: inf.dmg, life: 120, spin: 0 });
+    const ox = n.x, oy = n.y - 12, tg = spitTarget(ox, oy);
+    let vx = P.face * S.speed, vy = -0.6, grav = 0.07;
+    if (tg) { const dx = tg.x - ox, dy = tg.y - oy, d = Math.hypot(dx, dy) || 1; vx = dx / d * S.speed; vy = dy / d * S.speed; grav = 0; }
+    playerShots.push({ kind, x: ox - inf.w / 2, y: oy - inf.h / 2, w: inf.w, h: inf.h, vx, vy, grav, dmg: inf.dmg, life: 120, spin: 0, aimed: !!tg });
     P.spitCD = S.cooldown; stats.spits++; sfx('spit'); P.vx -= P.face * 0.6;
   } else {
     P.spitCD = S.puffCooldown; stats.puffs++; sfx('puff');
@@ -1039,10 +1042,28 @@ function doSpit() {
     tip('puff', 'タンクが空のときの SPIT は空気砲。ゴーストを少しのあいだ目を回させる');
   }
 }
+// SPIT auto-aim: nearest target in front within ~70 degrees of horizontal (mobile friendly; the chandelier hangs high)
+function spitTarget(ox, oy) {
+  const cand = [];
+  for (const e of ents) {
+    if (e.dead || !e.hitBy) continue;
+    if (e.ghost && (e.state === 'swallow' || e.state === 'caught')) continue;
+    if (e.type === 'vase' && e.empty) continue;
+    cand.push({ x: e.x, y: e.ghost ? e.y : e.y - e.h / 2 });
+  }
+  if (boss && boss.hitTest && ['idle', 'candles', 'wisps', 'shards', 'crash', 'stuck', 'rise'].includes(boss.state)) cand.push({ x: boss.x, y: boss.y + 50, boss: 1 });
+  let best = null, bd = 260;
+  for (const c of cand) {
+    const dx = (c.x - ox) * P.face, dy = c.y - oy; if (dx < 6) continue;
+    if (Math.abs(Math.atan2(dy, dx)) > 1.25) continue;
+    const d = Math.hypot(dx, dy); if (d < bd) { bd = d; best = c; }
+  }
+  return best;
+}
 function updateShots() {
   for (const s of playerShots) {
     if (s.dead) continue;
-    s.x += s.vx; s.y += s.vy; s.vy += 0.07; s.spin++; s.life--;
+    s.x += s.vx; s.y += s.vy; s.vy += s.grav; s.spin++; s.life--;
     if (s.kind === 'fireball' && frame % 2 === 0) parts.push({ x: s.x + s.w / 2, y: s.y + s.h / 2, vx: rnd(-0.4, 0.4), vy: rnd(-0.6, 0), life: 14, col: '#ffb040', size: 2, glow: 1 });
     if (s.life <= 0 || s.x < -20 || s.x > room.W + 20 || boxHitsSolid(s.x + 2, s.y + 2, s.w - 4, s.h - 4)) { shatter(s); continue; }
     for (const e of ents) {
@@ -1121,7 +1142,7 @@ function spawnRoomEntities() {
 function makeGhost(kind, x, y, extra) {
   const C = CONFIG[kind === 'armorghost' ? 'puff' : kind] || CONFIG.puff;
   const hp = kind === 'armorghost' ? CONFIG.armor.ghostHp : C.hp;
-  return Object.assign({ type: kind, ghost: true, x, y, w: kind === 'dish' ? 24 : 20, h: kind === 'dish' ? 24 : 20, hp, maxHp: hp, state: 'float', t: 0, catchT: 0, stunT: 0,
+  return Object.assign({ type: kind, ghost: true, x, y, w: kind === 'dish' ? 28 : 24, h: kind === 'dish' ? 28 : 24, hp, maxHp: hp, state: 'float', t: 0, catchT: 0, stunT: 0,
     vx: 0, vy: 0, homeX: x, homeY: y, seed: Math.random() * 10, dashCD: 60 + Math.random() * 80, throwCD: 60 + Math.random() * 60, inCone: 0, flash: 0,
     hitBy(s) { if (this.state === 'swallow') return false; this.stunT = CONFIG.spit.stunFrames; this.hp = Math.max(8, this.hp - CONFIG.spit.ghostDamage * s.dmg); this.flash = 8; sfx('hit');
       if (this.state === 'caught') return true; this.state = 'float'; tip('stun', '目を回したゴーストはすぐにつかまえられる！'); return true; } }, extra || {});
@@ -1132,7 +1153,7 @@ function ghostTouchDamage(e, dmg) {
 }
 function updateGhost(e) {
   e.t++; if (e.flash > 0) e.flash--; if (e.inCone > 0) e.inCone--; else if (e.catchT > 0 && e.state !== 'caught') e.catchT = Math.max(0, e.catchT - 2);
-  const px = pcx(), py = P.y + 14, dx = px - e.x, dy = py - e.y, dist = Math.hypot(dx, dy);
+  const px = pcx(), py = P.y + 24, dx = px - e.x, dy = py - e.y, dist = Math.hypot(dx, dy);
   const C = e.type === 'dish' ? CONFIG.dish : CONFIG.puff, fast = e.type === 'armorghost' ? 1.45 : 1;
   if (e.state === 'swallow') {
     const n = nozzle(), k = Math.min(1, e.t / 18); e.x = e.sx + (n.x - e.sx) * k * k; e.y = e.sy + (n.y - e.sy) * k * k;
@@ -1143,6 +1164,10 @@ function updateGhost(e) {
   }
   if (e.state === 'caught') return;              // driven by updateTug
   if (e.stunT > 0) { e.stunT--; e.vx *= 0.85; e.vy *= 0.85; e.x += e.vx; e.y += e.vy; return; }
+  if (e.inCone > 0 && P.vacOn && e.type !== 'firewisp') { // held in the vacuum wind: slowed and drawn toward the nozzle
+    const n = nozzle(); if (e.state === 'warn' || e.state === 'dash') { e.state = 'float'; e.dashCD = 90; }
+    e.vx *= 0.8; e.vy *= 0.8; e.x += (n.x - e.x) * 0.006 - Math.sign(n.x - e.x) * 0.25 + Math.sin(e.t * 0.3) * 0.4; e.y += (n.y - e.y) * 0.02; clampGhost(e); return;
+  }
   if (e.state === 'flee') { e.x -= Math.sign(dx) * 1.2; e.y += Math.sin(e.t * 0.1) * 0.6 - 0.2; if (e.t > 60) { e.state = 'float'; e.t = 0; } clampGhost(e); return; }
   if (e.type === 'firewisp') updateFireWisp(e);
   else if (e.type === 'dish') updateDish(e, dx, dy, dist);
@@ -1371,7 +1396,7 @@ function updateBoss() {
       break; }
     case 'crash': {
       const tr = bossP('crashTrack');
-      if (b.t < tr) { b.shadowX += clamp(pcx() - b.shadowX, -2.4, 2.4); trackTo(b.shadowX, 3); if (b.t % 16 === 0) sfx('warn'); }
+      if (b.t < tr) { b.shadowX += clamp(pcx() - b.shadowX, -B.crashFollow, B.crashFollow); trackTo(b.shadowX, 3); if (b.t % 16 === 0) sfx('warn'); }
       else if (b.t < tr + B.crashLock) { trackTo(b.shadowX, 3); }
       else { // fall
         b.vy = (b.vy || 0) + 0.6; b.y += b.vy;
@@ -1379,7 +1404,8 @@ function updateBoss() {
           for (const d of [-1, 1]) ebullets.push({ kind: 'wave', x: b.x + d * 50 - 8, y: FLOOR_Y - 14, w: 16, h: 14, vx: d * B.waveSpeed, vy: 0, dmg: B.waveDamage, life: 200 });
           for (let i = 0; i < 20; i++) parts.push({ x: b.x + rnd(-56, 56), y: FLOOR_Y - 4, vx: rnd(-2, 2), vy: rnd(-3, -0.5), life: 30, col: i % 2 ? '#c8ecff' : '#c9a24a', size: 2, grav: 1 });
           b.core = { ghost: true, boss: true, x: b.x, y: b.y + 42, hp: b.hp, maxHp: b.maxHp, state: 'out', t: 0, catchT: 0, seed: 3, inCone: 0,
-            onDrain() { boss.hp = this.hp; if (boss.hp <= boss.maxHp / 2 && !boss.rage) boss.damage(0); },
+            onDrain(d) { this.drained = (this.drained || 0) + d; boss.hp = this.hp;
+              if (this.drained >= B.coreCap && boss.hp > 0 && P.tug === this) { endTug(false); this.state = 'flee'; boss.t = Math.max(boss.t, bossP('stuck') - 20); tip('coreBreak', 'コアがふりほどいた！ もう一度落とさせよう', true); } if (boss.hp <= boss.maxHp / 2 && !boss.rage) boss.damage(0); },
             onCaptured() { boss.die(); },
             clampTug() { const dx = this.x - boss.x, dy = this.y - (boss.y + 30); const d = Math.hypot(dx, dy); if (d > 120) { this.x = boss.x + dx / d * 120; this.y = boss.y + 30 + dy / d * 120; } } };
           tip('core', '中のゴーストが出てきた！ 今だ、VACで吸い込め！', true);
@@ -1390,7 +1416,7 @@ function updateBoss() {
     case 'stuck': {
       const c = b.core;
       if (c && c.state !== 'caught' && c.state !== 'swallow') { // core bobs out of the globe, dizzy
-        const k = Math.min(1, b.t / 20); c.x = b.x + Math.sin(b.t * 0.05) * 22; c.y = b.y + 42 - k * 46 + Math.sin(b.t * 0.11) * 4;
+        const k = Math.min(1, b.t / 20); c.x = b.x + Math.sin(b.t * 0.05) * 22; c.y = b.y + 42 + k * 14 + Math.sin(b.t * 0.11) * 4; // drops out under the globe, at nozzle height
         if (c.inCone > 0) c.inCone--; else c.catchT = Math.max(0, c.catchT - 1);
       }
       if (b.t >= bossP('stuck') && !(c && c.state === 'swallow')) { if (P.tug === c) { endTug(false); tip('coreEsc', 'コアが逃げた！ また落ちてくるのを待とう', true); } b.core = null; b.state = 'rise'; b.t = 0; }
@@ -1756,6 +1782,7 @@ function startClear() { setState('clear'); clearT = 0; saveGame(room.id); say(''
 // ---------------------------------------------------------------------
 function update() {
   stats.updates++; frame++; stateT++;
+  if (window.__bot) { try { window.__bot(); } catch (e) { console.error('bot', e); } }
   if (state === 'loading') { if (assetsReady()) { setState('title'); if (QS.get('room')) debugStart(); } }
   else if (state === 'title') updateTitle();
   else if (state === 'play') updatePlay();

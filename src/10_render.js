@@ -35,6 +35,7 @@ function startClear() { setState('clear'); clearT = 0; saveGame(room.id); say(''
 // ---------------------------------------------------------------------
 function update() {
   stats.updates++; frame++; stateT++;
+  if (window.__bot) { try { window.__bot(); } catch (e) { console.error('bot', e); } }
   if (state === 'loading') { if (assetsReady()) { setState('title'); if (QS.get('room')) debugStart(); } }
   else if (state === 'title') updateTitle();
   else if (state === 'play') updatePlay();

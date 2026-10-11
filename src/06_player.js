@@ -198,7 +198,10 @@ function doSpit() {
   P.spitPose = 16;
   if (P.tank.length) {
     const kind = P.tank.shift(), inf = SHOT_INFO[kind] || SHOT_INFO.book;
-    playerShots.push({ kind, x: n.x - inf.w / 2, y: n.y - 10 - inf.h / 2, w: inf.w, h: inf.h, vx: P.face * S.speed, vy: -0.6, dmg: inf.dmg, life: 120, spin: 0 });
+    const ox = n.x, oy = n.y - 12, tg = spitTarget(ox, oy);
+    let vx = P.face * S.speed, vy = -0.6, grav = 0.07;
+    if (tg) { const dx = tg.x - ox, dy = tg.y - oy, d = Math.hypot(dx, dy) || 1; vx = dx / d * S.speed; vy = dy / d * S.speed; grav = 0; }
+    playerShots.push({ kind, x: ox - inf.w / 2, y: oy - inf.h / 2, w: inf.w, h: inf.h, vx, vy, grav, dmg: inf.dmg, life: 120, spin: 0, aimed: !!tg });
     P.spitCD = S.cooldown; stats.spits++; sfx('spit'); P.vx -= P.face * 0.6;
   } else {
     P.spitCD = S.puffCooldown; stats.puffs++; sfx('puff');
@@ -210,10 +213,28 @@ function doSpit() {
     tip('puff', 'タンクが空のときの SPIT は空気砲。ゴーストを少しのあいだ目を回させる');
   }
 }
+// SPIT auto-aim: nearest target in front within ~70 degrees of horizontal (mobile friendly; the chandelier hangs high)
+function spitTarget(ox, oy) {
+  const cand = [];
+  for (const e of ents) {
+    if (e.dead || !e.hitBy) continue;
+    if (e.ghost && (e.state === 'swallow' || e.state === 'caught')) continue;
+    if (e.type === 'vase' && e.empty) continue;
+    cand.push({ x: e.x, y: e.ghost ? e.y : e.y - e.h / 2 });
+  }
+  if (boss && boss.hitTest && ['idle', 'candles', 'wisps', 'shards', 'crash', 'stuck', 'rise'].includes(boss.state)) cand.push({ x: boss.x, y: boss.y + 50, boss: 1 });
+  let best = null, bd = 260;
+  for (const c of cand) {
+    const dx = (c.x - ox) * P.face, dy = c.y - oy; if (dx < 6) continue;
+    if (Math.abs(Math.atan2(dy, dx)) > 1.25) continue;
+    const d = Math.hypot(dx, dy); if (d < bd) { bd = d; best = c; }
+  }
+  return best;
+}
 function updateShots() {
   for (const s of playerShots) {
     if (s.dead) continue;
-    s.x += s.vx; s.y += s.vy; s.vy += 0.07; s.spin++; s.life--;
+    s.x += s.vx; s.y += s.vy; s.vy += s.grav; s.spin++; s.life--;
     if (s.kind === 'fireball' && frame % 2 === 0) parts.push({ x: s.x + s.w / 2, y: s.y + s.h / 2, vx: rnd(-0.4, 0.4), vy: rnd(-0.6, 0), life: 14, col: '#ffb040', size: 2, glow: 1 });
     if (s.life <= 0 || s.x < -20 || s.x > room.W + 20 || boxHitsSolid(s.x + 2, s.y + 2, s.w - 4, s.h - 4)) { shatter(s); continue; }
     for (const e of ents) {

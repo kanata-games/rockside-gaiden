@@ -32,7 +32,7 @@ function spawnRoomEntities() {
 function makeGhost(kind, x, y, extra) {
   const C = CONFIG[kind === 'armorghost' ? 'puff' : kind] || CONFIG.puff;
   const hp = kind === 'armorghost' ? CONFIG.armor.ghostHp : C.hp;
-  return Object.assign({ type: kind, ghost: true, x, y, w: kind === 'dish' ? 24 : 20, h: kind === 'dish' ? 24 : 20, hp, maxHp: hp, state: 'float', t: 0, catchT: 0, stunT: 0,
+  return Object.assign({ type: kind, ghost: true, x, y, w: kind === 'dish' ? 28 : 24, h: kind === 'dish' ? 28 : 24, hp, maxHp: hp, state: 'float', t: 0, catchT: 0, stunT: 0,
     vx: 0, vy: 0, homeX: x, homeY: y, seed: Math.random() * 10, dashCD: 60 + Math.random() * 80, throwCD: 60 + Math.random() * 60, inCone: 0, flash: 0,
     hitBy(s) { if (this.state === 'swallow') return false; this.stunT = CONFIG.spit.stunFrames; this.hp = Math.max(8, this.hp - CONFIG.spit.ghostDamage * s.dmg); this.flash = 8; sfx('hit');
       if (this.state === 'caught') return true; this.state = 'float'; tip('stun', '目を回したゴーストはすぐにつかまえられる！'); return true; } }, extra || {});
@@ -43,7 +43,7 @@ function ghostTouchDamage(e, dmg) {
 }
 function updateGhost(e) {
   e.t++; if (e.flash > 0) e.flash--; if (e.inCone > 0) e.inCone--; else if (e.catchT > 0 && e.state !== 'caught') e.catchT = Math.max(0, e.catchT - 2);
-  const px = pcx(), py = P.y + 14, dx = px - e.x, dy = py - e.y, dist = Math.hypot(dx, dy);
+  const px = pcx(), py = P.y + 24, dx = px - e.x, dy = py - e.y, dist = Math.hypot(dx, dy);
   const C = e.type === 'dish' ? CONFIG.dish : CONFIG.puff, fast = e.type === 'armorghost' ? 1.45 : 1;
   if (e.state === 'swallow') {
     const n = nozzle(), k = Math.min(1, e.t / 18); e.x = e.sx + (n.x - e.sx) * k * k; e.y = e.sy + (n.y - e.sy) * k * k;
@@ -54,6 +54,10 @@ function updateGhost(e) {
   }
   if (e.state === 'caught') return;              // driven by updateTug
   if (e.stunT > 0) { e.stunT--; e.vx *= 0.85; e.vy *= 0.85; e.x += e.vx; e.y += e.vy; return; }
+  if (e.inCone > 0 && P.vacOn && e.type !== 'firewisp') { // held in the vacuum wind: slowed and drawn toward the nozzle
+    const n = nozzle(); if (e.state === 'warn' || e.state === 'dash') { e.state = 'float'; e.dashCD = 90; }
+    e.vx *= 0.8; e.vy *= 0.8; e.x += (n.x - e.x) * 0.006 - Math.sign(n.x - e.x) * 0.25 + Math.sin(e.t * 0.3) * 0.4; e.y += (n.y - e.y) * 0.02; clampGhost(e); return;
+  }
   if (e.state === 'flee') { e.x -= Math.sign(dx) * 1.2; e.y += Math.sin(e.t * 0.1) * 0.6 - 0.2; if (e.t > 60) { e.state = 'float'; e.t = 0; } clampGhost(e); return; }
   if (e.type === 'firewisp') updateFireWisp(e);
   else if (e.type === 'dish') updateDish(e, dx, dy, dist);

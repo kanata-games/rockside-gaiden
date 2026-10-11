@@ -525,15 +525,15 @@ def ghost(f, mood='normal', col=('#c8f0ff', '#88c8f0', '#4a7ac0'), size=26):
         s.rect(cx - 5, ey, 2, 2, '#ff3050'); s.rect(cx + 3, ey, 2, 2, '#ff3050')
         for x in range(int(cx - 4), int(cx + 4)): s.px(x, ey + 5 + (x % 2), '#1a1440')
     s.outline('#1a2448'); return s
-for f in range(4): E.add('puff%d' % f, ghost(f))
-E.add('puff_tug', ghost(1, 'tug')); E.add('puff_angry', ghost(2, 'angry'))
+for f in range(4): E.add('puff%d' % f, ghost(f, size=32))
+E.add('puff_tug', ghost(1, 'tug', size=32)); E.add('puff_angry', ghost(2, 'angry', size=32))
 DCOL = ('#f0d0ff', '#c098e8', '#7a52b8')
 for f in range(3): 
-    s = ghost(f, 'normal', DCOL, 30)
-    # chef / butler: bow tie + white gloves holding a plate stack
-    s.rect(12, 21, 6, 2, '#2a1440'); s.px(14, 21, '#ff5a7a'); s.px(15, 21, '#ff5a7a')
+    s = ghost(f, 'normal', DCOL, 36)
+    # butler ghost: bow tie
+    s.rect(15, 25, 6, 2, '#2a1440'); s.px(17, 25, '#ff5a7a'); s.px(18, 25, '#ff5a7a')
     E.add('dish%d' % f, s)
-E.add('dish_throw', ghost(1, 'angry', DCOL, 30)); E.add('dish_tug', ghost(1, 'tug', DCOL, 30))
+E.add('dish_throw', ghost(1, 'angry', DCOL, 36)); E.add('dish_tug', ghost(1, 'tug', DCOL, 36))
 def armor(f, broken=False):
     s = Spr(28, 52)
     steel, sh, sl, sd = '#8a92a8', '#c8d0e0', '#5a6278', '#2a3044'

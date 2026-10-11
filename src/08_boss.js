@@ -73,7 +73,7 @@ function updateBoss() {
       break; }
     case 'crash': {
       const tr = bossP('crashTrack');
-      if (b.t < tr) { b.shadowX += clamp(pcx() - b.shadowX, -2.4, 2.4); trackTo(b.shadowX, 3); if (b.t % 16 === 0) sfx('warn'); }
+      if (b.t < tr) { b.shadowX += clamp(pcx() - b.shadowX, -B.crashFollow, B.crashFollow); trackTo(b.shadowX, 3); if (b.t % 16 === 0) sfx('warn'); }
       else if (b.t < tr + B.crashLock) { trackTo(b.shadowX, 3); }
       else { // fall
         b.vy = (b.vy || 0) + 0.6; b.y += b.vy;
@@ -81,7 +81,8 @@ function updateBoss() {
           for (const d of [-1, 1]) ebullets.push({ kind: 'wave', x: b.x + d * 50 - 8, y: FLOOR_Y - 14, w: 16, h: 14, vx: d * B.waveSpeed, vy: 0, dmg: B.waveDamage, life: 200 });
           for (let i = 0; i < 20; i++) parts.push({ x: b.x + rnd(-56, 56), y: FLOOR_Y - 4, vx: rnd(-2, 2), vy: rnd(-3, -0.5), life: 30, col: i % 2 ? '#c8ecff' : '#c9a24a', size: 2, grav: 1 });
           b.core = { ghost: true, boss: true, x: b.x, y: b.y + 42, hp: b.hp, maxHp: b.maxHp, state: 'out', t: 0, catchT: 0, seed: 3, inCone: 0,
-            onDrain() { boss.hp = this.hp; if (boss.hp <= boss.maxHp / 2 && !boss.rage) boss.damage(0); },
+            onDrain(d) { this.drained = (this.drained || 0) + d; boss.hp = this.hp;
+              if (this.drained >= B.coreCap && boss.hp > 0 && P.tug === this) { endTug(false); this.state = 'flee'; boss.t = Math.max(boss.t, bossP('stuck') - 20); tip('coreBreak', 'コアがふりほどいた！ もう一度落とさせよう', true); } if (boss.hp <= boss.maxHp / 2 && !boss.rage) boss.damage(0); },
             onCaptured() { boss.die(); },
             clampTug() { const dx = this.x - boss.x, dy = this.y - (boss.y + 30); const d = Math.hypot(dx, dy); if (d > 120) { this.x = boss.x + dx / d * 120; this.y = boss.y + 30 + dy / d * 120; } } };
           tip('core', '中のゴーストが出てきた！ 今だ、VACで吸い込め！', true);
@@ -92,7 +93,7 @@ function updateBoss() {
     case 'stuck': {
       const c = b.core;
       if (c && c.state !== 'caught' && c.state !== 'swallow') { // core bobs out of the globe, dizzy
-        const k = Math.min(1, b.t / 20); c.x = b.x + Math.sin(b.t * 0.05) * 22; c.y = b.y + 42 - k * 46 + Math.sin(b.t * 0.11) * 4;
+        const k = Math.min(1, b.t / 20); c.x = b.x + Math.sin(b.t * 0.05) * 22; c.y = b.y + 42 + k * 14 + Math.sin(b.t * 0.11) * 4; // drops out under the globe, at nozzle height
         if (c.inCone > 0) c.inCone--; else c.catchT = Math.max(0, c.catchT - 1);
       }
       if (b.t >= bossP('stuck') && !(c && c.state === 'swallow')) { if (P.tug === c) { endTug(false); tip('coreEsc', 'コアが逃げた！ また落ちてくるのを待とう', true); } b.core = null; b.state = 'rise'; b.t = 0; }

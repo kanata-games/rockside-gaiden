@@ -91,7 +91,7 @@ function drawHiText(text, gx, gy, gsize, color, outline, align, alpha) {
 }
 // dialogue box (speaker name + wrapped text), top y in game px (default: along the bottom)
 function drawDialogue(name, nameColor, text, alpha, topY) {
-  const s = hiS(), fs = fontPx(9), nfs = Math.round(fs * 0.85), pad = Math.round(fs * 0.7);
+  const s = hiS(), fs = fontPx(8), nfs = Math.round(fs * 0.85), pad = Math.round(fs * 0.7);
   const bx = Math.round(10 * s), bw = Math.round((VW - 20) * s);
   sctx.save(); sctx.globalAlpha = alpha === undefined ? 1 : alpha;
   sctx.font = '700 ' + fs + 'px ' + JP_FONT;
