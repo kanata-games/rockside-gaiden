@@ -250,8 +250,11 @@ function drawFloats() {
     if (f.life < 60 && (f.life >> 2) & 1) continue;
     const x = Math.round(f.x - cam.x), y = Math.round(f.y - cam.y), bob = Math.round(Math.sin(f.t * 0.12) * 1);
     g.globalCompositeOperation = 'lighter'; g.fillStyle = 'rgba(120,220,255,0.22)'; g.fillRect(x - 2, y - 2 + bob, f.w + 4, f.h + 4); g.globalCompositeOperation = 'source-over';
+    // the object itself carries the platform: drawn just under the glowing pad (feet land on the pad's top edge)
+    const r = rectOf('items', f.kind), ix = Math.round(x + f.w / 2 - r.w / 2), iy = Math.round(y + 3 + bob);
+    g.globalAlpha = 0.55; sprWhite('items', f.kind, ix - 1, iy, false, '#8fe8ff'); sprWhite('items', f.kind, ix + 1, iy, false, '#8fe8ff'); sprWhite('items', f.kind, ix, iy + 1, false, '#8fe8ff'); g.globalAlpha = 1;
+    spr('items', f.kind, ix, iy);
     spr('props', 'floatpad', x, y + bob);
-    const r = rectOf('items', f.kind); spr('items', f.kind, Math.round(x + f.w / 2 - r.w / 2), Math.round(y - r.h + 3 + bob));
   }
 }
 function drawItem(it) {
