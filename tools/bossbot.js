@@ -30,6 +30,7 @@ window.__bot = function () {
   if (kind === 'chandelier' && b.state === 'crash') danger.push([b.t < (b.rage ? CONFIG.boss.crashTrackRage : CONFIG.boss.crashTrack) ? b.shadowX : b.px, 76]);
   if (kind === 'golem') { if (b.state === 'slam') danger.push([b.x, 96]); if (b.state === 'idle' || b.state === 'bubbles') danger.push([b.x, 46]); }
   if (kind === 'clock' && b.state !== 'stopped') danger.push([b.x, 46]);
+  if (kind === 'marionette' && b.state === 'dance' && b.jy > 20) danger.push([b.x, 40]);
   if (kind === 'chronoa' && b.state === 'rewind' && b.orbs) for (const o of b.orbs) if (o.q || b.t < 60) danger.push([o.tx + (b.orbO ? (b.orbO.x - o.tx) * 0.2 : 0), 26]);
   if (kind === 'rose' && !b.burrow) danger.push([b.x, 34]);
   
@@ -39,17 +40,19 @@ window.__bot = function () {
   if (kind === 'serpent' && b.state === 'sweep' && b.sweepVx) { const d = b.hx - pcx; if (Math.sign(d) === Math.sign(b.sweepVx) * -1 && Math.abs(d) < 56) { if (!b.petalHigh) { if (P.onGround) jump = true; holdJump = true; } } }
   for (const q of G.ebullets) {
     const qx = q.x + q.w / 2, toward = Math.sign(pcx - qx) === Math.sign(q.vx) || !q.vx, dx = Math.abs(qx - pcx);
-    if ((q.kind === 'wave' || q.kind === 'suds' || q.kind === 'rgear' || q.kind === 'root') && toward && dx < 40 && dx > 8 && P.onGround) { jump = true; holdJump = true; S.waveDir = Math.sign(q.vx) || 1; S.waveT = 40; }
+    if ((q.kind === 'wave' || q.kind === 'suds' || q.kind === 'rgear' || q.kind === 'root' || q.kind === 'planet' || (q.kind === 'comet' && !q.high)) && toward && dx < (q.kind === 'comet' ? 52 : 40) && dx > 8 && P.onGround) { jump = true; holdJump = true; S.waveDir = Math.sign(q.vx) || 1; S.waveT = 40; }
     if (q.kind === 'bubble' && P.tank.length >= 3 && dx < 50 && Math.abs(q.y - P.y - 20) < 40) danger.push([qx, 50]);
     if (q.kind === 'firepatch' || q.kind === 'puddle') danger.push([qx, q.kind === 'puddle' ? 30 : 24]);
-    if (q.kind === 'blast' || q.kind === 'geyser' || q.kind === 'hand' || q.kind === 'thorn' || q.kind === 'sandfall') danger.push([qx, q.w / 2 + 10]);
+    if (q.kind === 'blast' || q.kind === 'geyser' || q.kind === 'hand' || q.kind === 'thorn' || q.kind === 'sandfall' || q.kind === 'string') danger.push([qx, q.w / 2 + 10]);
     if (q.kind === 'hotwater' && q.tx !== undefined) danger.push([q.tx + 6, 28]);
     if (q.kind === 'seedpod' && q.tx !== undefined) danger.push([q.tx, 22]);
-    if ((q.kind === 'shard' || q.kind === 'candle' || q.kind === 'dropbottle' || q.kind === 'sock' || q.kind === 'drop') && q.vy > 0 && q.y < P.y + P.h) danger.push([qx, 18]);
+    if ((q.kind === 'shard' || q.kind === 'candle' || q.kind === 'dropbottle' || q.kind === 'sock' || q.kind === 'drop' || q.kind === 'sandbag' || q.kind === 'maskshot') && q.vy > 0 && q.y < P.y + P.h) danger.push([qx, 18]);
     if (q.kind === 'chord' && toward && dx < 60 && q.y > FY - 40 && P.onGround && dx < 36) { jump = true; holdJump = true; }
     if (q.kind === 'petal' && toward && dx < 60) { if (q.y > FY - 40) { if (P.onGround && dx < 34) { jump = true; holdJump = true; } } }
   }
   if (kind === 'rose' && b.state === 'petals' && b.petalHigh) jump = false;
+  if (kind === 'orrery' && G.ebullets.some(q => q.kind === 'comet' && q.high && !q.dead && Math.abs(q.x + 13 - pcx) < 120)) { jump = false; S.hold = 0; }   // HIGH comet: stay on the floor
+  if (kind === 'orrery' && b.state === 'comet' && b.lane && b.lane.high) { jump = false; S.hold = 0; }
   if ((kind === 'organ' && b.state === 'chord' || kind === 'serpent' && b.state === 'sweep') && b.petalHigh && !G.ebullets.some(q => q.kind === 'chord' && q.y > FY - 40)) jump = false;   // HIGH stream: stay on the floor
   if (kind === 'rose' && b.state === 'petals' && !b.petalHigh) holdJump = true;
   // golem ball: jump it when it is close and coming at us

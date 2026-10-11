@@ -20,7 +20,7 @@ ROOM_DEFS.push(
     decor: [['dollshelf', 12, 15], ['dollshelf', 20, 15], ['round_window', 12, 7], ['candelabra', 5, 11, { light: 1 }], ['cobweb', 1, 2, { top: 1 }]] },
 
   { id: 'gearshaft', jp: '歯車の縦穴', en: 'GEAR SHAFT', area: 'clock', theme: 'gears', tiles: 'w', cx: 8, cy: -3, cw: 1, ch: 2, dark: 0.5,
-    build(R) { R.box(); R.open('B', 0, 8, 11); R.open('L', 0, 11, 14); R.gate(0, 11, 0, 14, 'spirit_clock'); R.solid(1, 15, 6, 16); R.plat(13, 20, 27); R.plat(3, 10, 21); },
+    build(R) { R.box(); R.open('B', 0, 8, 11); R.open('L', 0, 11, 14); R.gate(0, 11, 0, 14, 'spirit_clock'); R.solid(1, 15, 6, 16); R.open('R', 0, 11, 14); R.gate(23, 11, 23, 14, 'spirit_stars'); R.solid(18, 15, 22, 16); R.plat(10, 14, 12); R.plat(13, 20, 27); R.plat(3, 10, 21); },
     ents: [['gargoyle', 18, 14], ['bats', 10, 26], ['cursedbook', 16, 20], ['gear', 15, 27], ['gear', 18, 27], ['gear', 6, 21], ['chair', 4, 33], ['bottle', 20, 33]],
     decor: [['gear_big', 12, 32], ['gear_med', 5, 28], ['gear_big', 17, 20], ['gear_med', 8, 13], ['gear_big', 14, 8], ['sconce', 3, 30, { light: 1 }], ['sconce', 20, 24, { light: 1 }],
       ['sconce', 11, 16, { light: 1 }], ['sconce', 20, 7, { light: 1 }]] },
@@ -48,9 +48,9 @@ ROOM_DEFS.push(
 
   { id: 'clockroom', jp: '大時計の間', en: 'GREAT CLOCK CHAMBER', area: 'clock', theme: 'tower', tiles: 'w', cx: 7, cy: -4, cw: 1, ch: 1, dark: 0.36, boss: 'clock',
     // v0.4: the sealed door behind the clock leads up to the clock heart (Chronoa)
-    bossGate: { gate: 'heart', need: ['clock'] },
+    bossGate: { gate: 'heart', need: ['clock', 'marionette', 'orrery'] },
     build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.gate(23, 11, 23, 14, 'heart'); R.plat(2, 5, 11); R.plat(18, 21, 11); },
-    ents: [['boss', 12, 15]],
+    ents: [['boss', 12, 15], ['hint', 21, 15, { text: '扉に三つの封印：時計・糸・星。……三つとも解けば、上へ行ける' }]],
     decor: [['round_window', 4, 6], ['round_window', 20, 6], ['sconce', 3, 9, { light: 1 }], ['sconce', 21, 9, { light: 1 }], ['gear_med', 12, 4]] },
 
   // ---- v0.4: the top of the tower (true final boss) ----

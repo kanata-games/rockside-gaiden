@@ -13,4 +13,6 @@ ROOM_DEFS.push(
   warpRoom('warp_clock', 'clock', 'gears', 'w', 5, -2, 'R', [['gear_med', 4, 12]]),
   warpRoom('warp_crypt', 'crypt', 'crypt', 'k', 13, 1, 'L', [['urn', 20, 15]]),
   warpRoom('warp_bath', 'bath', 'bath', 'b', 11, 3, 'R', [['duckprop', 4, 15]]),
+  warpRoom('warp_theater', 'theater', 'theater', 'w', 1, 0, 'R', [['masks', 4, 9]]),
+  warpRoom('warp_stars', 'stars', 'observatory', 'k', 12, -2, 'L', [['starchart', 20, 8]]),
 );

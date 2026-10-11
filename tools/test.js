@@ -244,7 +244,7 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       ok('clock hands: the marked stab actually comes down from the ceiling', await waitFor(page, () => GAIDEN.ebullets.some(q => q.kind === 'hand' && q.h > 150), 20000)); await ctx.close(); }
 
     // ---- bosses 2-4, played by the bot (god mode; balance runs without god mode: tools/bossrun.js)
-    for (const [kind, roomId, abil] of [['golem', 'washroom', 'float,turbo'], ['rose', 'rosebed', 'float,turbo,djump'], ['organ', 'choir', 'float,turbo,djump'], ['serpent', 'yubune', 'float,turbo,djump,phase'], ['clock', 'clockroom', 'float,turbo,djump,phase'], ['chronoa', 'clockheart', 'float,turbo,djump,phase,tank']]) {
+    for (const [kind, roomId, abil] of [['golem', 'washroom', 'float,turbo'], ['rose', 'rosebed', 'float,turbo,djump'], ['organ', 'choir', 'float,turbo,djump'], ['serpent', 'yubune', 'float,turbo,djump,phase'], ['marionette', 'stage', 'float,turbo,djump,phase'], ['orrery', 'dome', 'float,turbo,djump,phase'], ['clock', 'clockroom', 'float,turbo,djump,phase'], ['chronoa', 'clockheart', 'float,turbo,djump,phase,tank']]) {
       const { ctx, page } = await open(browser, `?room=${roomId}&x=2&y=16&god=1&abil=${abil}`);
       await waitFor(page, () => GAIDEN.state === 'play', 5000);
       await E(page, BOT); await E(page, () => { window.__speed = 8; });

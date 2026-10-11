@@ -14,7 +14,7 @@ function spawnRoomEntities() {
       case 'start': room.start = { x, y }; break;
       case 'save': ents.push({ type: 'save', x, y, w: 28, h: 40, used: false }); room.save = { x, y }; break;
       case 'coin': case 'heart': spawnItem(type, x, y, { perm: id }); break;
-      case 'bats': for (let k = 0; k < (opt.n || 2); k++) ents.push(makeFoe('bat', x + (k - 0.5) * 18, y + (k & 1) * 6)); break;
+      case 'bats': for (let k = 0; k < (opt.n || 2); k++) ents.push(makeFoe('bat', x + (k - 0.5) * 18, y + (k & 1) * 6, opt.foe)); break;
       case 'rat': case 'gargoyle': case 'puppet': case 'skeleton': case 'cursedbook': case 'skullwisp': case 'crab': ents.push(makeFoe(type, x, y, opt.foe)); break;
       case 'warp': ents.push(makeWarp(x, y, opt, id)); break;
       case 'sheet': ents.push(makeGhost('sheet', x, y)); break;
@@ -184,7 +184,7 @@ function checkLockedDoor() {
 // ---------------------------------------------------------------------
 //  enemy bullets (plates, candles, crystal shards, fire patches, floor waves)
 // ---------------------------------------------------------------------
-const PERSIST_BULLETS = new Set(['firepatch', 'wave', 'suds', 'thorn', 'hand', 'root', 'blast', 'geyser', 'puddle', 'sandorb', 'sandfall']);
+const PERSIST_BULLETS = new Set(['firepatch', 'wave', 'suds', 'thorn', 'hand', 'root', 'blast', 'geyser', 'puddle', 'sandorb', 'sandfall', 'string']);
 function updateEBullets() {
   for (const b of ebullets) {
     if (b.dead) continue;

@@ -132,4 +132,14 @@ const CONFIG = {
   chronoa: { hp: 260, idle: 46, idleRage: 34, handWarn: 40, handWarnRage: 34, handDamage: 1, pendWarn: 52, swings: 3, swingsRage: 4, pendDamage: 2,
     orbs: 5, orbsRage: 6, orbWarn: 40, orbWarnRage: 34, orbSpeed: 2.6, orbDamage: 1, zoneWarn: 34, sandWarn: 44, sandWarnRage: 38, sandDamage: 1, slowMul: 0.55,
     beamTrack: 50, beamLock: 32, beamLockRage: 30, beamDamage: 2, stun: 150, stunRage: 130, contactDamage: 1, coreCap: 30, specialEvery: 3 },
+  // ---- v0.4 area bosses (both hold a seal of the clock heart). HP between the rose/organ and the clock; long weak-point windows
+  // 人形座長 ストリングス MAESTRO STRINGS (puppet theater stage)
+  marionette: { hp: 180, idle: 44, idleRage: 34, cutWarn: 40, cutWarnRage: 34, cutDamage: 1, leapWarn: 40, leapWarnRage: 36, leapAir: 40, leapDamage: 2, waveSpeed: 2.6,
+    masks: 4, masksRage: 5, maskWarn: 46, maskWarnRage: 40, maskFlight: 58, maskDamage: 1, spotTrack: 56, spotLock: 32, spotLockRage: 28, bagDamage: 2,
+    stun: 150, stunRage: 130, coreCap: 30, specialEvery: 3 },
+  // 星喰いの天球儀 アストラ ASTRA, THE STAR-EATING ORRERY (observatory dome)
+  orrery: { hp: 200, idle: 44, idleRage: 34, meteors: 5, meteorsRage: 6, meteorWarn: 42, meteorWarnRage: 36, starDamage: 1,
+    cometWarn: 46, cometWarnRage: 40, cometSpeed: 3.0, cometSpeedRage: 3.4, cometDamage: 1, orbitWarn: 40, orbitWarnRage: 34, planets: 2, planetsRage: 3,
+    planetSpeed: 2.8, planetSpeedRage: 3.1, planetDamage: 1, novaWarn: 62, novaWarnRage: 54, shards: 6, shardsRage: 7, shardSpeed: 3.6, shardDamage: 2,
+    stun: 150, stunRage: 130, coreCap: 30, specialEvery: 3 },
 };

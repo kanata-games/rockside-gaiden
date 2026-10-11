@@ -17,6 +17,8 @@ const ATTACKS = {
   organ: ['choir', 'float,turbo,djump', ['notes', 'pipes', 'chord', 'requiem', 'fortissimo']],
   serpent: ['yubune', 'float,turbo,djump,phase', ['arcs', 'sweep', 'rain', 'geyser']],
   clock: ['clockroom', 'float,turbo,djump,phase', ['hands', 'gears', 'pendulum', 'midnight', 'chime']],
+  marionette: ['stage', 'float,turbo,djump,phase', ['cut', 'dance', 'masks', 'spotlight']],
+  orrery: ['dome', 'float,turbo,djump,phase', ['meteor', 'comet', 'orbit', 'supernova']],
   chronoa: ['clockheart', 'float,turbo,djump,phase,tank', ['hands', 'pendulum', 'rewind', 'slow', 'beam']],
 };
 module.exports.ATTACKS = ATTACKS;
@@ -89,11 +91,11 @@ async function one(browser, base, boss, atk, rage, opt) {
     // move Kanata to x0, wait for the next start of the forced attack, record until the boss is back to idle/stunned (+ lingering bullets)
     await page.evaluate(x => { window.__ctl.x = x; window.__hz = null; window.__hzOn = false; }, x0);
     await page.waitForFunction(atk => { const b = GAIDEN.boss; return b && b.state !== atk; }, atk, { timeout: 30000, polling: 'raf' }).catch(() => {});
-    const okStart = await page.waitForFunction(atk => { const b = GAIDEN.boss; if (b && b.state === atk && b.t <= 2) { for (const e of GAIDEN.ebullets) e.__hzB = -2; window.__bx = b.kind === 'chronoa' ? -1e9 : Math.round(b.hx !== undefined ? b.hx : b.x);   /* chronoa: no body on the floor */ window.__hz = [[]]; window.__hzOn = true; window.__mk = ['']; return true; } return false; }, atk, { timeout: 40000, polling: 'raf' }).then(() => true).catch(() => false);
+    const okStart = await page.waitForFunction(atk => { const b = GAIDEN.boss; if (b && b.state === atk && b.t <= 2) { for (const e of GAIDEN.ebullets) e.__hzB = -2; window.__bx = (b.kind === 'chronoa' || b.kind === 'orrery') ? -1e9 : Math.round(b.hx !== undefined ? b.hx : b.x);   /* chronoa: no body on the floor */ window.__hz = [[]]; window.__hzOn = true; window.__mk = ['']; return true; } return false; }, atk, { timeout: 40000, polling: 'raf' }).then(() => true).catch(() => false);
     if (!okStart) { out.fails.push({ x0, why: 'attack never started' }); continue; }
     // log marks per frame (re-aims) and the end of the attack
     // (marks are logged by the bot hook in the same frame as the hazards, so the two stay aligned)
-    await page.waitForFunction(atk => { const b = GAIDEN.boss; if (!b) return true; const idle = (['idle', 'dizzy', 'stunned', 'wilt', 'stopped', 'burrow', 'return', 'reform', 'flung', 'shut', 'wake'].includes(b.state) || (b.state === 'rewind' && b.kind !== 'chronoa')) || b.state === 'dying';
+    await page.waitForFunction(atk => { const b = GAIDEN.boss; if (!b) return true; const idle = (['idle', 'dizzy', 'stunned', 'wilt', 'stopped', 'burrow', 'return', 'reform', 'flung', 'shut', 'wake', 'slump', 'rise', 'stop', 'relight'].includes(b.state) || (b.state === 'rewind' && b.kind !== 'chronoa')) || b.state === 'dying';
       if (idle && !window.__endF) window.__endF = window.__hz.length; return window.__endF && window.__hz.length > window.__endF + 90; }, atk, { timeout: 60000, polling: 'raf' }).catch(() => {});
     const rec = await page.evaluate(() => { const r = { H: window.__hz, mk: window.__mk, end: window.__endF, bx: window.__bx }; window.__hz = null; window.__hzOn = false; window.__endF = 0; return r; });
     // the boss body itself is ignored for the trailing frames after the attack (it's the next attack's business)

@@ -8,6 +8,7 @@
 //  Positions: x = centre, y = bottom (feet), like every non-ghost entity.
 // =====================================================================
 const FOE_SIZE = { bat: [14, 10], rat: [18, 10], gargoyle: [26, 26], puppet: [16, 30], skeleton: [18, 40], cursedbook: [16, 14], skullwisp: [16, 18], crab: [20, 12] };
+const SKIN_JP = { dancer: '踊り子人形', maskbat: '仮面コウモリ', starwisp: '星くず火', chart: '呪いの星図' };
 const FOE_JP = { bat: 'コウモリ', rat: 'ネズミ', gargoyle: 'ガーゴイル', puppet: 'あやつり人形', skeleton: '骸骨の給仕', cursedbook: '呪いの本', skullwisp: 'どくろ火', crab: 'おふろガニ' };
 const EDIBLE = { rat: 1, bat: 1, crab: 1 };  // tiny critters: the mimic vacuum eats them
 function makeFoe(kind, x, y, opt) {
@@ -17,7 +18,7 @@ function makeFoe(kind, x, y, opt) {
     onSuck() { this.inCone = 3;
       if (EDIBLE[this.type]) { this.eatT = (this.eatT || 0) + 1; if (this.state === 'hang') this.state = 'fly'; tip('eat', 'ガブッ！ 小さな生き物は掃除機が食べちゃう。HP が少し回復して、GABU ゲージがたまる'); return; }
       if (frame % 9 === 0) { sfx('tink'); parts.push({ x: this.x + rnd(-6, 6), y: this.y - this.h / 2 + rnd(-6, 6), vx: rnd(-1, 1), vy: rnd(-1, 0), life: 10, col: '#ffffff', size: 1 }); }
-      this.tinkT = 30; tip('foe', FOE_JP[this.type] + 'は生き物（？）だから掃除機が効かない！ 吸い込んだ物をぶつけよう（SPIT）'); },
+      this.tinkT = 30; tip('foe', (SKIN_JP[this.skin] || FOE_JP[this.type]) + 'は生き物（？）だから掃除機が効かない！ 吸い込んだ物をぶつけよう（SPIT）'); },
     hitBy(s) { return foeHit(this, s); } };
   if (kind === 'rat' || kind === 'puppet' || kind === 'skeleton' || kind === 'crab') { e.body = { x: x - w / 2, y: y - h, w, h, vx: 0, vy: 0 }; e.state = 'walk'; e.face = Math.random() < 0.5 ? -1 : 1; }
   if (kind === 'bat') { e.state = 'hang'; e.y = Math.max(y, 2 * TS + h + 2); }

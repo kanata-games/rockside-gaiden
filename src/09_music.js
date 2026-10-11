@@ -170,6 +170,48 @@ const MUSIC_SONGS = {
     order: ['A', 'B', 'A2'] },
 
   // ---- v0.4 ----
+  theater: { name: 'STRINGS ATTACHED', jp: '道中：人形劇場', mood: 'creepy cabaret waltz-tango in D minor, music-box lead over an oom-pah bass, curtain-call flourishes', bpm: 128,
+    lead: { duty: 0.125, vol: 0.064, gate: 0.78 }, p2v: { duty: 0.25, vol: 0.034 },
+    sections: {
+      A: { chords: ['Dm', 'A7', 'Dm', 'Gm', 'Dm', 'Bb', 'Em7b5,A', 'Dm'], p2: 'stab', bass: 'pop',
+        drums: ['k...s.s.k...s.s.'], fill: 'k...s.s.k.s.ssss',
+        mel: ['D5:3 E5:1 F5:2 A5 D6:4 C#6:2 A5', 'G5:6 E5:2 C#5:8', 'F5:3 G5:1 A5:2 D6 F6:4 E6:2 D6', 'Bb5:6 G5:2 D5:8',
+              'A5:3 G5:1 F5:2 E5 D5:4 F5:2 A5', 'D6:6 Bb5:2 F5:8', 'G5:2 Bb5 E6 G5 A5 C#6 E6 G6', 'F6:4 E6 D6:8'] },
+      B: { chords: ['F', 'C', 'Bb', 'A', 'Gm', 'Dm', 'E7', 'A7'], p2: 'harm3', bass: 'walk',
+        drums: ['k.h.s.h.k.h.s.hh'], fill: 'k.s.s.s.ssssxcx.',
+        mel: ['A5:4 C6:2 F6 A6:4 G6:2 F6', 'E6:6 C6:2 G5:8', 'D6:4 F6:2 Bb6 D7:4 C7:2 Bb6', 'A6:6 C#7:2 E7:8',
+              'D7:4 Bb6:2 G6 D6:4 G6', 'F6:4 D6:2 A5 F5:4 A5', 'G#5:2 B5 D6 E6 G#6 B6 D7 E7', 'C#7:8 E6:4 A6'] },
+      A2: { base: 'A', p2: 'echo' } },
+    order: ['A', 'B', 'A2'] },
+
+  stars: { name: 'COUNTING STARS', jp: '道中：星見の天文台', mood: 'weightless, sparkling E major nocturne; glassy arpeggios turning like an orrery, soft pulse', bpm: 104,
+    lead: { duty: 0.125, vol: 0.058, gate: 0.92 }, p2v: { duty: 0.125, vol: 0.03 },
+    sections: {
+      A: { chords: ['Emaj7', 'C#m', 'Amaj7', 'B', 'Emaj7', 'G#m', 'Amaj7', 'B'], p2: 'arp16', bass: 'half',
+        drums: ['k.......s.......'], fill: 'k.......s...s.ss',
+        mel: ['B5:4 G#5:2 E5 B5:4 D#6', 'E6:6 C#6:2 G#5:8', 'C#6:4 A5:2 E5 C#6:4 E6', 'F#6:8 D#6:4 B5',
+              'G#6:4 E6:2 B5 G#6:4 B6', 'A#6:6 G#6:2 D#6:8', 'C#7:4 B6:2 A6 E6:4 C#6', 'D#6:12 r:4'] },
+      B: { chords: ['C#m', 'G#m', 'A', 'E', 'F#m', 'C#m', 'D#m7b5,G#', 'C#m,B'], p2: 'echo', bass: 'drone',
+        drums: ['k...h...s...h...'], fill: 'k...h...s.s.sss.',
+        mel: ['E6:6 D#6:2 C#6:4 G#5', 'B5:6 A#5:2 G#5:8', 'C#6:4 E6:2 A6 C#7:4 B6', 'G#6:12 r:4',
+              'A6:4 F#6:2 C#6 A5:4 C#6', 'E6:6 D#6:2 C#6:8', 'F#6:2 A6 C7 B6 G#6 D#6 B#5 D#6', 'C#6:8 D#6:4 B5'] },
+      A2: { base: 'A', p2: 'arp8' } },
+    order: ['A', 'B', 'A2'] },
+
+  boss5: { name: 'CURTAIN CALL', jp: 'ボス：人形座長／星喰いの天球儀', mood: 'theatrical F minor boss theme; galloping strings, brassy stabs, a whirling bridge', bpm: 160,
+    lead: { duty: 0.25, vol: 0.07, gate: 0.84 }, p2v: { duty: 0.125, vol: 0.036 },
+    sections: {
+      A: { chords: ['Fm', 'Fm', 'Db', 'C', 'Fm', 'Bbm', 'Gm7b5,C', 'Fm'], p2: 'arp16', bass: 'gallop',
+        drums: ['k.hks.hkk.hks.hk'], fill: 'k.hks.hks.s.ssss',
+        mel: ['F5:2 Ab5 C6 F6 E6:4 C6', 'Ab5:2 G5 F5 C5 F5:8', 'Db6:2 C6 Bb5 Ab5 F5:4 Ab5', 'G5:6 E5:2 C5:8',
+              'C6:2 Ab5 F5 Ab5 C6:4 F6', 'Db6:4 Bb5:2 F5 Db6:4 F6', 'E6:2 G6 Bb6 G6 E6 C6 E6 G6', 'F6:12 r:4'] },
+      B: { chords: ['Db', 'Eb', 'C', 'Fm', 'Bbm', 'C', 'Db,Eb', 'C7'], p2: 'harm3', bass: 'oct8',
+        drums: ['k.k.s.k.k.k.s.kk'], fill: 'k.s.s.s.ssssxcx.',
+        mel: ['F6:4 Ab6:2 F6 Db6:4 F6', 'G6:4 Bb6:2 G6 Eb6:4 G6', 'E6:4 G6:2 C7 E7:4 C7', 'Ab6:6 G6:2 F6:8',
+              'F6:4 Db6:2 Bb5 F6:4 Bb6', 'G6:4 E6:2 C6 G6:4 C7', 'Db7:2 C7 Bb6 Ab6 Bb6 C7 Db7 Eb7', 'E7:8 C7:4 G6'] },
+      A2: { base: 'A', p2: 'echo' } },
+    order: ['A', 'B', 'A2'] },
+
   chronoa: { name: 'NOT DONE YET', jp: 'ボス：時計塔管理人クロノア', mood: 'true final boss, C# minor; drowsy music-box intro feel over a relentless clockwork gallop, rewinding runs', bpm: 164,
     lead: { duty: 0.25, vol: 0.07, gate: 0.82 }, p2v: { duty: 0.125, vol: 0.034 },
     sections: {
@@ -212,9 +254,9 @@ const MUSIC_SONGS = {
       mel: ['F5:2 E5 D5 A4 F4:8', 'G4:4 E4 D4:8'] } },
     order: ['A'] },
 };
-const MUSIC_LIST = ['title', 'mansion', 'laundry', 'garden', 'clock', 'chapel', 'bath', 'boss', 'boss2', 'boss3', 'boss4', 'vault', 'afterglow', 'jingle_warning', 'jingle_save', 'jingle_clear', 'jingle_gameover'];
+const MUSIC_LIST = ['title', 'mansion', 'laundry', 'garden', 'clock', 'chapel', 'bath', 'boss', 'boss2', 'boss3', 'boss4', 'theater', 'stars', 'boss5', 'vault', 'afterglow', 'jingle_warning', 'jingle_save', 'jingle_clear', 'jingle_gameover'];
 const BOSS_THEMES = new Set(['boss', 'boss2', 'boss3']);
-const BOSS_MUSIC = { chronoa: 'chronoa', chandelier: 'boss', golem: 'boss2', rose: 'boss2', clock: 'boss3', organ: 'boss4', serpent: 'boss4' };
+const BOSS_MUSIC = { chronoa: 'chronoa', marionette: 'boss5', orrery: 'boss5', chandelier: 'boss', golem: 'boss2', rose: 'boss2', clock: 'boss3', organ: 'boss4', serpent: 'boss4' };
 
 // ---------------------------------------------------------------------
 //  compiler: song -> events per 16th step  { ch: 'p1'|'p2'|'tri'|'noi', m: midi, len (steps), vol, duty, kind }

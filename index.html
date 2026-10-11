@@ -198,6 +198,16 @@ const CONFIG = {
   chronoa: { hp: 260, idle: 46, idleRage: 34, handWarn: 40, handWarnRage: 34, handDamage: 1, pendWarn: 52, swings: 3, swingsRage: 4, pendDamage: 2,
     orbs: 5, orbsRage: 6, orbWarn: 40, orbWarnRage: 34, orbSpeed: 2.6, orbDamage: 1, zoneWarn: 34, sandWarn: 44, sandWarnRage: 38, sandDamage: 1, slowMul: 0.55,
     beamTrack: 50, beamLock: 32, beamLockRage: 30, beamDamage: 2, stun: 150, stunRage: 130, contactDamage: 1, coreCap: 30, specialEvery: 3 },
+  // ---- v0.4 area bosses (both hold a seal of the clock heart). HP between the rose/organ and the clock; long weak-point windows
+  // 人形座長 ストリングス MAESTRO STRINGS (puppet theater stage)
+  marionette: { hp: 180, idle: 44, idleRage: 34, cutWarn: 40, cutWarnRage: 34, cutDamage: 1, leapWarn: 40, leapWarnRage: 36, leapAir: 40, leapDamage: 2, waveSpeed: 2.6,
+    masks: 4, masksRage: 5, maskWarn: 46, maskWarnRage: 40, maskFlight: 58, maskDamage: 1, spotTrack: 56, spotLock: 32, spotLockRage: 28, bagDamage: 2,
+    stun: 150, stunRage: 130, coreCap: 30, specialEvery: 3 },
+  // 星喰いの天球儀 アストラ ASTRA, THE STAR-EATING ORRERY (observatory dome)
+  orrery: { hp: 200, idle: 44, idleRage: 34, meteors: 5, meteorsRage: 6, meteorWarn: 42, meteorWarnRage: 36, starDamage: 1,
+    cometWarn: 46, cometWarnRage: 40, cometSpeed: 3.0, cometSpeedRage: 3.4, cometDamage: 1, orbitWarn: 40, orbitWarnRage: 34, planets: 2, planetsRage: 3,
+    planetSpeed: 2.8, planetSpeedRage: 3.1, planetDamage: 1, novaWarn: 62, novaWarnRage: 54, shards: 6, shardsRage: 7, shardSpeed: 3.6, shardDamage: 2,
+    stun: 150, stunRage: 130, coreCap: 30, specialEvery: 3 },
 };
 
 // ---- sprite metadata embedded at build time (tools/build.py) ----
@@ -618,6 +628,8 @@ const AREAS = {
   clock:   { jp: '屋根裏と時計塔', short: '時計塔', en: 'ATTIC & CLOCK TOWER', music: 'clock', col: '#6a4a24' },
   crypt:   { jp: '礼拝堂と地下墓所', short: '地下墓所', en: 'CHAPEL & CRYPT', music: 'chapel', col: '#4a2a6a' },
   bath:    { jp: '大浴場と貯水槽', short: '大浴場', en: 'GRAND BATH & CISTERN', music: 'bath', col: '#1e6a7a' },
+  theater: { jp: '人形劇場', short: '人形劇場', en: 'PUPPET THEATER', music: 'theater', col: '#8a2a4a' },
+  stars:   { jp: '星見の天文台', short: '天文台', en: 'STARGAZING OBSERVATORY', music: 'stars', col: '#2a3a8a' },
 };
 const ROOM_DEFS = [
   { id: 'foyer', jp: '玄関ホール', en: 'GRAND FOYER', area: 'east', theme: 'foyer', cx: 0, cy: 1, cw: 2, ch: 1, dark: 0.42,
@@ -631,11 +643,12 @@ const ROOM_DEFS = [
       ['rug', 22, 15], ['rug', 30, 15]] },
 
   { id: 'gallery', jp: '肖像画の回廊', en: 'PORTRAIT GALLERY', area: 'east', theme: 'gallery', cx: 2, cy: 1, cw: 3, ch: 1, dark: 0.5,
-    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.solid(30, 13, 41, 14); R.plat(10, 16, 11); R.plat(18, 23, 7); R.plat(55, 61, 11); R.plat(48, 53, 7); },
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.solid(30, 13, 41, 14); R.open('T', 1, 10, 13); R.gate(34, 0, 37, 1, 'spirit_theater'); R.plat(33, 38, 10); R.plat(10, 16, 11); R.plat(18, 23, 7); R.plat(55, 61, 11); R.plat(48, 53, 7); },
     ents: [['book', 5, 15], ['book', 26, 15], ['book', 43, 15], ['puff', 14, 8], ['armor', 38, 13], ['puff', 57, 8],
       ['coin', 19, 7], ['coin', 21, 7], ['dust', 22, 15, { drop: ['coin', 'coin'] }], ['vase', 33, 13, { drop: ['heart'] }],
       ['curtain', 65, 15, { drop: ['coin', 'coin', 'coin', 'coin'] }], ['coin', 49, 7], ['coin', 51, 7], ['candle', 59, 11],
-      ['bats', 46, 4], ['plate', 12, 11], ['chair', 52, 15], ['bottle', 62, 15]],
+      ['bats', 46, 4], ['plate', 12, 11], ['chair', 52, 15], ['bottle', 62, 15],
+      ['hint', 36, 10, { need: 'phase', text: '天井の穴から拍手が聞こえる…　でも霊の結界でふさがれている' }]],
     decor: [['portrait_lord', 6, 9.5], ['portrait_lady', 12, 9.5], ['portrait_land', 27, 9], ['portrait_big', 36, 10], ['portrait_lady', 45, 9.5],
       ['portrait_lord', 58, 9.5], ['portrait_land', 67, 9], ['sconce', 9, 11, { light: 1 }], ['sconce', 24, 11, { light: 1 }], ['sconce', 41, 9, { light: 1 }],
       ['sconce', 54, 11, { light: 1 }], ['sconce', 70, 11, { light: 1 }], ['pillar', 24, 15], ['pillar', 48, 15], ['cobweb', 70.75, 2, { top: 1, flip: 1 }]] },
@@ -838,7 +851,7 @@ ROOM_DEFS.push(
     decor: [['dollshelf', 12, 15], ['dollshelf', 20, 15], ['round_window', 12, 7], ['candelabra', 5, 11, { light: 1 }], ['cobweb', 1, 2, { top: 1 }]] },
 
   { id: 'gearshaft', jp: '歯車の縦穴', en: 'GEAR SHAFT', area: 'clock', theme: 'gears', tiles: 'w', cx: 8, cy: -3, cw: 1, ch: 2, dark: 0.5,
-    build(R) { R.box(); R.open('B', 0, 8, 11); R.open('L', 0, 11, 14); R.gate(0, 11, 0, 14, 'spirit_clock'); R.solid(1, 15, 6, 16); R.plat(13, 20, 27); R.plat(3, 10, 21); },
+    build(R) { R.box(); R.open('B', 0, 8, 11); R.open('L', 0, 11, 14); R.gate(0, 11, 0, 14, 'spirit_clock'); R.solid(1, 15, 6, 16); R.open('R', 0, 11, 14); R.gate(23, 11, 23, 14, 'spirit_stars'); R.solid(18, 15, 22, 16); R.plat(10, 14, 12); R.plat(13, 20, 27); R.plat(3, 10, 21); },
     ents: [['gargoyle', 18, 14], ['bats', 10, 26], ['cursedbook', 16, 20], ['gear', 15, 27], ['gear', 18, 27], ['gear', 6, 21], ['chair', 4, 33], ['bottle', 20, 33]],
     decor: [['gear_big', 12, 32], ['gear_med', 5, 28], ['gear_big', 17, 20], ['gear_med', 8, 13], ['gear_big', 14, 8], ['sconce', 3, 30, { light: 1 }], ['sconce', 20, 24, { light: 1 }],
       ['sconce', 11, 16, { light: 1 }], ['sconce', 20, 7, { light: 1 }]] },
@@ -866,9 +879,9 @@ ROOM_DEFS.push(
 
   { id: 'clockroom', jp: '大時計の間', en: 'GREAT CLOCK CHAMBER', area: 'clock', theme: 'tower', tiles: 'w', cx: 7, cy: -4, cw: 1, ch: 1, dark: 0.36, boss: 'clock',
     // v0.4: the sealed door behind the clock leads up to the clock heart (Chronoa)
-    bossGate: { gate: 'heart', need: ['clock'] },
+    bossGate: { gate: 'heart', need: ['clock', 'marionette', 'orrery'] },
     build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.gate(23, 11, 23, 14, 'heart'); R.plat(2, 5, 11); R.plat(18, 21, 11); },
-    ents: [['boss', 12, 15]],
+    ents: [['boss', 12, 15], ['hint', 21, 15, { text: '扉に三つの封印：時計・糸・星。……三つとも解けば、上へ行ける' }]],
     decor: [['round_window', 4, 6], ['round_window', 20, 6], ['sconce', 3, 9, { light: 1 }], ['sconce', 21, 9, { light: 1 }], ['gear_med', 12, 4]] },
 
   // ---- v0.4: the top of the tower (true final boss) ----
@@ -981,6 +994,77 @@ ROOM_DEFS.push(
   warpRoom('warp_clock', 'clock', 'gears', 'w', 5, -2, 'R', [['gear_med', 4, 12]]),
   warpRoom('warp_crypt', 'crypt', 'crypt', 'k', 13, 1, 'L', [['urn', 20, 15]]),
   warpRoom('warp_bath', 'bath', 'bath', 'b', 11, 3, 'R', [['duckprop', 4, 15]]),
+  warpRoom('warp_theater', 'theater', 'theater', 'w', 1, 0, 'R', [['masks', 4, 9]]),
+  warpRoom('warp_stars', 'stars', 'observatory', 'k', 12, -2, 'L', [['starchart', 20, 8]]),
+);
+
+// =====================================================================
+//  AREA 7 (v0.4): 人形劇場 (PUPPET THEATER) - above the portrait gallery. Way in: the hole in the gallery
+//  ceiling (needs にだんジャンプ). Boss: 人形座長 ストリングス (holds one seal of the clock heart).
+// =====================================================================
+ROOM_DEFS.push(
+  { id: 'lobby', jp: '劇場のロビー', en: 'THEATER LOBBY', area: 'theater', theme: 'theater', tiles: 'w', cx: 2, cy: 0, cw: 2, ch: 1, dark: 0.42,
+    vel: 'theater', velAt: [44, 15],
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.open('B', 1, 10, 13); R.open('T', 0, 8, 11);
+      R.plat(38, 43, 12); R.plat(20, 25, 12); R.plat(13, 18, 9); R.plat(6, 11, 5); R.plat(28, 32, 8); },
+    ents: [['save', 30, 15], ['puppet', 16, 15, { foe: { skin: 'dancer' } }], ['bats', 26, 4, { foe: { skin: 'maskbat' } }], ['coin', 29, 8], ['coin', 31, 8],
+      ['plate', 22, 12], ['chair', 4, 15], ['bottle', 41, 12], ['dust', 44, 15, { drop: ['coin', 'coin'] }], ['curtain', 2.5, 15, { drop: ['coin', 'heart'] }], ['vase', 24, 15, { drop: ['coin', 'coin'] }]],
+    decor: [['stagecurtain', 9, 15], ['portrait_big', 24, 9], ['masks', 34, 8], ['chandelier_deco', 24, 3.5, { hang: 1, light: 2 }], ['sconce', 18, 8, { light: 1 }], ['sconce', 40, 8, { light: 1 }],
+      ['rug', 30, 15], ['rug', 37, 15], ['pillar', 12, 15], ['pillar', 46, 15], ['cobweb', 46.75, 2, { top: 1, flip: 1 }]] },
+
+  { id: 'wings', jp: '舞台袖', en: 'BACKSTAGE WINGS', area: 'theater', theme: 'stage', tiles: 'w', cx: 4, cy: 0, cw: 1, ch: 1, dark: 0.55,
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.plat(4, 9, 11); R.plat(12, 16, 8); R.plat(17, 21, 4); },
+    ents: [['heartbig', 19, 2.5], ['puppet', 12, 15, { foe: { skin: 'dancer' } }], ['puppet', 18, 15, { foe: { skin: 'dancer' } }], ['chair', 6, 11], ['plate', 14, 8], ['coin', 20, 15], ['coin', 21, 15],
+      ['curtain', 21.5, 15, { drop: ['coin', 'coin', 'coin'] }]],
+    decor: [['stagecurtain', 4, 15], ['masks', 15, 11], ['dollshelf', 10, 15], ['footlight', 14, 15, { light: 1 }], ['sconce', 20, 9, { light: 1 }], ['cobweb', 22.75, 2, { top: 1, flip: 1 }]] },
+
+  { id: 'audience', jp: '観客席', en: 'AUDITORIUM', area: 'theater', theme: 'theater', tiles: 'w', cx: 1, cy: -1, cw: 3, ch: 1, dark: 0.5,
+    build(R) { R.box(); R.open('B', 1, 8, 11); R.open('R', 0, 11, 14);
+      R.plat(4, 12, 12); R.plat(14, 22, 10); R.plat(38, 46, 12); R.plat(50, 58, 10); R.plat(60, 68, 12); R.plat(26, 30, 7); R.plat(43, 48, 6); },
+    ents: [['puppet', 10, 15, { foe: { skin: 'dancer' } }], ['puppet', 44, 15, { foe: { skin: 'dancer' } }], ['puppet', 62, 15, { foe: { skin: 'dancer' } }],
+      ['bats', 20, 4, { foe: { skin: 'maskbat' } }], ['bats', 54, 4, { foe: { skin: 'maskbat' }, n: 3 }], ['chair', 6, 12], ['chair', 18, 10], ['chair', 52, 10], ['plate', 40, 12], ['book', 64, 12],
+      ['coin', 27, 7], ['coin', 29, 7], ['coin', 44, 6], ['coin', 46, 6], ['dust', 24, 15, { drop: ['coin', 'coin'] }], ['dust', 58, 15, { drop: ['heart'] }], ['bottle', 68, 15],
+      ['hint', 69, 15, { text: '舞台の上から、糸のきしむ音がする…' }]],
+    decor: [['masks', 36, 9], ['portrait_big', 12, 8], ['portrait_big', 60, 8], ['chandelier_deco', 20, 3.5, { hang: 1, light: 2 }], ['chandelier_deco', 52, 3.5, { hang: 1, light: 2 }],
+      ['sconce', 4, 8, { light: 1 }], ['sconce', 34, 10, { light: 1 }], ['sconce', 68, 8, { light: 1 }], ['stagecurtain', 70, 15], ['cobweb', 1, 2, { top: 1 }]] },
+
+  { id: 'stage', jp: '人形劇場の舞台', en: 'THE MARIONETTE STAGE', area: 'theater', theme: 'stage', tiles: 'w', cx: 4, cy: -1, cw: 1, ch: 1, dark: 0.38, boss: 'marionette',
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.plat(2, 5, 11); R.plat(18, 21, 11); },
+    ents: [['boss', 16, 15]],
+    decor: [['stagecurtain', 2, 15], ['stagecurtain', 22, 15, { flip: 1 }], ['footlight', 6, 15, { light: 1 }], ['footlight', 10, 15, { light: 1 }], ['footlight', 14, 15, { light: 1 }], ['footlight', 18, 15, { light: 1 }],
+      ['masks', 12, 5]] },
+);
+
+// =====================================================================
+//  AREA 8 (v0.4): 星見の天文台 (STARGAZING OBSERVATORY) - beside the clock tower. Way in: the spirit barrier on the
+//  right of the gear shaft (needs 霊体化). Boss: 星喰いの天球儀 アストラ (holds one seal of the clock heart).
+// =====================================================================
+ROOM_DEFS.push(
+  { id: 'starhall', jp: '星図の回廊', en: 'HALL OF STAR CHARTS', area: 'stars', theme: 'observatory', tiles: 'k', cx: 9, cy: -3, cw: 2, ch: 1, dark: 0.5,
+    vel: 'stars', velAt: [40, 15],
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.open('B', 1, 8, 11); R.plat(6, 11, 11); R.plat(14, 19, 8); R.plat(22, 27, 11); R.plat(38, 43, 10); },
+    ents: [['skullwisp', 16, 5, { foe: { skin: 'starwisp' } }], ['cursedbook', 26, 6, { foe: { skin: 'chart' } }], ['cursedbook', 40, 6, { foe: { skin: 'chart' } }],
+      ['book', 8, 11], ['book', 24, 11], ['plate', 40, 10], ['coin', 15, 8], ['coin', 17, 8], ['dust', 20, 15, { drop: ['coin', 'coin'] }], ['bottle', 44, 15], ['chair', 4, 15]],
+    decor: [['starchart', 10, 8], ['starchart', 26, 8], ['starchart', 41, 7], ['bookshelf', 3, 15], ['bookshelf', 30, 15], ['armillary', 18, 15], ['round_window', 36, 6],
+      ['sconce', 12, 9, { light: 1 }], ['sconce', 34, 9, { light: 1 }], ['cobweb', 1, 2, { top: 1 }]] },
+
+  { id: 'planetarium', jp: 'プラネタリウム', en: 'PLANETARIUM', area: 'stars', theme: 'stars', tiles: 'k', cx: 9, cy: -2, cw: 2, ch: 1, dark: 0.6,
+    build(R) { R.box(); R.open('T', 1, 8, 11); R.open('R', 0, 11, 14); R.plat(26, 30, 12); R.plat(31, 36, 7); R.plat(6, 12, 11); R.plat(14, 19, 7); R.plat(40, 45, 11); },
+    ents: [['save', 22, 15], ['heartbig', 16.5, 5], ['skullwisp', 10, 6, { foe: { skin: 'starwisp' } }], ['skullwisp', 42, 6, { foe: { skin: 'starwisp' } }], ['cursedbook', 30, 5, { foe: { skin: 'chart' } }],
+      ['coin', 7, 11], ['coin', 9, 11], ['coin', 11, 11], ['gear', 42, 11], ['book', 28, 12], ['vase', 4, 15, { drop: ['coin', 'heart'] }], ['crystal', 46, 15]],
+    decor: [['armillary', 22, 12], ['telescope', 36, 15], ['starchart', 8, 8], ['starchart', 44, 8], ['spiritlamp', 14, 15, { light: 1 }], ['spiritlamp', 32, 15, { light: 1 }]] },
+
+  { id: 'telescope', jp: '望遠鏡の塔', en: 'TELESCOPE SHAFT', area: 'stars', theme: 'observatory', tiles: 'k', cx: 11, cy: -3, cw: 1, ch: 2, dark: 0.55,
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.open('L', 1, 11, 14); R.open('R', 1, 11, 14); R.solid(1, 15, 4, 16); R.solid(19, 15, 22, 16);
+      R.plat(9, 14, 29); R.plat(3, 8, 25); R.plat(15, 20, 21); R.plat(6, 17, 18); },
+    ents: [['skullwisp', 12, 10, { foe: { skin: 'starwisp' } }], ['cursedbook', 6, 22, { foe: { skin: 'chart' } }], ['bats', 16, 6, { foe: { skin: 'maskbat' } }],
+      ['gear', 10, 29], ['book', 5, 25], ['coin', 16, 21], ['coin', 18, 21], ['bottle', 20, 33]],
+    decor: [['telescope', 12, 15], ['starchart', 12, 26], ['sconce', 3, 21, { light: 1 }], ['sconce', 20, 28, { light: 1 }], ['sconce', 12, 5, { light: 1 }], ['gear_med', 4, 31]] },
+
+  { id: 'dome', jp: '天文台のドーム', en: 'OBSERVATORY DOME', area: 'stars', theme: 'stars', tiles: 'k', cx: 12, cy: -3, cw: 1, ch: 1, dark: 0.4, boss: 'orrery',
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.plat(2, 5, 11); R.plat(18, 21, 11); },
+    ents: [['boss', 12, 15]],
+    decor: [['telescope', 3, 15], ['telescope', 21, 15, { flip: 1 }], ['spiritlamp', 8, 15, { light: 1 }], ['spiritlamp', 16, 15, { light: 1 }]] },
 );
 // =====================================================================
 //  room index (all areas are loaded by now), tile codes, room grid builder (DSL)
@@ -1709,7 +1793,7 @@ function spawnRoomEntities() {
       case 'start': room.start = { x, y }; break;
       case 'save': ents.push({ type: 'save', x, y, w: 28, h: 40, used: false }); room.save = { x, y }; break;
       case 'coin': case 'heart': spawnItem(type, x, y, { perm: id }); break;
-      case 'bats': for (let k = 0; k < (opt.n || 2); k++) ents.push(makeFoe('bat', x + (k - 0.5) * 18, y + (k & 1) * 6)); break;
+      case 'bats': for (let k = 0; k < (opt.n || 2); k++) ents.push(makeFoe('bat', x + (k - 0.5) * 18, y + (k & 1) * 6, opt.foe)); break;
       case 'rat': case 'gargoyle': case 'puppet': case 'skeleton': case 'cursedbook': case 'skullwisp': case 'crab': ents.push(makeFoe(type, x, y, opt.foe)); break;
       case 'warp': ents.push(makeWarp(x, y, opt, id)); break;
       case 'sheet': ents.push(makeGhost('sheet', x, y)); break;
@@ -1879,7 +1963,7 @@ function checkLockedDoor() {
 // ---------------------------------------------------------------------
 //  enemy bullets (plates, candles, crystal shards, fire patches, floor waves)
 // ---------------------------------------------------------------------
-const PERSIST_BULLETS = new Set(['firepatch', 'wave', 'suds', 'thorn', 'hand', 'root', 'blast', 'geyser', 'puddle', 'sandorb', 'sandfall']);
+const PERSIST_BULLETS = new Set(['firepatch', 'wave', 'suds', 'thorn', 'hand', 'root', 'blast', 'geyser', 'puddle', 'sandorb', 'sandfall', 'string']);
 function updateEBullets() {
   for (const b of ebullets) {
     if (b.dead) continue;
@@ -1950,6 +2034,7 @@ function updateParts() {
 //  Positions: x = centre, y = bottom (feet), like every non-ghost entity.
 // =====================================================================
 const FOE_SIZE = { bat: [14, 10], rat: [18, 10], gargoyle: [26, 26], puppet: [16, 30], skeleton: [18, 40], cursedbook: [16, 14], skullwisp: [16, 18], crab: [20, 12] };
+const SKIN_JP = { dancer: '踊り子人形', maskbat: '仮面コウモリ', starwisp: '星くず火', chart: '呪いの星図' };
 const FOE_JP = { bat: 'コウモリ', rat: 'ネズミ', gargoyle: 'ガーゴイル', puppet: 'あやつり人形', skeleton: '骸骨の給仕', cursedbook: '呪いの本', skullwisp: 'どくろ火', crab: 'おふろガニ' };
 const EDIBLE = { rat: 1, bat: 1, crab: 1 };  // tiny critters: the mimic vacuum eats them
 function makeFoe(kind, x, y, opt) {
@@ -1959,7 +2044,7 @@ function makeFoe(kind, x, y, opt) {
     onSuck() { this.inCone = 3;
       if (EDIBLE[this.type]) { this.eatT = (this.eatT || 0) + 1; if (this.state === 'hang') this.state = 'fly'; tip('eat', 'ガブッ！ 小さな生き物は掃除機が食べちゃう。HP が少し回復して、GABU ゲージがたまる'); return; }
       if (frame % 9 === 0) { sfx('tink'); parts.push({ x: this.x + rnd(-6, 6), y: this.y - this.h / 2 + rnd(-6, 6), vx: rnd(-1, 1), vy: rnd(-1, 0), life: 10, col: '#ffffff', size: 1 }); }
-      this.tinkT = 30; tip('foe', FOE_JP[this.type] + 'は生き物（？）だから掃除機が効かない！ 吸い込んだ物をぶつけよう（SPIT）'); },
+      this.tinkT = 30; tip('foe', (SKIN_JP[this.skin] || FOE_JP[this.type]) + 'は生き物（？）だから掃除機が効かない！ 吸い込んだ物をぶつけよう（SPIT）'); },
     hitBy(s) { return foeHit(this, s); } };
   if (kind === 'rat' || kind === 'puppet' || kind === 'skeleton' || kind === 'crab') { e.body = { x: x - w / 2, y: y - h, w, h, vx: 0, vy: 0 }; e.state = 'walk'; e.face = Math.random() < 0.5 ? -1 : 1; }
   if (kind === 'bat') { e.state = 'hang'; e.y = Math.max(y, 2 * TS + h + 2); }
@@ -3119,6 +3204,208 @@ function timeSlowAt(x, feetY) {
 }
 
 // =====================================================================
+//  AREA BOSS (v0.4): 人形座長 ストリングス MAESTRO STRINGS (人形劇場の舞台 / puppet theater stage)
+//    A life-size marionette conductor that works his own strings from the rigging. Not a friend character.
+//    cut      : gold marks -> his strings whip straight down (2 waves; the 2nd fills the 1st's gaps)
+//    dance    : a red mark under Kanata -> he leaps onto it: landing + sparkle waves both ways (jump them)
+//    masks    : pink marks -> the troupe's masks are tossed in high arcs onto them (one leaves a PLATE = ammo)
+//    spotlight: (every 3rd) a spotlight hunts Kanata, LOCKS (flashing) -> a sandbag drops from the rigging.
+//               The rigging jerks, his strings tangle and he slumps: the MASK CORE pops out = weak point
+//    rage     : (50%) shorter warnings, more masks, the dance becomes a double leap
+// =====================================================================
+BOSS_DEFS.marionette = { jp: '人形座長 ストリングス', en: 'MAESTRO STRINGS', cfg: 'marionette', cols: ['#e8c8a0', '#2a2040', '#ff6a8a', '#ffffff'],
+  rageText: '座長が怒った！ 糸がぎりぎり鳴っている',
+  sayIntro: '……おおきな、あやつり人形。……誰が糸を引いてるの？', sayCore: '……仮面のゴースト。……吸っちゃえ',
+  make(b) { b.face = -1; b.jy = 0; b.tx = b.x; b.pose = 'idle'; b.markR = 22; b.spot = null; },
+  hitBox(b) { return { x0: b.x - 22, x1: b.x + 22, y0: FLOOR_Y - 96 - b.jy, y1: FLOOR_Y - 10 - b.jy }; },
+  aim(b) { return { x: b.x, y: FLOOR_Y - 58 - b.jy }; },
+  update(b) {
+    const C = CONFIG.marionette, px = clamp(pcx(), 16, room.W - 16);
+    b.face = Math.sign(pcx() - b.x) || b.face;
+    switch (b.state) {
+      case 'idle': b.pose = 'idle'; b.markR = 22;
+        if (b.t === 1) b.tx = pcx() < 192 ? rnd(250, 330) : rnd(54, 134);   // dances back to the far side of the stage
+        b.x += clamp(b.tx - b.x, -1.2, 1.2);
+        if (b.t >= bossP('idle')) chooseAttack(b, ['cut', 'dance', 'masks'], 'spotlight'); break;
+      case 'cut': {
+        const warn = bossP('cutWarn'), T2 = warn + 28;
+        if (b.t === 1 || b.t === T2) { b.pose = 'cast'; b.marks = (b.t === 1 ? [px, px - 96, px + 96] : [px - 48, px + 48]).map(x => clamp(x, 16, room.W - 16)); b.mT = b.t; sfx('tick');
+          tip('mcut', '金色の印に、座長の糸が振り下ろされる！ 印から離れて'); }
+        if (b.t < b.mT + warn && (b.t - b.mT) % 10 === 0) sfx('tick');
+        if (b.t === b.mT + warn) { for (const mx of b.marks) ebullets.push({ kind: 'string', x: mx - 5, y: 2 * TS, w: 10, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: C.cutDamage, life: 22, static: 1 });
+          b.marks = []; sfx('whoosh'); cam.shake = 2; }
+        if (b.t >= T2 + warn + 30) { b.state = 'idle'; b.t = 0; } break; }
+      case 'dance': {
+        const warn = bossP('leapWarn'), air = C.leapAir;
+        if (b.t === 1) { b.marks = [clamp(px, 40, room.W - 40)]; b.markR = 58; b.lx0 = b.x; b.leaps = b.rage ? 2 : 1; b.pose = 'cast'; sfx('warn');
+          tip('mdance', '座長が跳ぶ！ 赤い印から離れて、着地の波はジャンプでかわせ'); }
+        if (b.t < warn) { if (b.t % 8 === 0) sfx('warn'); break; }
+        if (b.t === warn) { sfx('whoosh'); b.lx1 = b.marks[0]; b.pose = 'jump'; }
+        if (b.t < warn + air) { const k = (b.t - warn) / air; b.x = b.lx0 + (b.lx1 - b.lx0) * k; b.jy = Math.sin(k * Math.PI) * 110; break; }
+        if (b.t === warn + air) { b.jy = 0; b.x = b.lx1; b.marks = []; b.pose = 'idle'; sfx('boom'); cam.shake = 9; hitStop = 3;
+          if (overlapBox(b.x - 30, FLOOR_Y - 90, b.x + 30, FLOOR_Y)) hurtPlayer(C.leapDamage, b.x, 'dance');
+          for (const d of [-1, 1]) ebullets.push({ kind: 'wave', x: b.x + d * 36 - 8, y: FLOOR_Y - 14, w: 16, h: 14, vx: d * C.waveSpeed, vy: 0, dmg: 1, life: 220 });
+          for (let i = 0; i < 16; i++) parts.push({ x: b.x + rnd(-30, 30), y: FLOOR_Y - 4, vx: rnd(-2, 2), vy: rnd(-3, -0.5), life: 26, col: i & 1 ? '#ffe080' : '#ff8ab0', size: 2, grav: 1 }); }
+        if (b.t === warn + air + 34 && --b.leaps > 0) { b.t = 1; b.lx0 = b.x; b.marks = [clamp(clamp(pcx(), 16, room.W - 16), 40, room.W - 40)]; b.pose = 'cast'; sfx('warn'); break; }
+        if (b.t >= warn + air + 34) { b.markR = 22; b.state = 'idle'; b.t = 0; } break; }
+      case 'masks': {
+        const warn = bossP('maskWarn'), fl = C.maskFlight;
+        if (b.t === 1) { const n = bossP('masks'); const xs = [px]; for (let k = 1; xs.length < n; k++) { xs.push(px + k * 64); if (xs.length < n) xs.push(px - k * 64); }
+          b.marks = xs.map(x => clamp(x, 20, room.W - 20)); b.markR = 20; b.pose = 'cast'; sfx('warn'); tip('mmask', '桃色の印に、劇団の仮面が投げこまれる！ 印と印のあいだへ'); }
+        if (b.t < warn && b.t % 12 === 0) sfx('warn');
+        if (b.t === warn) { let i = 0; b.flyers = [];   // tossed up over the marks, then they drop straight down
+          for (const mx of b.marks) { const plate = i++ === 0, q = { kind: 'maskshot', x: b.x - 7, y: FLOOR_Y - 96, w: 14, h: 12, vx: 0, vy: 0, g: 0, dmg: C.maskDamage, life: 400, static: 1,
+            onLand: q => { for (let k = 0; k < 6; k++) parts.push({ x: q.x + 7, y: FLOOR_Y - 3, vx: rnd(-1.5, 1.5), vy: rnd(-2, -0.5), life: 16, col: '#ffd0e0', size: 2, grav: 1 }); sfx('tink'); if (plate) spawnItem('plate', clamp(q.x + 7, 24, room.W - 24), FLOOR_Y); } };
+            b.flyers.push({ q, x0: b.x, y0: FLOOR_Y - 96, tx: mx }); ebullets.push(q); }
+          b.pose = 'idle'; sfx('whoosh'); }
+        if (b.t > warn && b.flyers) { const k = Math.min(1, (b.t - warn) / 24);
+          for (const f of b.flyers) { f.q.x = f.x0 + (f.tx - f.x0) * k - 7; f.q.y = f.y0 + (60 - f.y0) * k - Math.sin(k * Math.PI) * 30;
+            if (k >= 1) { f.q.static = 0; f.q.vy = 0.5; f.q.g = 0.32; } }
+          if (k >= 1) b.flyers = null; }
+        if (b.t === warn + fl + 2) b.marks = [];
+        if (b.t >= warn + fl + 30) { b.state = 'idle'; b.t = 0; } break; }
+      case 'spotlight': {
+        const tr = C.spotTrack, lk = bossP('spotLock');
+        if (b.t === 1) { b.spot = { x: pcx() }; b.markR = 34; b.pose = 'cast'; sfx('warn'); tip('mspot', 'スポットライトが追ってくる！ 点滅したら止まる… 光の下から逃げて！'); }
+        if (b.t < tr) b.spot.x += clamp(pcx() - b.spot.x, -1.6, 1.6);
+        if (b.t < tr + lk) { b.marks = [b.spot.x]; if (b.t % 8 === 0) sfx('warn'); }
+        if (b.t === tr + lk) { b.marks = [b.spot.x]; ebullets.push({ kind: 'sandbag', x: b.spot.x - 20, y: 2 * TS, w: 40, h: 36, vx: 0, vy: 4, g: 0.45, dmg: C.bagDamage, life: 60,
+          onLand: q => { sfx('boom'); cam.shake = 10; hitStop = 3; for (let i = 0; i < 18; i++) parts.push({ x: q.x + rnd(0, 40), y: FLOOR_Y - 4, vx: rnd(-2.5, 2.5), vy: rnd(-3, -0.5), life: 30, col: i & 1 ? '#c8a878' : '#e8d8b0', size: 2, grav: 1 }); } }); sfx('whoosh'); }
+        if (b.t === tr + lk + 26) { b.marks = []; b.spot = null; b.state = 'slump'; b.t = 0; b.pose = 'slump'; b.markR = 22; b.winLen = bossP('stun'); sfx('crash');
+          b.coreSide = Math.sign(pcx() - b.x) || 1; b.core = makeCore(b, b.x + b.coreSide * 40, FLOOR_Y - 30, () => ({ x: boss.x, y: FLOOR_Y - 50 }), 'mcore');
+          tip('mcore', '糸がからまって座長がくずれ落ちた！ 仮面のコアを VAC で吸い込め！', true); }
+        break; }
+      case 'slump': coreBob(b, b.x + b.coreSide * 40, FLOOR_Y - 30); if (coreWindowOver(b)) { b.state = 'rise'; b.t = 0; } break;
+      case 'rise': b.pose = b.t < 30 ? 'slump' : 'idle'; if (b.t > 50) { b.state = 'idle'; b.t = 0; } break;
+    }
+  },
+  dying(b) { b.pose = 'slump'; b.marks = []; b.spot = null; b.jy = 0; b.flyers = null; },
+  onDefeat(b) { bossReward(b, b.x); say('……糸、ぜんぶほどけた。……おつかれさま、座長さん', 220);
+    tip('sealTheater', '時計塔の封印がひとつ解けた！（' + ['clock', 'marionette', 'orrery'].filter(k => progress.bosses.has(k)).length + ' / 3）', true);
+    checkBossGates(); velAppear('marionette', b.x > 192 ? 60 : 324, FLOOR_Y); },
+  draw(b, lights) {
+    const C = CONFIG.marionette, x = Math.round(b.x - cam.x), y = Math.round(FLOOR_Y - cam.y);
+    if (b.state === 'cut') for (const m of b.marks) drawFloorMark(m, Math.min(1, (b.t - b.mT) / bossP('cutWarn')), 'rgba(255,210,90,0.9)');
+    if (b.state === 'masks') for (const m of b.marks) drawFloorMark(m, Math.min(1, b.t / bossP('maskWarn')), 'rgba(255,110,170,0.9)');
+    if (b.state === 'dance' && b.marks.length) drawFloorMark(b.marks[0], Math.min(1, b.t / bossP('leapWarn')), 'rgba(255,60,60,0.85)');
+    if (b.state === 'spotlight' && b.spot) { const lock = b.t >= C.spotTrack, sx = b.spot.x - cam.x, top = 2 * TS - cam.y;
+      g.globalCompositeOperation = 'lighter'; g.fillStyle = lock ? ((frame & 2) ? 'rgba(255,120,120,0.30)' : 'rgba(255,240,200,0.30)') : 'rgba(255,240,190,0.16)';
+      g.beginPath(); g.moveTo(sx - 6, top); g.lineTo(sx + 6, top); g.lineTo(sx + 30, y); g.lineTo(sx - 30, y); g.closePath(); g.fill(); g.globalCompositeOperation = 'source-over';
+      drawFloorMark(b.spot.x, lock ? 1 : 0.5, 'rgba(255,60,60,0.9)'); lights.push({ x: b.spot.x, y: FLOOR_Y - 20, r: 50, warm: 1 }); }
+    if (b.state === 'dying' && b.t >= 90) return;
+    const key = b.pose === 'jump' ? 'str_jump' : b.pose === 'cast' ? 'str_cast' : b.pose === 'slump' ? 'str_slump' : 'str_idle' + ((frame >> 4) & 1);
+    const r = rectOf('boss', key), sx = x - (r.w >> 1), sy = y - r.h - Math.round(b.jy) + (b.pose === 'slump' ? 0 : Math.round(Math.sin(frame * 0.07) * 2) - 2);
+    // the control strings run up into the dark rigging (slack + tangled while slumped)
+    g.strokeStyle = 'rgba(230,230,255,0.55)'; g.lineWidth = 1;
+    for (const [ox, oy] of [[-20, 58], [20, 58], [-6, 6], [6, 6], [-10, 96], [10, 96]]) { g.beginPath(); g.moveTo(sx + 32 + ox, sy + oy);
+      if (b.pose === 'slump') g.quadraticCurveTo(sx + 32 + ox * 2 + Math.sin(frame * 0.1 + ox) * 6, (sy + 2 * TS - cam.y) / 2, sx + 32 + ox * 0.3, 2 * TS - cam.y); else g.lineTo(sx + 32 + ox * 0.5, 2 * TS - cam.y); g.stroke(); }
+    spr('boss', key, sx, sy, b.face < 0);
+    if (b.flash > 0 && (frame & 2)) { g.globalAlpha = 0.7; sprWhite('boss', key, sx, sy, b.face < 0); g.globalAlpha = 1; }
+    if (b.state === 'dance' && b.t < bossP('leapWarn') && (frame & 4)) { g.globalAlpha = 0.4; sprWhite('boss', key, sx, sy, b.face < 0, '#ff4040'); g.globalAlpha = 1; }
+    if (b.state === 'slump') for (let i = 0; i < 4; i++) { const an = frame * 0.12 + i * 1.57; g.fillStyle = '#ffe080'; g.fillRect(Math.round(x + Math.cos(an) * 18), Math.round(y - 92 + Math.sin(an) * 4), 2, 2); }
+    lights.push({ x: b.x, y: FLOOR_Y - 60 - b.jy, r: 60, warm: 1 });
+    drawCore(b, lights, 'mcore');
+  },
+};
+
+// =====================================================================
+//  AREA BOSS (v0.4): 星喰いの天球儀 アストラ ASTRA, THE STAR-EATING ORRERY (星見の天文台 / observatory dome)
+//    A brass orrery that swallowed a little sun and now wants the whole night sky. Not a friend character.
+//    meteor   : blue marks -> shooting stars fall straight onto them
+//    comet    : a dotted lane flashes (LOW = jump it / HIGH = stay on the floor) -> a comet streaks across from the far wall
+//    orbit    : the planets come loose and roll along the floor from the walls, one after another (jump them)
+//    supernova: (every 3rd) the sun swells, dotted rays fan out -> star shards fly down the rays.
+//               Burnt out, the sun goes grey: its SUN CORE drops out = weak point (tug-of-war)
+//    rage     : (50%) the sun turns red: shorter warnings, more stars / planets, faster comets
+// =====================================================================
+BOSS_DEFS.orrery = { jp: '星喰いの天球儀 アストラ', en: 'ASTRA, THE STAR-EATING ORRERY', cfg: 'orrery', cols: ['#ffd060', '#ff8a3a', '#ffffff', '#c9a24a'],
+  rageText: 'アストラの太陽が赤く燃え上がった！',
+  sayIntro: '……天球儀が、星を食べてる。……おなか、こわすよ', sayCore: '……太陽の中に、ゴースト……',
+  make(b) { b.x = 192; b.y = 96; b.markR = 22; b.rays = null; b.lane = null; },
+  hitBox(b) { return { x0: b.x - 30, x1: b.x + 30, y0: b.y - 30, y1: b.y + 30 }; },
+  aim(b) { return b.state === 'stop' ? null : { x: b.x, y: b.y }; },
+  update(b) {
+    const C = CONFIG.orrery, px = clamp(pcx(), 16, room.W - 16);
+    b.x = 192 + Math.sin(frame * 0.012) * 26; b.y = 96 + Math.sin(frame * 0.023) * 6;
+    switch (b.state) {
+      case 'idle': b.markR = 22; if (b.t >= bossP('idle')) chooseAttack(b, ['meteor', 'comet', 'orbit'], 'supernova'); break;
+      case 'meteor': {
+        const warn = bossP('meteorWarn');
+        if (b.t === 1) { const n = bossP('meteors'), xs = [px]; for (let k = 1; xs.length < n; k++) { xs.push(px + k * 56); if (xs.length < n) xs.push(px - k * 56); }
+          b.marks = xs.map(x => clamp(x, 18, room.W - 18)); b.marks0 = b.marks.slice(); b.markR = 18; b.second = 0; sfx('warn'); tip('ometeor', '青い印に流れ星が落ちてくる！ 印と印のあいだへ'); }
+        if (b.t < warn && b.t % 12 === 0) sfx('tick');
+        if (b.t === warn) { let i = 0; for (const mx of b.marks) { const gem = i++ === 0; ebullets.push({ kind: 'starshot', x: mx - 7, y: 2 * TS, w: 14, h: 14, vx: 0, vy: 5, g: 0.2, dmg: C.starDamage, life: 90,
+          onLand: q => { if (gem) spawnItem('crystal', clamp(q.x + 7, 24, room.W - 24), FLOOR_Y); for (let k = 0; k < 6; k++) parts.push({ x: q.x + 7, y: FLOOR_Y - 3, vx: rnd(-1.5, 1.5), vy: rnd(-2, -0.5), life: 16, col: '#fff4a0', size: 2, glow: 1, grav: 1 }); } }); } sfx('whoosh'); }
+        if (b.t === warn + 30) { b.marks = []; if (b.rage && !b.second) { b.second = 1; b.marks = b.marks0.map(x => clamp(x + 28, 18, room.W - 18)); b.t = warn - 30; } }   // rage: a 2nd volley in the gaps
+        if (b.t >= warn + 56) { b.second = 0; b.state = 'idle'; b.t = 0; } break; }
+      case 'comet': {
+        const warn = bossP('cometWarn'), n = b.rage ? 2 : 1;
+        if (b.t === 1) { b.cn = 0; b.cT = 1; }
+        if (b.t === b.cT) { b.lane = { high: b.cn === 0 ? Math.random() < 0.5 : !b.lastHigh, dir: pcx() < 192 ? 1 : -1 }; b.lastHigh = b.lane.high; b.petalHigh = b.lane.high; sfx('warn');
+          tip('ocomet', 'ほうき星！ 低い線ならジャンプ、高い線なら床でじっと'); }
+        if (b.lane && b.t < b.cT + warn && (b.t - b.cT) % 10 === 0) sfx('tick');
+        if (b.lane && b.t === b.cT + warn) { const L = b.lane, y = L.high ? FLOOR_Y - 60 : FLOOR_Y - 16;
+          ebullets.push({ kind: 'comet', x: L.dir > 0 ? room.W - 16 - 26 : 16, y, w: 26, h: 14, vx: -L.dir * bossP('cometSpeed'), vy: 0, g: 0, dmg: C.cometDamage, life: 200, static: 1, wall: 1, high: L.high }); sfx('whoosh'); }
+        if (b.lane && b.t === b.cT + warn + 120) { b.cn++; b.lane = null; if (b.cn < n) b.cT = b.t + 1; }
+        if (b.cn >= n && !ebullets.some(q => q.kind === 'comet' && !q.dead)) { b.petalHigh = false; b.state = 'idle'; b.t = 0; } break; }
+      case 'orbit': {
+        const warn = bossP('orbitWarn'), n = bossP('planets');
+        if (b.t === 1) { b.pn = 0; b.pdir = pcx() < 192 ? 1 : -1; b.pT = warn; sfx('warn'); tip('oorbit', '惑星が外れて床を転がってくる！ ジャンプでかわせ'); }
+        if (b.t === b.pT && b.pn < n) { const d = b.pn % 2 ? -b.pdir : b.pdir;   // first one from the far wall
+          ebullets.push({ kind: 'planet', x: d > 0 ? room.W - 34 : 16, y: FLOOR_Y - 18, w: 18, h: 18, vx: -d * bossP('planetSpeed'), vy: 0, g: 0, dmg: C.planetDamage, life: 400, static: 1, wall: 1, onExpire: q => spawnItem('gear', clamp(q.x + 9, 24, room.W - 24), FLOOR_Y) }); b.pn++; sfx('whoosh'); }
+        if (b.t > warn && b.pn < n && !ebullets.some(q => q.kind === 'planet' && !q.dead) && b.t >= b.pT) b.pT = b.t + 30;
+        if (b.pn >= n && b.t > b.pT + 2 && !ebullets.some(q => q.kind === 'planet' && !q.dead)) { b.state = 'idle'; b.t = 0; } break; }
+      case 'supernova': {   // shards fly out along the rays to a point high above each mark, hang there, then drop straight down
+        const warn = bossP('novaWarn'), sp = C.shardSpeed, HY = 64, hang = 16;
+        if (b.t === 1) { const n = bossP('shards'), off = rnd(-20, 20); b.rays = []; b.rO = { x: b.x, y: b.y + 26 };
+          for (let i = 0; i < n; i++) b.rays.push({ tx: clamp(192 + off + (i - (n - 1) / 2) * 60, 16, room.W - 16), k: 0, q: null, st: 0 });
+          b.marks = b.rays.map(r => r.tx); b.markR = 18; sfx('warn'); tip('onova', '太陽がふくらむ！ 点線の先に星のかけらが降ってくる… 線と線のあいだへ'); }
+        if (b.t < warn && b.t % 8 === 0) sfx('warn');
+        if (b.t === warn) { for (const r of b.rays) { r.q = { kind: 'starshot', x: b.rO.x - 7, y: b.rO.y - 7, w: 14, h: 14, vx: 0, vy: 0, g: 0, dmg: C.shardDamage, life: 9999, static: 1 }; ebullets.push(r.q); } sfx('boom'); cam.shake = 8; }
+        if (b.t > warn) { let alive = 0;
+          for (const r of b.rays) { if (!r.q) continue; alive++;
+            if (r.st === 0) { const L = Math.hypot(r.tx - b.rO.x, HY - b.rO.y) || 1; r.k = Math.min(1, r.k + sp / L);
+              r.q.x = b.rO.x + (r.tx - b.rO.x) * r.k - 7; r.q.y = b.rO.y + (HY - b.rO.y) * r.k - 7; if (r.k >= 1) { r.st = 1; r.hold = hang; } }
+            else if (r.st === 1) { if (--r.hold <= 0) { r.st = 2; r.q.static = 0; r.q.vy = 1; r.q.g = 0.4; r.q.life = 80;
+              r.q.onLand = q => { for (let k = 0; k < 6; k++) parts.push({ x: q.x + 7, y: FLOOR_Y - 3, vx: rnd(-1.5, 1.5), vy: rnd(-2, -0.5), life: 16, col: '#fff4a0', size: 2, glow: 1, grav: 1 }); }; } }
+            else if (r.q.dead) { r.q = null; alive--; } }
+          if (!alive) { b.rays = null; b.marks = []; b.markR = 22; b.state = 'stop'; b.t = 0; b.winLen = bossP('stun'); sfx('crash'); cam.shake = 6;
+            b.coreSide = Math.sign(pcx() - 192) || 1; b.core = makeCore(b, 192 + b.coreSide * 40, FLOOR_Y - 30, () => ({ x: boss.x, y: boss.y + 50 }), 'scor');
+            tip('ocore', '太陽が燃えつきた！ こぼれ落ちた「太陽のコア」を VAC で吸い込め！', true); } }
+        break; }
+      case 'stop': coreBob(b, 192 + b.coreSide * 40, FLOOR_Y - 30); if (coreWindowOver(b)) { b.state = 'relight'; b.t = 0; } break;
+      case 'relight': if (b.t > 50) { b.state = 'idle'; b.t = 0; } break;
+    }
+  },
+  dying(b) { b.marks = []; b.rays = null; b.lane = null; },
+  onDefeat(b) { bossReward(b, b.x); say('……星、みんな空にかえった。……きれい', 220);
+    tip('sealStars', '時計塔の封印がひとつ解けた！（' + ['clock', 'marionette', 'orrery'].filter(k => progress.bosses.has(k)).length + ' / 3）', true);
+    checkBossGates(); velAppear('orrery', pcx() < 192 ? 330 : 54, FLOOR_Y); },
+  draw(b, lights) {
+    const x = Math.round(b.x - cam.x), y = Math.round(b.y - cam.y);
+    if (b.state === 'meteor') for (const m of b.marks) drawFloorMark(m, Math.min(1, b.t / bossP('meteorWarn')), 'rgba(110,170,255,0.9)');
+    if (b.state === 'comet' && b.lane && b.t < b.cT + bossP('cometWarn')) { const ly = (b.lane.high ? FLOOR_Y - 53 : FLOOR_Y - 9) - cam.y;
+      g.fillStyle = (frame & 4) ? 'rgba(160,220,255,0.9)' : 'rgba(255,255,255,0.5)'; for (let xx = 4; xx < room.W; xx += 8) g.fillRect(Math.round(xx - cam.x), Math.round(ly), 4, 1);
+      drawTextShadow(b.lane.high ? 'HIGH' : 'LOW', Math.round((b.lane.dir > 0 ? room.W - 40 : 40) - cam.x), Math.round(ly - 12), 'c', 1, 'c'); }
+    if (b.state === 'orbit' && b.t < bossP('orbitWarn')) { g.fillStyle = (frame & 4) ? 'rgba(160,220,255,0.7)' : 'rgba(255,255,255,0.3)';
+      for (let xx = 18; xx < room.W - 18; xx += 10) g.fillRect(Math.round(xx - cam.x), FLOOR_Y - 2 - cam.y, 5, 1); }
+    if (b.state === 'supernova' && b.rays) for (const r of b.rays) { if (b.t > bossP('novaWarn') && !r.q) continue;
+      g.fillStyle = b.t < bossP('novaWarn') && (frame & 4) ? 'rgba(255,240,160,0.95)' : 'rgba(255,190,90,0.55)';
+      const L = Math.hypot(r.tx - b.rO.x, 64 - b.rO.y); for (let d = 0; d < L; d += 6) { const k = d / L; g.fillRect(Math.round(b.rO.x + (r.tx - b.rO.x) * k - cam.x), Math.round(b.rO.y + (64 - b.rO.y) * k - cam.y), 2, 2); }
+      for (let yy = 64; yy < FLOOR_Y; yy += 8) g.fillRect(Math.round(r.tx - cam.x), Math.round(yy - cam.y), 1, 4);
+      drawFloorMark(r.tx, 0.6, 'rgba(255,190,90,0.8)'); }
+    if (b.state === 'dying' && b.t >= 90) return;
+    const key = b.state === 'stop' || b.state === 'relight' && b.t < 25 || b.state === 'dying' ? 'astra_stop' : b.state === 'supernova' ? 'astra_nova' : b.rage ? 'astra_rage' : 'astra_idle';
+    let ox = 0; if (b.state === 'supernova' && b.t < bossP('novaWarn')) ox = (frame & 2) ? 1 : -1;
+    spr('boss', key, x - 56 + ox, y - 56);
+    if (b.flash > 0 && (frame & 2)) { g.globalAlpha = 0.6; sprWhite('boss', key, x - 56, y - 56); g.globalAlpha = 1; }
+    if (b.state === 'stop') for (let i = 0; i < 4; i++) { const an = frame * 0.12 + i * 1.57; g.fillStyle = '#ffe080'; g.fillRect(Math.round(x + Math.cos(an) * 26), Math.round(y - 40 + Math.sin(an) * 4), 2, 2); }
+    lights.push({ x: b.x, y: b.y, r: b.state === 'stop' ? 50 : 110, warm: 1 });
+    drawCore(b, lights, 'scor');
+  },
+};
+
+// =====================================================================
 //  v0.4 STORY: portrait dialogue box, ヴェル VEL's one-line appearances, the true ending.
 //    ヴェル (主人付き秘書) is never fought. She appears in human form at key moments (new areas, after certain
 //    bosses, before Chronoa), says ONE short polite cryptic line, and fades away.
@@ -3131,6 +3418,8 @@ const VEL_LINES = {
   first:   '見えているものが、すべてではありません。',
   theater: '……拍手は、幕が下りてからでも遅くはありません。',
   stars:   '星は、見られていることに気づいています。',
+  marionette: '糸の切れた人形は、自由なのでしょうか。……それとも。',
+  orrery:  '夜空の数を数えるのは、主のささやかなご趣味です。',
   clock:   '時計の針は、まだ止まっていませんよ。',
   chronoa: '……私の後ろには、立たないことをお勧めします。',
 };
@@ -3382,6 +3671,48 @@ const MUSIC_SONGS = {
     order: ['A', 'B', 'A2'] },
 
   // ---- v0.4 ----
+  theater: { name: 'STRINGS ATTACHED', jp: '道中：人形劇場', mood: 'creepy cabaret waltz-tango in D minor, music-box lead over an oom-pah bass, curtain-call flourishes', bpm: 128,
+    lead: { duty: 0.125, vol: 0.064, gate: 0.78 }, p2v: { duty: 0.25, vol: 0.034 },
+    sections: {
+      A: { chords: ['Dm', 'A7', 'Dm', 'Gm', 'Dm', 'Bb', 'Em7b5,A', 'Dm'], p2: 'stab', bass: 'pop',
+        drums: ['k...s.s.k...s.s.'], fill: 'k...s.s.k.s.ssss',
+        mel: ['D5:3 E5:1 F5:2 A5 D6:4 C#6:2 A5', 'G5:6 E5:2 C#5:8', 'F5:3 G5:1 A5:2 D6 F6:4 E6:2 D6', 'Bb5:6 G5:2 D5:8',
+              'A5:3 G5:1 F5:2 E5 D5:4 F5:2 A5', 'D6:6 Bb5:2 F5:8', 'G5:2 Bb5 E6 G5 A5 C#6 E6 G6', 'F6:4 E6 D6:8'] },
+      B: { chords: ['F', 'C', 'Bb', 'A', 'Gm', 'Dm', 'E7', 'A7'], p2: 'harm3', bass: 'walk',
+        drums: ['k.h.s.h.k.h.s.hh'], fill: 'k.s.s.s.ssssxcx.',
+        mel: ['A5:4 C6:2 F6 A6:4 G6:2 F6', 'E6:6 C6:2 G5:8', 'D6:4 F6:2 Bb6 D7:4 C7:2 Bb6', 'A6:6 C#7:2 E7:8',
+              'D7:4 Bb6:2 G6 D6:4 G6', 'F6:4 D6:2 A5 F5:4 A5', 'G#5:2 B5 D6 E6 G#6 B6 D7 E7', 'C#7:8 E6:4 A6'] },
+      A2: { base: 'A', p2: 'echo' } },
+    order: ['A', 'B', 'A2'] },
+
+  stars: { name: 'COUNTING STARS', jp: '道中：星見の天文台', mood: 'weightless, sparkling E major nocturne; glassy arpeggios turning like an orrery, soft pulse', bpm: 104,
+    lead: { duty: 0.125, vol: 0.058, gate: 0.92 }, p2v: { duty: 0.125, vol: 0.03 },
+    sections: {
+      A: { chords: ['Emaj7', 'C#m', 'Amaj7', 'B', 'Emaj7', 'G#m', 'Amaj7', 'B'], p2: 'arp16', bass: 'half',
+        drums: ['k.......s.......'], fill: 'k.......s...s.ss',
+        mel: ['B5:4 G#5:2 E5 B5:4 D#6', 'E6:6 C#6:2 G#5:8', 'C#6:4 A5:2 E5 C#6:4 E6', 'F#6:8 D#6:4 B5',
+              'G#6:4 E6:2 B5 G#6:4 B6', 'A#6:6 G#6:2 D#6:8', 'C#7:4 B6:2 A6 E6:4 C#6', 'D#6:12 r:4'] },
+      B: { chords: ['C#m', 'G#m', 'A', 'E', 'F#m', 'C#m', 'D#m7b5,G#', 'C#m,B'], p2: 'echo', bass: 'drone',
+        drums: ['k...h...s...h...'], fill: 'k...h...s.s.sss.',
+        mel: ['E6:6 D#6:2 C#6:4 G#5', 'B5:6 A#5:2 G#5:8', 'C#6:4 E6:2 A6 C#7:4 B6', 'G#6:12 r:4',
+              'A6:4 F#6:2 C#6 A5:4 C#6', 'E6:6 D#6:2 C#6:8', 'F#6:2 A6 C7 B6 G#6 D#6 B#5 D#6', 'C#6:8 D#6:4 B5'] },
+      A2: { base: 'A', p2: 'arp8' } },
+    order: ['A', 'B', 'A2'] },
+
+  boss5: { name: 'CURTAIN CALL', jp: 'ボス：人形座長／星喰いの天球儀', mood: 'theatrical F minor boss theme; galloping strings, brassy stabs, a whirling bridge', bpm: 160,
+    lead: { duty: 0.25, vol: 0.07, gate: 0.84 }, p2v: { duty: 0.125, vol: 0.036 },
+    sections: {
+      A: { chords: ['Fm', 'Fm', 'Db', 'C', 'Fm', 'Bbm', 'Gm7b5,C', 'Fm'], p2: 'arp16', bass: 'gallop',
+        drums: ['k.hks.hkk.hks.hk'], fill: 'k.hks.hks.s.ssss',
+        mel: ['F5:2 Ab5 C6 F6 E6:4 C6', 'Ab5:2 G5 F5 C5 F5:8', 'Db6:2 C6 Bb5 Ab5 F5:4 Ab5', 'G5:6 E5:2 C5:8',
+              'C6:2 Ab5 F5 Ab5 C6:4 F6', 'Db6:4 Bb5:2 F5 Db6:4 F6', 'E6:2 G6 Bb6 G6 E6 C6 E6 G6', 'F6:12 r:4'] },
+      B: { chords: ['Db', 'Eb', 'C', 'Fm', 'Bbm', 'C', 'Db,Eb', 'C7'], p2: 'harm3', bass: 'oct8',
+        drums: ['k.k.s.k.k.k.s.kk'], fill: 'k.s.s.s.ssssxcx.',
+        mel: ['F6:4 Ab6:2 F6 Db6:4 F6', 'G6:4 Bb6:2 G6 Eb6:4 G6', 'E6:4 G6:2 C7 E7:4 C7', 'Ab6:6 G6:2 F6:8',
+              'F6:4 Db6:2 Bb5 F6:4 Bb6', 'G6:4 E6:2 C6 G6:4 C7', 'Db7:2 C7 Bb6 Ab6 Bb6 C7 Db7 Eb7', 'E7:8 C7:4 G6'] },
+      A2: { base: 'A', p2: 'echo' } },
+    order: ['A', 'B', 'A2'] },
+
   chronoa: { name: 'NOT DONE YET', jp: 'ボス：時計塔管理人クロノア', mood: 'true final boss, C# minor; drowsy music-box intro feel over a relentless clockwork gallop, rewinding runs', bpm: 164,
     lead: { duty: 0.25, vol: 0.07, gate: 0.82 }, p2v: { duty: 0.125, vol: 0.034 },
     sections: {
@@ -3424,9 +3755,9 @@ const MUSIC_SONGS = {
       mel: ['F5:2 E5 D5 A4 F4:8', 'G4:4 E4 D4:8'] } },
     order: ['A'] },
 };
-const MUSIC_LIST = ['title', 'mansion', 'laundry', 'garden', 'clock', 'chapel', 'bath', 'boss', 'boss2', 'boss3', 'boss4', 'vault', 'afterglow', 'jingle_warning', 'jingle_save', 'jingle_clear', 'jingle_gameover'];
+const MUSIC_LIST = ['title', 'mansion', 'laundry', 'garden', 'clock', 'chapel', 'bath', 'boss', 'boss2', 'boss3', 'boss4', 'theater', 'stars', 'boss5', 'vault', 'afterglow', 'jingle_warning', 'jingle_save', 'jingle_clear', 'jingle_gameover'];
 const BOSS_THEMES = new Set(['boss', 'boss2', 'boss3']);
-const BOSS_MUSIC = { chronoa: 'chronoa', chandelier: 'boss', golem: 'boss2', rose: 'boss2', clock: 'boss3', organ: 'boss4', serpent: 'boss4' };
+const BOSS_MUSIC = { chronoa: 'chronoa', marionette: 'boss5', orrery: 'boss5', chandelier: 'boss', golem: 'boss2', rose: 'boss2', clock: 'boss3', organ: 'boss4', serpent: 'boss4' };
 
 // ---------------------------------------------------------------------
 //  compiler: song -> events per 16th step  { ch: 'p1'|'p2'|'tri'|'noi', m: midi, len (steps), vol, duty, kind }
@@ -3879,8 +4210,11 @@ function foeSprite(e) {
     case 'crab': return e.state === 'warn' || e.state === 'snap' ? 'crab_snap' : 'crab' + ((e.t >> 3) & 1);
   }
 }
+// v0.4 area skins: same behaviour, new look (dancer = puppet, maskbat = bat, starwisp = skullwisp, chart = cursedbook)
+const FOE_SKIN_BASE = { dancer: 'puppet', maskbat: 'bat', starwisp: 'skullwisp', chart: 'cbook' };
+function foeSkin(e, k) { const base = e.skin && FOE_SKIN_BASE[e.skin]; return base && k.startsWith(base) ? e.skin + k.slice(base.length) : k; }
 function drawFoe(e, x, y) {
-  const k = foeSprite(e), r = rectOf('enemies', k), fl = e.type === 'gargoyle' ? pcx() < e.x : e.face < 0;
+  const k = foeSkin(e, foeSprite(e)), r = rectOf('enemies', k), fl = e.type === 'gargoyle' ? pcx() < e.x : e.face < 0;
   let sx = x - r.w / 2, sy = y - r.h; if (e.state === 'warn' || e.tinkT > 20) sx += (frame & 2) ? 1 : -1;
   if (e.type === 'bat' && e.state === 'hang') sy = y - e.h - 2;
   spr('enemies', k, sx, sy, fl);
@@ -3920,6 +4254,15 @@ function drawShot(s) {
 function drawEBullet(b) {
   const x = b.x - cam.x, y = b.y - cam.y;
   if (b.kind === 'plate') { spr('items', 'plate', x, y); if (b.spin & 4) { g.fillStyle = '#ffffff'; g.fillRect(Math.round(x + 2), Math.round(y + 1), 3, 1); } }
+  // v0.4 area bosses
+  else if (b.kind === 'string') { const k = Math.min(1, (22 - b.life) / 4), h = Math.round(b.h * k); g.fillStyle = 'rgba(255,240,220,0.35)'; g.fillRect(Math.round(x + 1), Math.round(y), 8, h);
+    g.fillStyle = '#fff4e0'; g.fillRect(Math.round(x + 4), Math.round(y), 2, h); g.fillStyle = '#ff8ab0'; g.fillRect(Math.round(x + 2), Math.round(y + h - 4), 6, 4); }
+  else if (b.kind === 'maskshot') { g.save(); g.translate(Math.round(x + 7), Math.round(y + 6)); g.rotate(b.spin * 0.25); const r = rectOf('boss', 'maskshot'); g.drawImage(IMG.boss, r.x, r.y, r.w, r.h, -7, -7, r.w, r.h); g.restore(); }
+  else if (b.kind === 'sandbag') { spr('boss', 'sandbag', Math.round(x - 2), Math.round(y - 4)); g.fillStyle = '#c8b898'; g.fillRect(Math.round(x + 19), Math.round(y - 40), 1, 36); }
+  else if (b.kind === 'starshot') { spr('boss', 'starshot', Math.round(x - 1), Math.round(y - 1)); if (frame % 2 === 0) parts.push({ x: b.x + 7, y: b.y + 7, vx: rnd(-0.4, 0.4), vy: rnd(-0.6, 0), life: 12, col: '#fff4a0', size: 1, glow: 1 }); }
+  else if (b.kind === 'comet') { const d = Math.sign(b.vx) || 1; g.globalCompositeOperation = 'lighter'; for (let i = 1; i <= 6; i++) { g.fillStyle = 'rgba(140,200,255,' + (0.5 - i * 0.07) + ')'; g.fillRect(Math.round(x + 13 - d * (i * 7 + 6) - 4), Math.round(y + 3 + (i & 1)), 9, 8 - (i >> 1)); }
+    g.globalCompositeOperation = 'source-over'; g.fillStyle = '#e8f6ff'; g.beginPath(); g.arc(x + 13, y + 7, 7, 0, 7); g.fill(); g.fillStyle = '#7ac8ff'; g.beginPath(); g.arc(x + 13 + d * 2, y + 7, 4, 0, 7); g.fill(); }
+  else if (b.kind === 'planet') { const r = rectOf('boss', 'planet'); g.save(); g.translate(Math.round(x + 9), Math.round(y + 9)); g.rotate(frame * 0.15 * Math.sign(b.vx)); g.drawImage(IMG.boss, r.x, r.y, r.w, r.h, -9, -9, r.w, r.h); g.restore(); }
   else if (b.kind === 'candle') { spr('items', 'candle', x, y); spr('props', (boss && boss.rage ? 'bflame' : 'flame') + ((frame >> 2) & 3), x, y - 7); }
   else if (b.kind === 'shard') { g.fillStyle = '#c8ecff'; g.fillRect(Math.round(x + 3), Math.round(y), 2, 10); g.fillRect(Math.round(x + 1), Math.round(y + 3), 6, 4); g.fillStyle = '#ffffff'; g.fillRect(Math.round(x + 3), Math.round(y + 2), 1, 4); }
   else if (b.kind === 'firepatch') { const k = boss && boss.rage ? 'bflame' : 'flame'; for (let i = 0; i < 3; i++) spr('props', k + (((frame >> 2) + i) & 3), x + 1 + i * 7, y + (b.life < 30 ? 4 : 1)); }

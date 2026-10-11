@@ -257,8 +257,11 @@ function foeSprite(e) {
     case 'crab': return e.state === 'warn' || e.state === 'snap' ? 'crab_snap' : 'crab' + ((e.t >> 3) & 1);
   }
 }
+// v0.4 area skins: same behaviour, new look (dancer = puppet, maskbat = bat, starwisp = skullwisp, chart = cursedbook)
+const FOE_SKIN_BASE = { dancer: 'puppet', maskbat: 'bat', starwisp: 'skullwisp', chart: 'cbook' };
+function foeSkin(e, k) { const base = e.skin && FOE_SKIN_BASE[e.skin]; return base && k.startsWith(base) ? e.skin + k.slice(base.length) : k; }
 function drawFoe(e, x, y) {
-  const k = foeSprite(e), r = rectOf('enemies', k), fl = e.type === 'gargoyle' ? pcx() < e.x : e.face < 0;
+  const k = foeSkin(e, foeSprite(e)), r = rectOf('enemies', k), fl = e.type === 'gargoyle' ? pcx() < e.x : e.face < 0;
   let sx = x - r.w / 2, sy = y - r.h; if (e.state === 'warn' || e.tinkT > 20) sx += (frame & 2) ? 1 : -1;
   if (e.type === 'bat' && e.state === 'hang') sy = y - e.h - 2;
   spr('enemies', k, sx, sy, fl);
@@ -298,6 +301,15 @@ function drawShot(s) {
 function drawEBullet(b) {
   const x = b.x - cam.x, y = b.y - cam.y;
   if (b.kind === 'plate') { spr('items', 'plate', x, y); if (b.spin & 4) { g.fillStyle = '#ffffff'; g.fillRect(Math.round(x + 2), Math.round(y + 1), 3, 1); } }
+  // v0.4 area bosses
+  else if (b.kind === 'string') { const k = Math.min(1, (22 - b.life) / 4), h = Math.round(b.h * k); g.fillStyle = 'rgba(255,240,220,0.35)'; g.fillRect(Math.round(x + 1), Math.round(y), 8, h);
+    g.fillStyle = '#fff4e0'; g.fillRect(Math.round(x + 4), Math.round(y), 2, h); g.fillStyle = '#ff8ab0'; g.fillRect(Math.round(x + 2), Math.round(y + h - 4), 6, 4); }
+  else if (b.kind === 'maskshot') { g.save(); g.translate(Math.round(x + 7), Math.round(y + 6)); g.rotate(b.spin * 0.25); const r = rectOf('boss', 'maskshot'); g.drawImage(IMG.boss, r.x, r.y, r.w, r.h, -7, -7, r.w, r.h); g.restore(); }
+  else if (b.kind === 'sandbag') { spr('boss', 'sandbag', Math.round(x - 2), Math.round(y - 4)); g.fillStyle = '#c8b898'; g.fillRect(Math.round(x + 19), Math.round(y - 40), 1, 36); }
+  else if (b.kind === 'starshot') { spr('boss', 'starshot', Math.round(x - 1), Math.round(y - 1)); if (frame % 2 === 0) parts.push({ x: b.x + 7, y: b.y + 7, vx: rnd(-0.4, 0.4), vy: rnd(-0.6, 0), life: 12, col: '#fff4a0', size: 1, glow: 1 }); }
+  else if (b.kind === 'comet') { const d = Math.sign(b.vx) || 1; g.globalCompositeOperation = 'lighter'; for (let i = 1; i <= 6; i++) { g.fillStyle = 'rgba(140,200,255,' + (0.5 - i * 0.07) + ')'; g.fillRect(Math.round(x + 13 - d * (i * 7 + 6) - 4), Math.round(y + 3 + (i & 1)), 9, 8 - (i >> 1)); }
+    g.globalCompositeOperation = 'source-over'; g.fillStyle = '#e8f6ff'; g.beginPath(); g.arc(x + 13, y + 7, 7, 0, 7); g.fill(); g.fillStyle = '#7ac8ff'; g.beginPath(); g.arc(x + 13 + d * 2, y + 7, 4, 0, 7); g.fill(); }
+  else if (b.kind === 'planet') { const r = rectOf('boss', 'planet'); g.save(); g.translate(Math.round(x + 9), Math.round(y + 9)); g.rotate(frame * 0.15 * Math.sign(b.vx)); g.drawImage(IMG.boss, r.x, r.y, r.w, r.h, -9, -9, r.w, r.h); g.restore(); }
   else if (b.kind === 'candle') { spr('items', 'candle', x, y); spr('props', (boss && boss.rage ? 'bflame' : 'flame') + ((frame >> 2) & 3), x, y - 7); }
   else if (b.kind === 'shard') { g.fillStyle = '#c8ecff'; g.fillRect(Math.round(x + 3), Math.round(y), 2, 10); g.fillRect(Math.round(x + 1), Math.round(y + 3), 6, 4); g.fillStyle = '#ffffff'; g.fillRect(Math.round(x + 3), Math.round(y + 2), 1, 4); }
   else if (b.kind === 'firepatch') { const k = boss && boss.rage ? 'bflame' : 'flame'; for (let i = 0; i < 3; i++) spr('props', k + (((frame >> 2) + i) & 3), x + 1 + i * 7, y + (b.life < 30 ? 4 : 1)); }

@@ -19,6 +19,8 @@ const AREAS = {
   clock:   { jp: '屋根裏と時計塔', short: '時計塔', en: 'ATTIC & CLOCK TOWER', music: 'clock', col: '#6a4a24' },
   crypt:   { jp: '礼拝堂と地下墓所', short: '地下墓所', en: 'CHAPEL & CRYPT', music: 'chapel', col: '#4a2a6a' },
   bath:    { jp: '大浴場と貯水槽', short: '大浴場', en: 'GRAND BATH & CISTERN', music: 'bath', col: '#1e6a7a' },
+  theater: { jp: '人形劇場', short: '人形劇場', en: 'PUPPET THEATER', music: 'theater', col: '#8a2a4a' },
+  stars:   { jp: '星見の天文台', short: '天文台', en: 'STARGAZING OBSERVATORY', music: 'stars', col: '#2a3a8a' },
 };
 const ROOM_DEFS = [
   { id: 'foyer', jp: '玄関ホール', en: 'GRAND FOYER', area: 'east', theme: 'foyer', cx: 0, cy: 1, cw: 2, ch: 1, dark: 0.42,
@@ -32,11 +34,12 @@ const ROOM_DEFS = [
       ['rug', 22, 15], ['rug', 30, 15]] },
 
   { id: 'gallery', jp: '肖像画の回廊', en: 'PORTRAIT GALLERY', area: 'east', theme: 'gallery', cx: 2, cy: 1, cw: 3, ch: 1, dark: 0.5,
-    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.solid(30, 13, 41, 14); R.plat(10, 16, 11); R.plat(18, 23, 7); R.plat(55, 61, 11); R.plat(48, 53, 7); },
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.solid(30, 13, 41, 14); R.open('T', 1, 10, 13); R.gate(34, 0, 37, 1, 'spirit_theater'); R.plat(33, 38, 10); R.plat(10, 16, 11); R.plat(18, 23, 7); R.plat(55, 61, 11); R.plat(48, 53, 7); },
     ents: [['book', 5, 15], ['book', 26, 15], ['book', 43, 15], ['puff', 14, 8], ['armor', 38, 13], ['puff', 57, 8],
       ['coin', 19, 7], ['coin', 21, 7], ['dust', 22, 15, { drop: ['coin', 'coin'] }], ['vase', 33, 13, { drop: ['heart'] }],
       ['curtain', 65, 15, { drop: ['coin', 'coin', 'coin', 'coin'] }], ['coin', 49, 7], ['coin', 51, 7], ['candle', 59, 11],
-      ['bats', 46, 4], ['plate', 12, 11], ['chair', 52, 15], ['bottle', 62, 15]],
+      ['bats', 46, 4], ['plate', 12, 11], ['chair', 52, 15], ['bottle', 62, 15],
+      ['hint', 36, 10, { need: 'phase', text: '天井の穴から拍手が聞こえる…　でも霊の結界でふさがれている' }]],
     decor: [['portrait_lord', 6, 9.5], ['portrait_lady', 12, 9.5], ['portrait_land', 27, 9], ['portrait_big', 36, 10], ['portrait_lady', 45, 9.5],
       ['portrait_lord', 58, 9.5], ['portrait_land', 67, 9], ['sconce', 9, 11, { light: 1 }], ['sconce', 24, 11, { light: 1 }], ['sconce', 41, 9, { light: 1 }],
       ['sconce', 54, 11, { light: 1 }], ['sconce', 70, 11, { light: 1 }], ['pillar', 24, 15], ['pillar', 48, 15], ['cobweb', 70.75, 2, { top: 1, flip: 1 }]] },
