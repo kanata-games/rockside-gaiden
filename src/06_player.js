@@ -165,6 +165,10 @@ function updateVacuum() {
   // enemy projectiles that can be swallowed (plates, candles)
   for (const b of ebullets) {
     if (b.dead || !b.suckable) continue;
+    { // the stretch between Kanata and the nozzle counts as the mouth (stuff that slips past the cone is still swallowed)
+      const bx = b.x + b.w / 2, by = b.y + b.h / 2, front = P.face > 0 ? bx > pcx() - 2 && bx < n.x + 6 : bx < pcx() + 2 && bx > n.x - 6;
+      if (front && by > P.y - 6 && by < P.y + P.h && P.tank.length < V.tankMax) { b.dead = true; P.tank.push(b.ammo || (b.kind === 'fire' ? 'fireball' : b.kind)); sfx('stash'); tip('spit', '吸い込んだ物は SPIT で吐き出せる！'); continue; }
+    }
     if (!inCone(b.x + b.w / 2, b.y + b.h / 2, 6)) continue;
     const dx = n.x - (b.x + b.w / 2), dy = n.y - (b.y + b.h / 2), d = Math.hypot(dx, dy) || 1;
     if (P.tank.length >= V.tankMax) continue;
@@ -314,7 +318,8 @@ function impact(s, target) {
     for (let k = -1; k <= 1; k++) playerShots.push({ kind: 'shard', x: cx - 3, y: cy - 3, w: 6, h: 6, vx: -Math.sign(s.vx || 1) * rnd(0.6, 1.4) + k * 1.4, vy: -2 + k * 0.6, grav: 0.18, dmg: 1, life: 28, spin: 0, hit: new Set(target ? [target] : []) });
     sfx('tink');
   }
-  if (DURABLE.has(s.kind) && !s.burnt) spawnItem(s.kind, clamp(cx, 20, room.W - 20), cy + s.h / 2, { vx: -s.vx * 0.15, vy: -2.2, pop: 0 });
+  if (target && target.type === 'boss' && DURABLE.has(s.kind)) { for (let i = 0; i < 6; i++) parts.push({ x: cx, y: cy, vx: rnd(-2, 2), vy: rnd(-2.5, 0), life: 26, col: '#8a6a4a', size: 2, grav: 1 }); } // smashed on a boss: no reuse loop
+  else if (DURABLE.has(s.kind) && !s.burnt) spawnItem(s.kind, clamp(cx, 20, room.W - 20), cy + s.h / 2, { vx: -s.vx * 0.15, vy: -2.2, pop: 0 });
   if (s.kind === 'shard') return;
   sfx(s.heavy ? 'thud' : s.kind === 'plate' || s.kind === 'crystal' ? 'tink' : 'hit');
   if (s.heavy) cam.shake = Math.max(cam.shake, 4);

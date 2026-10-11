@@ -91,12 +91,12 @@ const CONFIG = {
     contactDamage: 2,
   },
   // ---- boss 2: リネン・ゴーレム LINEN GOLEM (laundry) ----
-  golem: { hp: 100, idle: 70, idleRage: 48, walk: 0.55, walkRage: 0.8, slamWarn: 44, slamWarnRage: 34, waveSpeed: 2.3, slamDamage: 2,
+  golem: { hp: 140, idle: 70, idleRage: 48, walk: 0.55, walkRage: 0.8, slamWarn: 44, slamWarnRage: 34, waveSpeed: 2.3, slamDamage: 2,
     bubbles: 3, bubblesRage: 5, bubbleDamage: 1, spinWarn: 50, spinWarnRage: 40, spinSpeed: 3.2, spinDamage: 2, dizzy: 170, dizzyRage: 140, contactDamage: 1 },
   // ---- boss 3: 夜咲きの女王 マダム・ローズ MADAME ROSE (greenhouse) ----
-  rose: { hp: 100, idle: 64, idleRage: 44, thornWarn: 46, thornWarnRage: 36, thorns: 3, thornsRage: 4, thornDamage: 2,
+  rose: { hp: 170, idle: 64, idleRage: 44, thornWarn: 46, thornWarnRage: 36, thorns: 3, thornsRage: 4, thornDamage: 2,
     seeds: 3, seedsRage: 4, seedDamage: 1, petalWarn: 50, petalWarnRage: 40, petalSpeed: 2.2, petalDamage: 1, bloom: 170, bloomRage: 140, burnBonus: 3, contactDamage: 1 },
   // ---- boss 4: 大時計の番人 グランドファーザー・チクタク GRANDFATHER TICKTOCK (clock tower) ----
-  clock: { hp: 100, idle: 60, idleRage: 42, handWarn: 44, handWarnRage: 34, hands: 2, handsRage: 3, handDamage: 2,
-    gears: 3, gearsRage: 4, gearSpeed: 1.8, gearDamage: 1, pendWarn: 54, pendWarnRage: 42, pendDamage: 2, chime: 170, chimeRage: 140, contactDamage: 1 },
+  clock: { hp: 180, spitMul: 1.2, idle: 56, idleRage: 40, handWarn: 40, handWarnRage: 32, hands: 3, handsRage: 4, handDamage: 2,
+    gears: 3, gearsRage: 4, gearSpeed: 2.0, gearDamage: 1, pendWarn: 50, pendWarnRage: 40, pendDamage: 2, chime: 170, chimeRage: 140, contactDamage: 1 },
 };

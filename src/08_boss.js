@@ -16,7 +16,7 @@ function makeBoss(kind, x, y) {
   const D = BOSS_DEFS[kind], C = CONFIG[D.cfg];
   const b = { type: 'boss', kind, D, hp: C.hp, maxHp: C.hp, state: 'sleep', t: 0, x, y, px: x, flash: 0, rage: false, lastAtk: '', atkN: 0, marks: [], core: null, dead: false, burnT: 0,
     hitTest(s) { if (!this.vulnerable()) return false; const h = D.hitBox(this), cx = s.x + s.w / 2, cy = s.y + s.h / 2; return cx > h.x0 - s.w / 2 && cx < h.x1 + s.w / 2 && cy > h.y0 - s.h / 2 && cy < h.y1 + s.h / 2; },
-    hitBy(s) { const fire = s.burn ? (kind === 'rose' ? CONFIG.rose.burnBonus * 2 : 2) : 0; this.damage(s.dmg * CONFIG.bossMul + fire);
+    hitBy(s) { const fire = s.burn ? (kind === 'rose' ? CONFIG.rose.burnBonus * 2 : 2) : 0; this.damage(s.dmg * (C.spitMul || CONFIG.bossMul) + fire);
       if (s.burn) { this.burnT = 40; if (kind === 'rose') tip('roseFire', 'よく燃える！ バラには火のついた物がとくに効く', true); } },
     damage(n) { if (this.state === 'dying' || this.state === 'done') return; this.hp -= n; this.flash = 10; sfx('bhit'); if (this.core) this.core.hp = this.hp;
       if (this.hp <= C.hp / 2 && !this.rage) { this.rage = true; tip('rage_' + kind, D.rageText, true); cam.shake = 8; }

@@ -526,7 +526,8 @@ function screenTap(gx, gy) {
 const STEP = 1000 / 60; let acc = 0, last = performance.now();
 function loop(now) {
   acc += Math.min(250, now - last); last = now;
-  let n = 0; while (acc >= STEP && n < 5) { update(); acc -= STEP; n++; }
+  let n = 0; if (window.__speed) { for (let i = 0; i < window.__speed; i++) update(); acc = 0; } // tests only: run N steps per frame
+  else while (acc >= STEP && n < 5) { update(); acc -= STEP; n++; }
   if (n === 5) acc = 0;
   render(); requestAnimationFrame(loop);
 }

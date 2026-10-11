@@ -157,14 +157,14 @@ const CONFIG = {
     contactDamage: 2,
   },
   // ---- boss 2: リネン・ゴーレム LINEN GOLEM (laundry) ----
-  golem: { hp: 100, idle: 70, idleRage: 48, walk: 0.55, walkRage: 0.8, slamWarn: 44, slamWarnRage: 34, waveSpeed: 2.3, slamDamage: 2,
+  golem: { hp: 140, idle: 70, idleRage: 48, walk: 0.55, walkRage: 0.8, slamWarn: 44, slamWarnRage: 34, waveSpeed: 2.3, slamDamage: 2,
     bubbles: 3, bubblesRage: 5, bubbleDamage: 1, spinWarn: 50, spinWarnRage: 40, spinSpeed: 3.2, spinDamage: 2, dizzy: 170, dizzyRage: 140, contactDamage: 1 },
   // ---- boss 3: 夜咲きの女王 マダム・ローズ MADAME ROSE (greenhouse) ----
-  rose: { hp: 100, idle: 64, idleRage: 44, thornWarn: 46, thornWarnRage: 36, thorns: 3, thornsRage: 4, thornDamage: 2,
+  rose: { hp: 170, idle: 64, idleRage: 44, thornWarn: 46, thornWarnRage: 36, thorns: 3, thornsRage: 4, thornDamage: 2,
     seeds: 3, seedsRage: 4, seedDamage: 1, petalWarn: 50, petalWarnRage: 40, petalSpeed: 2.2, petalDamage: 1, bloom: 170, bloomRage: 140, burnBonus: 3, contactDamage: 1 },
   // ---- boss 4: 大時計の番人 グランドファーザー・チクタク GRANDFATHER TICKTOCK (clock tower) ----
-  clock: { hp: 100, idle: 60, idleRage: 42, handWarn: 44, handWarnRage: 34, hands: 2, handsRage: 3, handDamage: 2,
-    gears: 3, gearsRage: 4, gearSpeed: 1.8, gearDamage: 1, pendWarn: 54, pendWarnRage: 42, pendDamage: 2, chime: 170, chimeRage: 140, contactDamage: 1 },
+  clock: { hp: 180, spitMul: 1.2, idle: 56, idleRage: 40, handWarn: 40, handWarnRage: 32, hands: 3, handsRage: 4, handDamage: 2,
+    gears: 3, gearsRage: 4, gearSpeed: 2.0, gearDamage: 1, pendWarn: 50, pendWarnRage: 40, pendDamage: 2, chime: 170, chimeRage: 140, contactDamage: 1 },
 };
 
 // ---- sprite metadata embedded at build time (tools/build.py) ----
@@ -1302,6 +1302,10 @@ function updateVacuum() {
   // enemy projectiles that can be swallowed (plates, candles)
   for (const b of ebullets) {
     if (b.dead || !b.suckable) continue;
+    { // the stretch between Kanata and the nozzle counts as the mouth (stuff that slips past the cone is still swallowed)
+      const bx = b.x + b.w / 2, by = b.y + b.h / 2, front = P.face > 0 ? bx > pcx() - 2 && bx < n.x + 6 : bx < pcx() + 2 && bx > n.x - 6;
+      if (front && by > P.y - 6 && by < P.y + P.h && P.tank.length < V.tankMax) { b.dead = true; P.tank.push(b.ammo || (b.kind === 'fire' ? 'fireball' : b.kind)); sfx('stash'); tip('spit', '吸い込んだ物は SPIT で吐き出せる！'); continue; }
+    }
     if (!inCone(b.x + b.w / 2, b.y + b.h / 2, 6)) continue;
     const dx = n.x - (b.x + b.w / 2), dy = n.y - (b.y + b.h / 2), d = Math.hypot(dx, dy) || 1;
     if (P.tank.length >= V.tankMax) continue;
@@ -1451,7 +1455,8 @@ function impact(s, target) {
     for (let k = -1; k <= 1; k++) playerShots.push({ kind: 'shard', x: cx - 3, y: cy - 3, w: 6, h: 6, vx: -Math.sign(s.vx || 1) * rnd(0.6, 1.4) + k * 1.4, vy: -2 + k * 0.6, grav: 0.18, dmg: 1, life: 28, spin: 0, hit: new Set(target ? [target] : []) });
     sfx('tink');
   }
-  if (DURABLE.has(s.kind) && !s.burnt) spawnItem(s.kind, clamp(cx, 20, room.W - 20), cy + s.h / 2, { vx: -s.vx * 0.15, vy: -2.2, pop: 0 });
+  if (target && target.type === 'boss' && DURABLE.has(s.kind)) { for (let i = 0; i < 6; i++) parts.push({ x: cx, y: cy, vx: rnd(-2, 2), vy: rnd(-2.5, 0), life: 26, col: '#8a6a4a', size: 2, grav: 1 }); } // smashed on a boss: no reuse loop
+  else if (DURABLE.has(s.kind) && !s.burnt) spawnItem(s.kind, clamp(cx, 20, room.W - 20), cy + s.h / 2, { vx: -s.vx * 0.15, vy: -2.2, pop: 0 });
   if (s.kind === 'shard') return;
   sfx(s.heavy ? 'thud' : s.kind === 'plate' || s.kind === 'crystal' ? 'tink' : 'hit');
   if (s.heavy) cam.shake = Math.max(cam.shake, 4);
@@ -1930,7 +1935,7 @@ function makeBoss(kind, x, y) {
   const D = BOSS_DEFS[kind], C = CONFIG[D.cfg];
   const b = { type: 'boss', kind, D, hp: C.hp, maxHp: C.hp, state: 'sleep', t: 0, x, y, px: x, flash: 0, rage: false, lastAtk: '', atkN: 0, marks: [], core: null, dead: false, burnT: 0,
     hitTest(s) { if (!this.vulnerable()) return false; const h = D.hitBox(this), cx = s.x + s.w / 2, cy = s.y + s.h / 2; return cx > h.x0 - s.w / 2 && cx < h.x1 + s.w / 2 && cy > h.y0 - s.h / 2 && cy < h.y1 + s.h / 2; },
-    hitBy(s) { const fire = s.burn ? (kind === 'rose' ? CONFIG.rose.burnBonus * 2 : 2) : 0; this.damage(s.dmg * CONFIG.bossMul + fire);
+    hitBy(s) { const fire = s.burn ? (kind === 'rose' ? CONFIG.rose.burnBonus * 2 : 2) : 0; this.damage(s.dmg * (C.spitMul || CONFIG.bossMul) + fire);
       if (s.burn) { this.burnT = 40; if (kind === 'rose') tip('roseFire', 'よく燃える！ バラには火のついた物がとくに効く', true); } },
     damage(n) { if (this.state === 'dying' || this.state === 'done') return; this.hp -= n; this.flash = 10; sfx('bhit'); if (this.core) this.core.hp = this.hp;
       if (this.hp <= C.hp / 2 && !this.rage) { this.rage = true; tip('rage_' + kind, D.rageText, true); cam.shake = 8; }
@@ -3238,7 +3243,8 @@ function screenTap(gx, gy) {
 const STEP = 1000 / 60; let acc = 0, last = performance.now();
 function loop(now) {
   acc += Math.min(250, now - last); last = now;
-  let n = 0; while (acc >= STEP && n < 5) { update(); acc -= STEP; n++; }
+  let n = 0; if (window.__speed) { for (let i = 0; i < window.__speed; i++) update(); acc = 0; } // tests only: run N steps per frame
+  else while (acc >= STEP && n < 5) { update(); acc -= STEP; n++; }
   if (n === 5) acc = 0;
   render(); requestAnimationFrame(loop);
 }
