@@ -3,9 +3,9 @@
 //  PLAYER: 清掃員カナタ  -  walk / jump / half-ghost hover, vacuum (catch + tug-of-war), SPIT
 // =====================================================================
 const P = { x: 0, y: 0, w: CONFIG.playerW, h: CONFIG.playerH, vx: 0, vy: 0, face: 1, onGround: false, coyote: 0, jumpBuf: 0, hover: CONFIG.hoverFrames, hovering: false,
-  hp: CONFIG.maxHP, inv: 0, grace: 0, knock: 0, dead: false, deadT: 0, vacOn: false, tug: null, tank: [], spitCD: 0, spitPose: 0, animT: 0, airT: 0, spawnX: 0, spawnY: 0, god: false,
+  hp: CONFIG.maxHP, inv: 0, grace: 0, gabu: 0, chomp: 0, gabuShot: 0, knock: 0, dead: false, deadT: 0, vacOn: false, tug: null, tank: [], spitCD: 0, spitPose: 0, animT: 0, airT: 0, spawnX: 0, spawnY: 0, god: false,
   dj: false, djT: 0, spitHold: 0, onFloat: null };
-const stats = { floats: 0, djumps: 0, foeKills: 0, foeHits: 0, levers: 0, abilities: [], updates: 0, frames: 0, captures: 0, spits: 0, puffs: 0, swallowed: 0, rooms: 0, hurts: 0, deaths: 0, saves: 0, secrets: 0, tugs: 0, maxTugFrames: 0, tips: [], bossHits: 0 };
+const stats = { floats: 0, djumps: 0, foeKills: 0, foeHits: 0, levers: 0, abilities: [], updates: 0, frames: 0, captures: 0, spits: 0, puffs: 0, swallowed: 0, rooms: 0, hurts: 0, deaths: 0, saves: 0, secrets: 0, tugs: 0, maxTugFrames: 0, tips: [], bossHits: 0, eaten: 0, gabuShots: 0 };
 const playerShots = [], ebullets = [], items = [], parts = [], floats = [];
 const pcx = () => P.x + P.w / 2, pcy = () => P.y + P.h / 2;
 // damage hurtbox: a bit smaller than the 16x50 body (the sprite is drawn even bigger), so near-misses feel fair
@@ -100,6 +100,7 @@ function updatePlayer() {
   if (P.dead) { P.deadT++; P.vx *= 0.9; P.vy = Math.min(P.vy + C.gravity, C.maxFall); moveBody(P, true); return; }
   if (P.inv > 0) P.inv--; if (P.grace > 0) P.grace--;
   if (P.spitCD > 0) P.spitCD--;
+  if (P.chomp > 0) P.chomp--; if (P.gabuShot > 0) P.gabuShot--;
   if (P.spitPose > 0) P.spitPose--;
   P.animT++;
   const dir = (held('right') ? 1 : 0) - (held('left') ? 1 : 0);
@@ -146,6 +147,9 @@ function updatePlayer() {
 }
 
 // suck items / ghosts / objects in the cone
+function inMouth(e) { // critters between Kanata and the nozzle are in the mimic's mouth
+  const n = nozzle(), f = P.face, front = f > 0 ? e.x > pcx() - 4 && e.x < n.x + 8 : e.x < pcx() + 4 && e.x > n.x - 8;
+  return front && e.y > P.y && e.y - e.h < P.y + P.h; }
 function updateVacuum() {
   const V = CONFIG.vac, n = nozzle();
   // wind streaks
@@ -186,7 +190,7 @@ function updateVacuum() {
         e.catchT += e.stunT > 0 ? Math.ceil(V.catchFrames / V.catchFramesStunned) : 1; e.inCone = 3;
         if (e.catchT >= V.catchFrames && !P.tug) { startTug(e); return; }
       }
-    } else if (e.onSuck && rectInCone(e.x - e.w / 2, e.y - e.h, e.w, e.h)) e.onSuck();
+    } else if (e.onSuck && (rectInCone(e.x - e.w / 2, e.y - e.h, e.w, e.h) || (e.foe && EDIBLE[e.type] && inMouth(e)))) e.onSuck();
   }
   if (boss && boss.onSuck) boss.onSuck();
 }
@@ -248,13 +252,24 @@ function doSpit() {
   const S = CONFIG.spit, n = nozzle();
   P.spitPose = 16;
   if (P.tank.length) {
-    const kind = P.tank.shift(), A = CONFIG.ammo[kind] || CONFIG.ammo.book, sp = A.heavy ? S.heavySpeed : S.speed;
+    const kind = P.tank.shift(), A0 = CONFIG.ammo[kind] || CONFIG.ammo.book, sp = A0.heavy ? S.heavySpeed : S.speed, E = CONFIG.eat;
+    const pow = P.gabu >= E.max, A = pow ? { ...A0, dmg: A0.dmg * E.shotMul, pierce: true, w: Math.round(A0.w * 1.4), h: Math.round(A0.h * 1.4) } : A0;
+    if (pow) { P.gabu = 0; P.chomp = 16; stats.gabuShots = (stats.gabuShots || 0) + 1; sfx('chomp'); }
     const ox = n.x, oy = n.y - 12, tg = spitTarget(ox, oy, A);
     let vx = P.face * sp, vy = -0.6, grav = A.heavy ? 0.1 : 0.07;
     if (tg) { const dx = tg.x - ox, dy = tg.y - oy, d = Math.hypot(dx, dy) || 1; vx = dx / d * sp; vy = dy / d * sp; grav = 0; }
     playerShots.push({ kind, x: ox - A.w / 2, y: oy - A.h / 2, w: A.w, h: A.h, vx, vy, grav, dmg: A.dmg, life: 120, spin: 0, aimed: !!tg,
-      burn: !!A.burn, splash: A.splash || 0, pierce: !!A.pierce, bounce: A.bounce || 0, shatter: !!A.shatter, heavy: !!A.heavy, hit: new Set() });
+      burn: !!A.burn, splash: A.splash || 0, pierce: !!A.pierce, power: pow, bounce: A.bounce || 0, shatter: !!A.shatter, heavy: !!A.heavy, hit: new Set() });
     P.spitCD = S.cooldown; stats.spits++; sfx(A.heavy ? 'heavyspit' : 'spit'); P.vx -= P.face * (A.heavy ? 1.2 : 0.6);
+  } else if (P.gabu >= CONFIG.eat.max) { // GABU bite wave: a ghostly set of jaws snaps forward
+    const E = CONFIG.eat; P.gabu = 0; P.chomp = 16; P.gabuShot = 22; P.spitCD = S.puffCooldown; stats.gabuShots = (stats.gabuShots || 0) + 1; sfx('chomp'); sfx('heavyspit'); cam.shake = 4;
+    for (let i = 0; i < 16; i++) parts.push({ x: n.x + P.face * rnd(0, E.biteRange), y: n.y + rnd(-14, 14), vx: P.face * rnd(1, 3), vy: rnd(-0.6, 0.6), life: 18, col: i & 1 ? '#ff8aa8' : '#ffffff', size: 2, glow: 1 });
+    for (const e of ents) { if (e.dead) continue; const dx = (e.x - n.x) * P.face, ey = e.ghost ? e.y : e.y - (e.h || 0) / 2;
+      if (dx < -10 || dx > E.biteRange || Math.abs(ey - n.y) > 40) continue;
+      if (e.ghost) { if (e.state !== 'swallow' && e.state !== 'caught') { e.stunT = S.puffStun * 2; e.x += P.face * 14; if (e.state === 'dash' || e.state === 'warn') e.state = 'float'; } }
+      else if (e.hitBy && (e.foe || e.type === 'armor')) e.hitBy({ dmg: E.biteDmg, vx: P.face * 3, heavy: true }); }
+    if (boss && boss.vulnerable() && boss.D.hitBox) { const h = boss.D.hitBox(boss); if ((P.face > 0 ? h.x0 - n.x : n.x - h.x1) < E.biteRange && h.y0 < n.y + 30 && h.y1 > n.y - 30) boss.hitBy({ dmg: E.biteDmg, vx: P.face }); }
+    tip('gabuBite', 'かみつき波！ タンクが空でも GABU ゲージ満タンなら強力な一撃', true);
   } else {
     P.spitCD = S.puffCooldown; stats.puffs++; sfx('puff');
     for (let i = 0; i < 10; i++) parts.push({ x: n.x, y: n.y - 4, vx: P.face * rnd(1.5, 3.5), vy: rnd(-0.8, 0.8), life: 18, col: '#e8f8ff', size: 2, glow: 1 });

@@ -86,6 +86,8 @@ const CONFIG = {
   hurtInsetX: 3, hurtInsetTop: 12,  // damage hurtbox inset (see hurtBox())
   foeRecoil: 60, foeEdge: 34,        // normal enemies back off this long after hitting Kanata; never closer than this to the room edge (doorways)
   entryGrace: 50, entrySafe: 112,     // after entering a room: no damage for N frames; enemies kept this far (px) from the entry point
+  // v0.3: the mimic vacuum EATS tiny critters (rat, bat): +heal and +1 GABU gauge; a full gauge powers up the next SPIT
+  eat: { heal: 1, max: 3, pullMax: 40, biteDmg: 3, biteRange: 96, shotMul: 2 },
   maxHP: 10, invFrames: 100, knockFrames: 16, knockVx: 1.6, knockVy: 2.6,
 
   // ---- vacuum (Luigi's Mansion style) ----
@@ -437,6 +439,7 @@ const Snd = {
       case 'thorn': this.noise(0.2, 0.22, 3000, 0, 'highpass'); this.tone('sawtooth', 300, 120, 0.12, 0.06); break;
       case 'tick': this.tone('square', 2200, 2200, 0.02, 0.05); break;
       case 'bell': this.tone('triangle', 392, 392, 1.2, 0.16); this.tone('triangle', 784, 784, 0.9, 0.06); this.tone('sine', 196, 196, 1.4, 0.12); break;
+      case 'chomp': this.noise(0.05, 0.3, 3000, 0, 'highpass'); this.tone('square', 260, 90, 0.08, 0.14); this.noise(0.05, 0.25, 2200, 0.09, 'highpass'); this.tone('square', 220, 70, 0.08, 0.12, 0.09); break;
       case 'whoosh': this.noise(0.5, 0.2, 1500, 0, 'bandpass'); break;
     }
   },
@@ -671,7 +674,7 @@ ROOM_DEFS.push(
 
   { id: 'laundry', jp: '洗濯場', en: 'LAUNDRY', area: 'laundry', theme: 'laundry', tiles: 't', cx: 6, cy: 3, cw: 2, ch: 1, dark: 0.48,
     build(R) { R.box(); R.open('R', 0, 11, 14); R.open('L', 0, 5, 8); R.solid(1, 9, 4, 14); R.plat(20, 26, 11); R.plat(28, 33, 7); R.plat(36, 42, 11); },
-    ents: [['save', 31, 15], ['sheet', 24, 8], ['sheet', 40, 8], ['rat', 14, 15], ['rat', 38, 15], ['bottle', 7, 15], ['bottle', 9, 15], ['bottle', 11, 15],
+    ents: [['save', 31, 15], ['sheet', 24, 8], ['sheet', 40, 8], ['rat', 14, 15], ['bottle', 7, 15], ['bottle', 9, 15], ['bottle', 11, 15],
       ['plate', 22, 11], ['soap', 30, 7], ['chair', 44, 15], ['curtain', 17, 15, { sprite: 'sheet', drop: ['coin', 'coin', 'heart'] }], ['dust', 34, 15, { drop: ['coin', 'coin'] }],
       ['hint', 8, 15, { need: 'float', text: '扉が高すぎて届かない…' }, ], ['hint', 7, 15, { have: 'float', text: '高い扉。物を吸ってSPIT長押し→ふわり足場に乗ってジャンプ！' }]],
     decor: [['washtub', 12, 15], ['washtub', 26, 15], ['washtub', 41, 15], ['pipes', 18, 15], ['pipes', 46, 15], ['boiler', 35, 15],
@@ -680,7 +683,7 @@ ROOM_DEFS.push(
 
   { id: 'drying', jp: '物干し部屋', en: 'DRYING ROOM', area: 'laundry', theme: 'laundry', tiles: 't', cx: 4, cy: 3, cw: 2, ch: 1, dark: 0.55,
     build(R) { R.box(); R.open('R', 0, 5, 8); R.solid(43, 9, 46, 14); R.open('B', 0, 4, 7); R.open('T', 1, 4, 7); R.plat(18, 24, 11); R.plat(27, 33, 7); R.plat(10, 15, 11); },
-    ents: [['bats', 16, 4], ['bats', 38, 4], ['sheet', 10, 7], ['bottle', 40, 15], ['bottle', 36, 15], ['chair', 22, 15], ['candle', 12, 11], ['plate', 20, 11],
+    ents: [['bats', 38, 4], ['sheet', 10, 7], ['bottle', 40, 15], ['bottle', 36, 15], ['chair', 22, 15], ['candle', 12, 11], ['plate', 20, 11],
       ['curtain', 26, 15, { sprite: 'sheet', drop: ['coin', 'coin', 'coin'] }], ['curtain', 34, 15, { sprite: 'sheet', drop: ['heart'] }],
       ['lever', 32, 7, { room: 'cellar', gate: 'grate' }], ['hint', 31, 7, { need: 'turbo', text: 'レバーが固くて動かない… もっと強く吸えたら' }]],
     decor: [['sheetline', 8, 3, { top: 1 }], ['sheetline', 20, 3, { top: 1 }], ['sheetline', 40, 3, { top: 1 }], ['pipes', 2, 15], ['pipes', 16, 15],
@@ -688,14 +691,14 @@ ROOM_DEFS.push(
 
   { id: 'boiler', jp: 'ボイラー室', en: 'BOILER ROOM', area: 'laundry', theme: 'boiler', tiles: 't', cx: 4, cy: 4, cw: 1, ch: 1, dark: 0.55,
     build(R) { R.box(); R.open('T', 0, 4, 7); R.open('R', 0, 11, 14); R.plat(10, 16, 11); R.plat(3, 9, 7); },
-    ents: [['rat', 8, 15], ['rat', 11, 15], ['skeleton', 15, 15], ['pot', 4, 15], ['pot', 20, 11], ['pan', 12, 11], ['pan', 6, 7], ['bottle', 21, 15],
+    ents: [['rat', 8, 15], ['skeleton', 15, 15], ['pot', 4, 15], ['pot', 20, 11], ['pan', 12, 11], ['pan', 6, 7], ['bottle', 21, 15],
       ['hint', 5, 15, { need: 'turbo', text: '鉄なべは重くて吸い込めない…' }]],
     decor: [['boiler', 12, 15], ['pipes', 2, 15], ['pipes', 20, 15], ['pipes', 22, 7], ['lamp_wall', 8, 10, { light: 1 }], ['lamp_wall', 17, 8, { light: 1 }]] },
 
   { id: 'kitchen', jp: '亡霊の厨房', en: 'PHANTOM KITCHEN', area: 'laundry', theme: 'kitchen', tiles: 't', cx: 5, cy: 4, cw: 3, ch: 1, dark: 0.46,
     build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.solid(10, 13, 17, 14); R.plat(20, 27, 11); R.solid(30, 13, 36, 14); R.plat(38, 44, 10);
       R.plat(46, 52, 7); R.solid(55, 13, 62, 14); R.plat(64, 70, 11); },
-    ents: [['skeleton', 24, 15], ['skeleton', 58, 13], ['rat', 40, 15], ['rat', 54, 15], ['dish', 34, 6], ['puff', 50, 4],
+    ents: [['skeleton', 24, 15], ['skeleton', 58, 13], ['rat', 40, 15], ['dish', 34, 6], ['puff', 50, 4],
       ['plate', 11, 13], ['plate', 13, 13], ['plate', 16, 13], ['plate', 32, 13], ['plate', 35, 13], ['pan', 22, 11], ['pan', 42, 10], ['pan', 57, 13],
       ['pot', 6, 15], ['pot', 48, 15], ['chair', 28, 15], ['chair', 52, 15], ['bottle', 45, 7], ['bottle', 61, 13], ['candle', 50, 7],
       ['dust', 68, 15, { drop: ['coin', 'heart'] }], ['vase', 4, 15, { drop: ['coin', 'coin', 'coin'] }]],
@@ -729,7 +732,7 @@ ROOM_DEFS.push(
 ROOM_DEFS.push(
   { id: 'conserv', jp: '温室の入口', en: 'CONSERVATORY', area: 'garden', theme: 'garden', tiles: 'g', cx: -2, cy: 1, cw: 2, ch: 1, dark: 0.4,
     build(R) { R.box(); R.open('R', 0, 11, 14); R.open('L', 0, 11, 14); R.plat(8, 14, 11); R.plat(18, 24, 7); R.plat(28, 34, 11); R.plat(38, 43, 7); },
-    ents: [['rat', 12, 15], ['rat', 36, 15], ['bats', 22, 4], ['puff', 30, 8], ['flowerpot', 5, 15], ['flowerpot', 10, 11], ['flowerpot', 30, 11], ['flowerpot', 44, 15],
+    ents: [['rat', 12, 15], ['puff', 30, 8], ['flowerpot', 5, 15], ['flowerpot', 10, 11], ['flowerpot', 30, 11], ['flowerpot', 44, 15],
       ['candle', 20, 7], ['seed', 40, 7], ['bottle', 26, 15], ['dust', 16, 15, { drop: ['coin', 'coin'] }], ['curtain', 2.5, 15, { sprite: 'ivy', drop: ['coin', 'coin', 'coin'] }]],
     decor: [['glasspane', 6, 10], ['glasspane', 18, 10], ['glasspane', 30, 10], ['glasspane', 42, 10], ['fern', 8, 15], ['fern', 33, 15], ['rosebush', 21, 15],
       ['rosebush', 40, 15], ['vine_hang', 13, 2, { top: 1 }], ['vine_hang', 27, 2, { top: 1 }], ['gardenlamp', 4, 15, { light: 1 }], ['gardenlamp', 24, 15, { light: 1 }], ['gardenlamp', 46, 15, { light: 1 }]] },
@@ -737,7 +740,7 @@ ROOM_DEFS.push(
   { id: 'greenhouse', jp: '薔薇の大温室', en: 'ROSE GREENHOUSE', area: 'garden', theme: 'garden', tiles: 'g', cx: -4, cy: 0, cw: 2, ch: 2, dark: 0.45,
     build(R) { R.box(); R.open('R', 1, 11, 14); R.open('L', 1, 11, 14); R.open('L', 0, 11, 14); R.gate(0, 11, 1, 14, 'vine1'); R.open('T', 1, 8, 11);
       R.solid(1, 15, 5, 16); R.plat(30, 37, 29); R.plat(19, 26, 25); R.plat(8, 15, 21); R.plat(7, 12, 18); R.plat(30, 37, 21); R.plat(38, 44, 17); R.plat(20, 26, 17); R.plat(26, 31, 13); R.plat(32, 37, 10); },
-    ents: [['gargoyle', 24, 6], ['bats', 14, 22], ['rat', 10, 33], ['rat', 40, 33], ['puff', 28, 26], ['puff', 16, 12],
+    ents: [['gargoyle', 24, 6], ['bats', 14, 22], ['rat', 10, 33], ['puff', 28, 26], ['puff', 16, 12],
       ['flowerpot', 4, 33], ['flowerpot', 33, 29], ['flowerpot', 22, 25], ['candle', 10, 21], ['candle', 13, 21], ['candle', 3, 15], ['seed', 41, 17], ['bottle', 44, 33],
       ['vines', 1, 15, { gate: 'vine1' }], ['hint', 5, 15, { text: 'つたで道がふさがれてる… 火をつけたら燃えそう' }],
       ['hint', 34, 10, { need: 'djump', text: '天井の穴の先… もう少し高く跳べたら' }], ['dust', 26, 33, { drop: ['coin', 'heart'] }]],
@@ -753,7 +756,7 @@ ROOM_DEFS.push(
 
   { id: 'courtyard', jp: '噴水の中庭', en: 'FOUNTAIN COURTYARD', area: 'garden', theme: 'courtyard', tiles: 'g', cx: -6, cy: 1, cw: 2, ch: 1, dark: 0.32,
     build(R) { R.box(); R.open('R', 0, 11, 14); R.open('B', 0, 6, 9); R.plat(14, 20, 11); R.plat(24, 30, 7); R.plat(34, 40, 11); },
-    ents: [['save', 42, 15], ['bats', 26, 3], ['puppet', 30, 15], ['gargoyle', 20, 5], ['flowerpot', 12, 15], ['flowerpot', 16, 11], ['candle', 27, 7], ['seed', 36, 11],
+    ents: [['save', 42, 15], ['puppet', 30, 15], ['gargoyle', 20, 5], ['flowerpot', 12, 15], ['flowerpot', 16, 11], ['candle', 27, 7], ['seed', 36, 11],
       ['bottle', 3, 15], ['chair', 33, 15], ['dust', 22, 15, { drop: ['coin', 'coin', 'coin'] }]],
     decor: [['fountain', 24, 15], ['statue', 4, 15], ['statue', 44, 15], ['hedge', 13, 15], ['hedge', 36, 15], ['gardenlamp', 10, 15, { light: 1 }],
       ['gardenlamp', 32, 15, { light: 1 }], ['gardenlamp', 46, 15, { light: 1 }], ['rosebush', 18, 15], ['rosebush', 40, 15]] },
@@ -767,7 +770,7 @@ ROOM_DEFS.push(
   { id: 'thorns', jp: '茨の迷路', en: 'THORN MAZE', area: 'garden', theme: 'thorn', tiles: 'g', cx: -6, cy: 2, cw: 3, ch: 1, dark: 0.55,
     build(R) { R.box(); R.open('T', 0, 6, 9); R.open('R', 0, 11, 14); R.plat(12, 18, 11); R.plat(4, 11, 7); R.gate(30, 2, 31, 14, 'vine2'); R.plat(36, 42, 11);
       R.plat(44, 50, 7); R.gate(54, 2, 55, 14, 'vine3'); R.plat(60, 66, 11); },
-    ents: [['puppet', 20, 15], ['puppet', 46, 15], ['rat', 38, 15], ['rat', 64, 15], ['bats', 40, 4], ['armor', 62, 15], ['puff', 16, 5],
+    ents: [['puppet', 20, 15], ['puppet', 46, 15], ['rat', 38, 15], ['bats', 40, 4], ['armor', 62, 15], ['puff', 16, 5],
       ['candle', 24, 15], ['candle', 26, 15], ['seed', 15, 11], ['candle', 49, 7], ['seed', 51, 15], ['flowerpot', 8, 7], ['flowerpot', 34, 15], ['bottle', 58, 15],
       ['vines', 30.5, 15, { gate: 'vine2' }], ['vines', 54.5, 15, { gate: 'vine3' }], ['dust', 44, 15, { drop: ['coin', 'heart'] }]],
     decor: [['hedge', 6, 15], ['hedge', 21, 15], ['hedge', 40, 15], ['hedge', 64, 15], ['rosebush', 14, 15], ['rosebush', 47, 15], ['statue', 70, 15],
@@ -794,7 +797,7 @@ ROOM_DEFS.push(
   { id: 'attic', jp: 'ほこりの屋根裏', en: 'DUSTY ATTIC', area: 'clock', theme: 'attic', tiles: 'w', cx: 6, cy: -1, cw: 3, ch: 1, dark: 0.55,
     build(R) { R.box(); R.open('B', 1, 18, 21); R.open('T', 2, 8, 11); R.secret(0, 11, 14); R.plat(8, 14, 11); R.plat(18, 24, 7); R.plat(30, 36, 11);
       R.plat(46, 51, 11); R.plat(53, 62, 8); R.plat(65, 70, 11); },
-    ents: [['save', 32, 15], ['cursedbook', 12, 6], ['cursedbook', 40, 6], ['cursedbook', 60, 5], ['bats', 22, 3], ['rat', 26, 15], ['rat', 56, 15], ['puppet', 66, 15],
+    ents: [['save', 32, 15], ['cursedbook', 12, 6], ['cursedbook', 40, 6], ['cursedbook', 60, 5], ['rat', 26, 15], ['puppet', 66, 15],
       ['chair', 6, 15], ['chair', 36, 15], ['book', 10, 11], ['book', 20, 7], ['book', 49, 11], ['bottle', 28, 15], ['gear', 58, 8], ['plate', 33, 11],
       ['curtain', 2.5, 15, { secret: 1, sprite: 'ivy' }], ['dust', 16, 15, { drop: ['coin', 'coin'] }], ['dust', 50, 15, { drop: ['heart'] }], ['dust', 68, 15, { drop: ['coin', 'coin', 'coin'] }]],
     decor: [['crate', 8, 15], ['crate', 9.5, 13.5], ['trunk', 22, 15], ['dollshelf', 38, 15], ['crate', 62, 15], ['trunk', 70, 15], ['round_window', 14, 6],
@@ -822,7 +825,7 @@ ROOM_DEFS.push(
 
   { id: 'clockback', jp: '文字盤の裏側', en: 'BEHIND THE CLOCKFACE', area: 'clock', theme: 'gears', tiles: 'w', cx: 6, cy: -2, cw: 2, ch: 1, dark: 0.52,
     build(R) { R.box(); R.open('T', 0, 4, 7); R.plat(10, 16, 11); R.plat(2, 9, 7); R.plat(22, 28, 11); R.plat(32, 38, 8); },
-    ents: [['lever', 42, 15, { room: 'pendulum', gate: 'belfry' }], ['gargoyle', 34, 4], ['bats', 26, 4], ['rat', 20, 15], ['rat', 38, 15], ['cursedbook', 14, 5],
+    ents: [['lever', 42, 15, { room: 'pendulum', gate: 'belfry' }], ['gargoyle', 34, 4], ['rat', 20, 15], ['cursedbook', 14, 5],
       ['gear', 24, 11], ['gear', 26, 11], ['gear', 35, 8], ['pot', 44, 15], ['chair', 30, 15], ['bottle', 8, 15]],
     decor: [['gear_big', 8, 15], ['gear_big', 30, 13], ['gear_med', 18, 7], ['gear_med', 40, 9], ['clockface', 24, 6], ['sconce', 14, 9, { light: 1 }], ['sconce', 36, 12, { light: 1 }],
       ['sconce', 46, 9, { light: 1 }]] },
@@ -1165,9 +1168,9 @@ function updateTips() {
 //  PLAYER: 清掃員カナタ  -  walk / jump / half-ghost hover, vacuum (catch + tug-of-war), SPIT
 // =====================================================================
 const P = { x: 0, y: 0, w: CONFIG.playerW, h: CONFIG.playerH, vx: 0, vy: 0, face: 1, onGround: false, coyote: 0, jumpBuf: 0, hover: CONFIG.hoverFrames, hovering: false,
-  hp: CONFIG.maxHP, inv: 0, grace: 0, knock: 0, dead: false, deadT: 0, vacOn: false, tug: null, tank: [], spitCD: 0, spitPose: 0, animT: 0, airT: 0, spawnX: 0, spawnY: 0, god: false,
+  hp: CONFIG.maxHP, inv: 0, grace: 0, gabu: 0, chomp: 0, gabuShot: 0, knock: 0, dead: false, deadT: 0, vacOn: false, tug: null, tank: [], spitCD: 0, spitPose: 0, animT: 0, airT: 0, spawnX: 0, spawnY: 0, god: false,
   dj: false, djT: 0, spitHold: 0, onFloat: null };
-const stats = { floats: 0, djumps: 0, foeKills: 0, foeHits: 0, levers: 0, abilities: [], updates: 0, frames: 0, captures: 0, spits: 0, puffs: 0, swallowed: 0, rooms: 0, hurts: 0, deaths: 0, saves: 0, secrets: 0, tugs: 0, maxTugFrames: 0, tips: [], bossHits: 0 };
+const stats = { floats: 0, djumps: 0, foeKills: 0, foeHits: 0, levers: 0, abilities: [], updates: 0, frames: 0, captures: 0, spits: 0, puffs: 0, swallowed: 0, rooms: 0, hurts: 0, deaths: 0, saves: 0, secrets: 0, tugs: 0, maxTugFrames: 0, tips: [], bossHits: 0, eaten: 0, gabuShots: 0 };
 const playerShots = [], ebullets = [], items = [], parts = [], floats = [];
 const pcx = () => P.x + P.w / 2, pcy = () => P.y + P.h / 2;
 // damage hurtbox: a bit smaller than the 16x50 body (the sprite is drawn even bigger), so near-misses feel fair
@@ -1262,6 +1265,7 @@ function updatePlayer() {
   if (P.dead) { P.deadT++; P.vx *= 0.9; P.vy = Math.min(P.vy + C.gravity, C.maxFall); moveBody(P, true); return; }
   if (P.inv > 0) P.inv--; if (P.grace > 0) P.grace--;
   if (P.spitCD > 0) P.spitCD--;
+  if (P.chomp > 0) P.chomp--; if (P.gabuShot > 0) P.gabuShot--;
   if (P.spitPose > 0) P.spitPose--;
   P.animT++;
   const dir = (held('right') ? 1 : 0) - (held('left') ? 1 : 0);
@@ -1308,6 +1312,9 @@ function updatePlayer() {
 }
 
 // suck items / ghosts / objects in the cone
+function inMouth(e) { // critters between Kanata and the nozzle are in the mimic's mouth
+  const n = nozzle(), f = P.face, front = f > 0 ? e.x > pcx() - 4 && e.x < n.x + 8 : e.x < pcx() + 4 && e.x > n.x - 8;
+  return front && e.y > P.y && e.y - e.h < P.y + P.h; }
 function updateVacuum() {
   const V = CONFIG.vac, n = nozzle();
   // wind streaks
@@ -1348,7 +1355,7 @@ function updateVacuum() {
         e.catchT += e.stunT > 0 ? Math.ceil(V.catchFrames / V.catchFramesStunned) : 1; e.inCone = 3;
         if (e.catchT >= V.catchFrames && !P.tug) { startTug(e); return; }
       }
-    } else if (e.onSuck && rectInCone(e.x - e.w / 2, e.y - e.h, e.w, e.h)) e.onSuck();
+    } else if (e.onSuck && (rectInCone(e.x - e.w / 2, e.y - e.h, e.w, e.h) || (e.foe && EDIBLE[e.type] && inMouth(e)))) e.onSuck();
   }
   if (boss && boss.onSuck) boss.onSuck();
 }
@@ -1410,13 +1417,24 @@ function doSpit() {
   const S = CONFIG.spit, n = nozzle();
   P.spitPose = 16;
   if (P.tank.length) {
-    const kind = P.tank.shift(), A = CONFIG.ammo[kind] || CONFIG.ammo.book, sp = A.heavy ? S.heavySpeed : S.speed;
+    const kind = P.tank.shift(), A0 = CONFIG.ammo[kind] || CONFIG.ammo.book, sp = A0.heavy ? S.heavySpeed : S.speed, E = CONFIG.eat;
+    const pow = P.gabu >= E.max, A = pow ? { ...A0, dmg: A0.dmg * E.shotMul, pierce: true, w: Math.round(A0.w * 1.4), h: Math.round(A0.h * 1.4) } : A0;
+    if (pow) { P.gabu = 0; P.chomp = 16; stats.gabuShots = (stats.gabuShots || 0) + 1; sfx('chomp'); }
     const ox = n.x, oy = n.y - 12, tg = spitTarget(ox, oy, A);
     let vx = P.face * sp, vy = -0.6, grav = A.heavy ? 0.1 : 0.07;
     if (tg) { const dx = tg.x - ox, dy = tg.y - oy, d = Math.hypot(dx, dy) || 1; vx = dx / d * sp; vy = dy / d * sp; grav = 0; }
     playerShots.push({ kind, x: ox - A.w / 2, y: oy - A.h / 2, w: A.w, h: A.h, vx, vy, grav, dmg: A.dmg, life: 120, spin: 0, aimed: !!tg,
-      burn: !!A.burn, splash: A.splash || 0, pierce: !!A.pierce, bounce: A.bounce || 0, shatter: !!A.shatter, heavy: !!A.heavy, hit: new Set() });
+      burn: !!A.burn, splash: A.splash || 0, pierce: !!A.pierce, power: pow, bounce: A.bounce || 0, shatter: !!A.shatter, heavy: !!A.heavy, hit: new Set() });
     P.spitCD = S.cooldown; stats.spits++; sfx(A.heavy ? 'heavyspit' : 'spit'); P.vx -= P.face * (A.heavy ? 1.2 : 0.6);
+  } else if (P.gabu >= CONFIG.eat.max) { // GABU bite wave: a ghostly set of jaws snaps forward
+    const E = CONFIG.eat; P.gabu = 0; P.chomp = 16; P.gabuShot = 22; P.spitCD = S.puffCooldown; stats.gabuShots = (stats.gabuShots || 0) + 1; sfx('chomp'); sfx('heavyspit'); cam.shake = 4;
+    for (let i = 0; i < 16; i++) parts.push({ x: n.x + P.face * rnd(0, E.biteRange), y: n.y + rnd(-14, 14), vx: P.face * rnd(1, 3), vy: rnd(-0.6, 0.6), life: 18, col: i & 1 ? '#ff8aa8' : '#ffffff', size: 2, glow: 1 });
+    for (const e of ents) { if (e.dead) continue; const dx = (e.x - n.x) * P.face, ey = e.ghost ? e.y : e.y - (e.h || 0) / 2;
+      if (dx < -10 || dx > E.biteRange || Math.abs(ey - n.y) > 40) continue;
+      if (e.ghost) { if (e.state !== 'swallow' && e.state !== 'caught') { e.stunT = S.puffStun * 2; e.x += P.face * 14; if (e.state === 'dash' || e.state === 'warn') e.state = 'float'; } }
+      else if (e.hitBy && (e.foe || e.type === 'armor')) e.hitBy({ dmg: E.biteDmg, vx: P.face * 3, heavy: true }); }
+    if (boss && boss.vulnerable() && boss.D.hitBox) { const h = boss.D.hitBox(boss); if ((P.face > 0 ? h.x0 - n.x : n.x - h.x1) < E.biteRange && h.y0 < n.y + 30 && h.y1 > n.y - 30) boss.hitBy({ dmg: E.biteDmg, vx: P.face }); }
+    tip('gabuBite', 'かみつき波！ タンクが空でも GABU ゲージ満タンなら強力な一撃', true);
   } else {
     P.spitCD = S.puffCooldown; stats.puffs++; sfx('puff');
     for (let i = 0; i < 10; i++) parts.push({ x: n.x, y: n.y - 4, vx: P.face * rnd(1.5, 3.5), vy: rnd(-0.8, 0.8), life: 18, col: '#e8f8ff', size: 2, glow: 1 });
@@ -1538,7 +1556,7 @@ function spawnRoomEntities() {
       case 'start': room.start = { x, y }; break;
       case 'save': ents.push({ type: 'save', x, y, w: 28, h: 40, used: false }); room.save = { x, y }; break;
       case 'coin': case 'heart': spawnItem(type, x, y, { perm: id }); break;
-      case 'bats': for (let k = 0; k < (opt.n || 3); k++) ents.push(makeFoe('bat', x + (k - 1) * 18, y + (k & 1) * 6)); break;
+      case 'bats': for (let k = 0; k < (opt.n || 2); k++) ents.push(makeFoe('bat', x + (k - 0.5) * 18, y + (k & 1) * 6)); break;
       case 'rat': case 'gargoyle': case 'puppet': case 'skeleton': case 'cursedbook': ents.push(makeFoe(type, x, y, opt.foe)); break;
       case 'sheet': ents.push(makeGhost('sheet', x, y)); break;
       case 'lever': ents.push(makeLever(x, y, opt, id)); break;
@@ -1765,17 +1783,22 @@ function updateParts() {
 
 // =====================================================================
 //  NORMAL (non-ghost) ENEMIES - the vacuum can't hold them: SPIT objects at them.
+//  v0.3: tiny critters (rat, bat) are EDIBLE - the mimic vacuum chomps them (heal + GABU gauge), see eatCritter().
+//  The bigger ones (gargoyle, puppet, skeleton, cursedbook, armor) stay suction-immune.
 //    bat (こうもり, swarm) / rat (ネズミ) / gargoyle (ガーゴイル) / puppet (あやつり人形) / skeleton (骸骨の給仕) / cursedbook (呪いの本)
 //  Shared: hp, hit flash + knockback, burn damage over time, coin drops, "the vacuum doesn't work" feedback.
 //  Positions: x = centre, y = bottom (feet), like every non-ghost entity.
 // =====================================================================
 const FOE_SIZE = { bat: [14, 10], rat: [18, 10], gargoyle: [26, 26], puppet: [16, 30], skeleton: [18, 40], cursedbook: [16, 14] };
 const FOE_JP = { bat: 'コウモリ', rat: 'ネズミ', gargoyle: 'ガーゴイル', puppet: 'あやつり人形', skeleton: '骸骨の給仕', cursedbook: '呪いの本' };
+const EDIBLE = { rat: 1, bat: 1 };
 function makeFoe(kind, x, y, opt) {
   const C = CONFIG.foes[kind], [w, h] = FOE_SIZE[kind];
   const e = { type: kind, foe: true, x, y, w, h, hp: C.hp, maxHp: C.hp, state: 'idle', t: 0, face: -1, flash: 0, burnT: 0, burnTick: 0, vx: 0, vy: 0,
     homeX: x, homeY: y, seed: Math.random() * 10, cd: 40 + Math.random() * (C.every || 60), body: null, inCone: 0, tinkT: 0,
-    onSuck() { this.inCone = 3; if (frame % 9 === 0) { sfx('tink'); parts.push({ x: this.x + rnd(-6, 6), y: this.y - this.h / 2 + rnd(-6, 6), vx: rnd(-1, 1), vy: rnd(-1, 0), life: 10, col: '#ffffff', size: 1 }); }
+    onSuck() { this.inCone = 3;
+      if (EDIBLE[this.type]) { this.eatT = (this.eatT || 0) + 1; if (this.state === 'hang') this.state = 'fly'; tip('eat', 'ガブッ！ 小さな生き物は掃除機が食べちゃう。HP が少し回復して、GABU ゲージがたまる'); return; }
+      if (frame % 9 === 0) { sfx('tink'); parts.push({ x: this.x + rnd(-6, 6), y: this.y - this.h / 2 + rnd(-6, 6), vx: rnd(-1, 1), vy: rnd(-1, 0), life: 10, col: '#ffffff', size: 1 }); }
       this.tinkT = 30; tip('foe', FOE_JP[this.type] + 'は生き物（？）だから掃除機が効かない！ 吸い込んだ物をぶつけよう（SPIT）'); },
     hitBy(s) { return foeHit(this, s); } };
   if (kind === 'rat' || kind === 'puppet' || kind === 'skeleton') { e.body = { x: x - w / 2, y: y - h, w, h, vx: 0, vy: 0 }; e.state = 'walk'; e.face = Math.random() < 0.5 ? -1 : 1; }
@@ -1806,6 +1829,12 @@ function killFoe(e) {
   if (e.type === 'gargoyle') list.push('heart');
   popItems(list, e.x, e.y - e.h / 2);
 }
+function eatCritter(e) {
+  const E = CONFIG.eat, n = nozzle(); e.dead = true; stats.eaten = (stats.eaten || 0) + 1; P.chomp = 16; sfx('chomp'); cam.shake = Math.max(cam.shake, 2); hitStop = Math.max(hitStop, 2);
+  heal(E.heal); const was = P.gabu; P.gabu = Math.min(E.max, P.gabu + 1);
+  for (let i = 0; i < 10; i++) parts.push({ x: n.x, y: n.y, vx: rnd(-1.5, 1.5), vy: rnd(-2, 0.5), life: 18, col: i & 1 ? '#ff8aa8' : '#ffe080', size: 2, glow: 1 });
+  if (P.gabu >= E.max && was < E.max) { sfx('secret'); tip('gabuFull', 'GABU ゲージ満タン！ 次の SPIT がパワーアップ（物なら2倍＋貫通、空ならかみつき波）', true); }
+}
 function foeTouch(e, dmg) {
   if (e.dead || P.dead) return;
   const top = e.y - e.h, l = e.x - e.w / 2;
@@ -1816,6 +1845,12 @@ function updateFoe(e) {
   const C = CONFIG.foes[e.type]; e.t++; if (e.recoil > 0) e.recoil--; if (e.flash > 0) e.flash--; if (e.inCone > 0) e.inCone--; if (e.tinkT > 0) e.tinkT--;
   if (e.burnT > 0) { e.burnT--; if (e.burnT % 30 === 0) { e.hp -= 1; e.flash = 6; if (e.hp <= 0) { killFoe(e); return; } }
     if (frame % 3 === 0) parts.push({ x: e.x + rnd(-e.w / 2, e.w / 2), y: e.y - rnd(0, e.h), vx: rnd(-0.3, 0.3), vy: -rnd(0.5, 1.2), life: 14, col: '#ffb040', size: 2, glow: 1 }); }
+  if (EDIBLE[e.type] && e.eatT > 0) { // being slurped into the mimic's mouth: helpless, harmless
+    if (e.inCone <= 0) e.eatT = 0;
+    else { const n = nozzle(), k = Math.min(0.35, 0.08 + e.eatT * 0.015); e.x += (n.x - e.x) * k; e.y += (n.y + e.h / 2 - e.y) * k; e.face = Math.sign(pcx() - e.x) || e.face;
+      if (e.body) { e.body.x = e.x - e.w / 2; e.body.y = e.y - e.h; e.body.vx = 0; e.body.vy = 0; }
+      if (Math.hypot(n.x - e.x, n.y - (e.y - e.h / 2)) < 12 || e.eatT > CONFIG.eat.pullMax) eatCritter(e);
+      return; } }
   const px = pcx(), py = pcy(), dx = px - e.x, dy = py - (e.y - e.h / 2), dist = Math.hypot(dx, dy);
   switch (e.type) {
     case 'bat': {
@@ -2785,7 +2820,7 @@ function startNewGame() {
 }
 function continueGame() { const d = loadSave(); if (!d) return startNewGame(); applySave(d); enterGame(progress.saveRoom || 'foyer', false); say('……ん。つづき、やろっか', 150); }
 function enterGame(roomId, atStart) {
-  P.hp = progress.maxHP; P.dead = false; P.tank = []; P.inv = 0; P.tug = null; P.hover = CONFIG.hoverFrames;
+  P.hp = progress.maxHP; P.dead = false; P.tank = []; P.gabu = 0; P.inv = 0; P.tug = null; P.hover = CONFIG.hoverFrames;
   loadRoom(roomId, { start: true });
   const sp = (atStart && room.start) || room.save || room.start || { x: 3 * TS, y: 15 * TS };
   placePlayer(sp.x + (room.save && !atStart ? 22 : 0), sp.y, 1); entrySafety();
@@ -2900,6 +2935,22 @@ function drawWisps(front) {
     const r = { w: IMG.wisp.width, h: IMG.wisp.height }; g.drawImage(IMG.wisp, Math.round(x - r.w / 2), Math.round(y - r.h / 2)); g.globalAlpha = 1;
   }
 }
+// the mimic vacuum's chomp: jaws open wide then snap shut (eating a critter / GABU-powered SPIT)
+function drawJaws(x, y, f, open, sc) {
+  g.fillStyle = '#3a0a1a'; g.beginPath(); g.ellipse(x + f * 6 * sc, y, 9 * sc, Math.max(1, open), 0, 0, 7); g.fill();
+  g.fillStyle = '#ffffff';
+  for (let i = 0; i < 4; i++) { const fx = x + f * (i * 4 + 1) * sc; // upper fangs point down, lower fangs point up
+    g.beginPath(); g.moveTo(fx, y - open); g.lineTo(fx + f * 3 * sc, y - open); g.lineTo(fx + f * 1.5 * sc, y - open + 4 * sc); g.fill();
+    g.beginPath(); g.moveTo(fx, y + open); g.lineTo(fx + f * 3 * sc, y + open); g.lineTo(fx + f * 1.5 * sc, y + open - 4 * sc); g.fill(); }
+  g.fillStyle = '#ff6a8a'; g.fillRect(Math.round(x - f * 2), Math.round(y - open - 2), 2, Math.round(open * 2 + 4));
+}
+function drawChomp() {
+  const n = nozzle(), x = n.x - cam.x, y = n.y - cam.y, f = P.face;
+  if (P.chomp > 0) { const k = P.chomp / 16, open = k > 0.55 ? (1 - k) / 0.45 * 7 + 1 : k / 0.55 * 8;
+    drawJaws(x, y, f, open, 1); if (P.chomp > 6) drawTextShadow('GABU!', Math.round(x + f * 10), Math.round(y - 22 - (16 - P.chomp)), 'r', 1, 'c'); }
+  if (P.gabuShot > 0) { const k = 1 - P.gabuShot / 22, gx = x + f * (14 + k * CONFIG.eat.biteRange * 0.8); g.globalAlpha = 1 - k * 0.6;
+    drawJaws(gx, y, f, P.gabuShot > 11 ? 10 : (P.gabuShot / 11) * 10, 1.8); g.globalAlpha = 1; }
+}
 function drawPlayer() {
   if (P.inv > 0 && !P.dead && (P.inv >> 2) % 2 === 0) return;
   drawWisps(false);
@@ -2912,6 +2963,7 @@ function drawPlayer() {
     g.globalCompositeOperation = 'source-over';
   }
   drawHero(heroPose(), Math.round(pcx() - cam.x), Math.round(P.y + P.h - cam.y), P.face < 0, false);
+  if (P.chomp > 0 || P.gabuShot > 0) drawChomp();
   drawWisps(true);
   // tug rope
   if (P.tug) {
@@ -3036,9 +3088,11 @@ function drawItem(it) {
 }
 function drawShot(s) {
   const x = s.x - cam.x, y = s.y - cam.y, r = rectOf('items', s.kind);
+  if (s.power) { g.fillStyle = (frame & 2) ? 'rgba(255,138,168,0.55)' : 'rgba(255,255,255,0.4)'; g.beginPath(); g.ellipse(x + s.w / 2, y + s.h / 2, s.w * 0.8, s.h * 0.8, 0, 0, 7); g.fill(); if (frame % 2 === 0) parts.push({ x: s.x + s.w / 2, y: s.y + s.h / 2, vx: -s.vx * 0.2, vy: rnd(-0.4, 0.4), life: 12, col: '#ff8aa8', size: 2, glow: 1 }); }
+  const sc = s.power ? 1.4 : 1;
   if (s.heavy) { g.fillStyle = 'rgba(255,255,255,0.25)'; g.fillRect(Math.round(x - s.vx * 2), Math.round(y + 2), s.w, s.h - 4); }
   g.save(); g.translate(Math.round(x + s.w / 2), Math.round(y + s.h / 2)); g.rotate(s.kind === 'plate' ? 0 : s.spin * 0.3 * Math.sign(s.vx));
-  g.drawImage(IMG.items, r.x, r.y, r.w, r.h, -r.w >> 1, -r.h >> 1, r.w, r.h); g.restore();
+  g.scale(sc, sc); g.drawImage(IMG.items, r.x, r.y, r.w, r.h, -r.w >> 1, -r.h >> 1, r.w, r.h); g.restore();
 }
 function drawEBullet(b) {
   const x = b.x - cam.x, y = b.y - cam.y;
@@ -3132,6 +3186,11 @@ function drawHUD() {
     if (i < P.tank.length) { const r = rectOf('items', P.tank[i]); const sc = Math.min(1, 11 / Math.max(r.w, r.h)); g.drawImage(IMG.items, r.x, r.y, r.w, r.h, Math.round(x + 6.5 - r.w * sc / 2), Math.round(y + 6.5 - r.h * sc / 2), Math.round(r.w * sc), Math.round(r.h * sc)); }
   }
   spr('items', 'coin0', 82, 20); drawTextShadow(String(progress.coins), 94, 22, 'y', 1);
+  { // GABU gauge (critters eaten -> powered SPIT)
+    const E = CONFIG.eat, full = P.gabu >= E.max; g.fillStyle = 'rgba(8,6,20,0.72)'; g.fillRect(4, 35, 18 + E.max * 9, 11); rectLine(4, 35, 18 + E.max * 9, 11, full && (frame & 8) ? '#ff8aa8' : '#4e4876');
+    drawText('GABU', 6, 37, full ? 'r' : 'b', 1);
+    for (let i = 0; i < E.max; i++) { const x = 25 + i * 9; g.fillStyle = i < P.gabu ? (full ? ((frame & 4) ? '#ffffff' : '#ff8aa8') : '#ff8aa8') : '#2a2440';
+      g.beginPath(); g.moveTo(x, 38); g.lineTo(x + 6, 38); g.lineTo(x + 3, 44); g.fill(); } }
   let ax = 112; for (const k of ['float', 'turbo', 'djump']) if (hasAbil(k)) { drawAbilIcon(k, ax, 20, true); ax += 11; }
   if (progress.hasKey) spr('items', 'key', 46 + hearts * 9 - 2, 6);
   // mini-map: 7 x 5 cells around the current room

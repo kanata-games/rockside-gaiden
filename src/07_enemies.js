@@ -14,7 +14,7 @@ function spawnRoomEntities() {
       case 'start': room.start = { x, y }; break;
       case 'save': ents.push({ type: 'save', x, y, w: 28, h: 40, used: false }); room.save = { x, y }; break;
       case 'coin': case 'heart': spawnItem(type, x, y, { perm: id }); break;
-      case 'bats': for (let k = 0; k < (opt.n || 3); k++) ents.push(makeFoe('bat', x + (k - 1) * 18, y + (k & 1) * 6)); break;
+      case 'bats': for (let k = 0; k < (opt.n || 2); k++) ents.push(makeFoe('bat', x + (k - 0.5) * 18, y + (k & 1) * 6)); break;
       case 'rat': case 'gargoyle': case 'puppet': case 'skeleton': case 'cursedbook': ents.push(makeFoe(type, x, y, opt.foe)); break;
       case 'sheet': ents.push(makeGhost('sheet', x, y)); break;
       case 'lever': ents.push(makeLever(x, y, opt, id)); break;

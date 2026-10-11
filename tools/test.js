@@ -124,7 +124,7 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       ok('every cell / pickup / boss reachable', r.status === 0, r.stdout.split('\n').filter(l => /unreached|REACH/.test(l)));
       ok('areas gated by abilities (garden needs turbo, clock tower needs double jump)', order.some(l => /garden.*turbo/.test(l)) && order.some(l => /clock.*djump/.test(l)), order); }
 
-    // ---- normal enemies: immune to the vacuum, beaten by thrown objects
+    // ---- normal (big) enemies: immune to the vacuum, beaten by thrown objects
     { const { ctx, page } = await open(browser, '?room=laundry&x=5&y=16&god=1');
       await waitFor(page, () => GAIDEN.state === 'play', 5000);
       await E(page, () => { for (let i = GAIDEN.ents.length - 1; i >= 0; i--) if (GAIDEN.ents[i].ghost || GAIDEN.ents[i].foe) GAIDEN.ents.splice(i, 1);
@@ -140,6 +140,18 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       await E(page, () => { GAIDEN.spawnItem('barrel', GAIDEN.P.x + 70, 15 * 16); GAIDEN.P.face = 1; GAIDEN.P.tank = []; });
       await page.keyboard.down('x'); await sleep(900); await page.keyboard.up('x');
       ok('heavy barrel cannot be sucked without turbo', await E(page, () => !GAIDEN.P.tank.includes('barrel')));
+      // v0.3: tiny critters are EATEN by the mimic vacuum (heal + GABU gauge); a full gauge powers up SPIT
+      await E(page, () => { for (let i = GAIDEN.ents.length - 1; i >= 0; i--) if (GAIDEN.ents[i].ghost || GAIDEN.ents[i].foe) GAIDEN.ents.splice(i, 1);
+        GAIDEN.ents.push(GAIDEN.makeFoe('rat', GAIDEN.P.x + 60, GAIDEN.P.y + GAIDEN.P.h)); GAIDEN.P.face = 1; GAIDEN.P.tank = []; GAIDEN.P.hp = 4; GAIDEN.P.gabu = 0; });
+      await page.keyboard.down('x'); await sleep(1200); await page.keyboard.up('x');
+      ok('rat gets eaten (chomp): heal + GABU gauge, not stored in the tank', await E(page, () => GAIDEN.foes().length === 0 && GAIDEN.stats.eaten === 1 && GAIDEN.P.hp === 5 && GAIDEN.P.gabu === 1 && GAIDEN.P.tank.length === 0),
+        await E(page, () => ({ foes: GAIDEN.foes().length, eaten: GAIDEN.stats.eaten, hp: GAIDEN.P.hp, gabu: GAIDEN.P.gabu, tank: GAIDEN.P.tank })));
+      await E(page, () => { GAIDEN.ents.push(GAIDEN.makeFoe('bat', GAIDEN.P.x + 50, GAIDEN.P.y + 30)); GAIDEN.P.face = 1; });
+      await page.keyboard.down('x'); await sleep(1200); await page.keyboard.up('x');
+      ok('bat gets eaten too', await E(page, () => GAIDEN.stats.eaten === 2 && GAIDEN.P.gabu === 2));
+      await E(page, () => { GAIDEN.ents.push(GAIDEN.makeFoe('skeleton', GAIDEN.P.x + 70, GAIDEN.P.y + GAIDEN.P.h)); GAIDEN.P.gabu = GAIDEN.CONFIG.eat.max; GAIDEN.P.tank = []; GAIDEN.P.face = 1; });
+      const sk0 = await E(page, () => GAIDEN.foes()[0].hp); await page.keyboard.press('c'); await sleep(400);
+      ok('full GABU gauge: empty-tank SPIT = bite wave that damages a big foe', await E(page, h => GAIDEN.P.gabu === 0 && GAIDEN.stats.gabuShots === 1 && (GAIDEN.foes().length === 0 || GAIDEN.foes()[0].hp < h), sk0));
       await ctx.close(); }
 
     // ---- chandelier defeat -> floor gives way + float pedestal; float power makes a platform

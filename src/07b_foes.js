@@ -1,17 +1,22 @@
 
 // =====================================================================
 //  NORMAL (non-ghost) ENEMIES - the vacuum can't hold them: SPIT objects at them.
+//  v0.3: tiny critters (rat, bat) are EDIBLE - the mimic vacuum chomps them (heal + GABU gauge), see eatCritter().
+//  The bigger ones (gargoyle, puppet, skeleton, cursedbook, armor) stay suction-immune.
 //    bat (こうもり, swarm) / rat (ネズミ) / gargoyle (ガーゴイル) / puppet (あやつり人形) / skeleton (骸骨の給仕) / cursedbook (呪いの本)
 //  Shared: hp, hit flash + knockback, burn damage over time, coin drops, "the vacuum doesn't work" feedback.
 //  Positions: x = centre, y = bottom (feet), like every non-ghost entity.
 // =====================================================================
 const FOE_SIZE = { bat: [14, 10], rat: [18, 10], gargoyle: [26, 26], puppet: [16, 30], skeleton: [18, 40], cursedbook: [16, 14] };
 const FOE_JP = { bat: 'コウモリ', rat: 'ネズミ', gargoyle: 'ガーゴイル', puppet: 'あやつり人形', skeleton: '骸骨の給仕', cursedbook: '呪いの本' };
+const EDIBLE = { rat: 1, bat: 1 };
 function makeFoe(kind, x, y, opt) {
   const C = CONFIG.foes[kind], [w, h] = FOE_SIZE[kind];
   const e = { type: kind, foe: true, x, y, w, h, hp: C.hp, maxHp: C.hp, state: 'idle', t: 0, face: -1, flash: 0, burnT: 0, burnTick: 0, vx: 0, vy: 0,
     homeX: x, homeY: y, seed: Math.random() * 10, cd: 40 + Math.random() * (C.every || 60), body: null, inCone: 0, tinkT: 0,
-    onSuck() { this.inCone = 3; if (frame % 9 === 0) { sfx('tink'); parts.push({ x: this.x + rnd(-6, 6), y: this.y - this.h / 2 + rnd(-6, 6), vx: rnd(-1, 1), vy: rnd(-1, 0), life: 10, col: '#ffffff', size: 1 }); }
+    onSuck() { this.inCone = 3;
+      if (EDIBLE[this.type]) { this.eatT = (this.eatT || 0) + 1; if (this.state === 'hang') this.state = 'fly'; tip('eat', 'ガブッ！ 小さな生き物は掃除機が食べちゃう。HP が少し回復して、GABU ゲージがたまる'); return; }
+      if (frame % 9 === 0) { sfx('tink'); parts.push({ x: this.x + rnd(-6, 6), y: this.y - this.h / 2 + rnd(-6, 6), vx: rnd(-1, 1), vy: rnd(-1, 0), life: 10, col: '#ffffff', size: 1 }); }
       this.tinkT = 30; tip('foe', FOE_JP[this.type] + 'は生き物（？）だから掃除機が効かない！ 吸い込んだ物をぶつけよう（SPIT）'); },
     hitBy(s) { return foeHit(this, s); } };
   if (kind === 'rat' || kind === 'puppet' || kind === 'skeleton') { e.body = { x: x - w / 2, y: y - h, w, h, vx: 0, vy: 0 }; e.state = 'walk'; e.face = Math.random() < 0.5 ? -1 : 1; }
@@ -42,6 +47,12 @@ function killFoe(e) {
   if (e.type === 'gargoyle') list.push('heart');
   popItems(list, e.x, e.y - e.h / 2);
 }
+function eatCritter(e) {
+  const E = CONFIG.eat, n = nozzle(); e.dead = true; stats.eaten = (stats.eaten || 0) + 1; P.chomp = 16; sfx('chomp'); cam.shake = Math.max(cam.shake, 2); hitStop = Math.max(hitStop, 2);
+  heal(E.heal); const was = P.gabu; P.gabu = Math.min(E.max, P.gabu + 1);
+  for (let i = 0; i < 10; i++) parts.push({ x: n.x, y: n.y, vx: rnd(-1.5, 1.5), vy: rnd(-2, 0.5), life: 18, col: i & 1 ? '#ff8aa8' : '#ffe080', size: 2, glow: 1 });
+  if (P.gabu >= E.max && was < E.max) { sfx('secret'); tip('gabuFull', 'GABU ゲージ満タン！ 次の SPIT がパワーアップ（物なら2倍＋貫通、空ならかみつき波）', true); }
+}
 function foeTouch(e, dmg) {
   if (e.dead || P.dead) return;
   const top = e.y - e.h, l = e.x - e.w / 2;
@@ -52,6 +63,12 @@ function updateFoe(e) {
   const C = CONFIG.foes[e.type]; e.t++; if (e.recoil > 0) e.recoil--; if (e.flash > 0) e.flash--; if (e.inCone > 0) e.inCone--; if (e.tinkT > 0) e.tinkT--;
   if (e.burnT > 0) { e.burnT--; if (e.burnT % 30 === 0) { e.hp -= 1; e.flash = 6; if (e.hp <= 0) { killFoe(e); return; } }
     if (frame % 3 === 0) parts.push({ x: e.x + rnd(-e.w / 2, e.w / 2), y: e.y - rnd(0, e.h), vx: rnd(-0.3, 0.3), vy: -rnd(0.5, 1.2), life: 14, col: '#ffb040', size: 2, glow: 1 }); }
+  if (EDIBLE[e.type] && e.eatT > 0) { // being slurped into the mimic's mouth: helpless, harmless
+    if (e.inCone <= 0) e.eatT = 0;
+    else { const n = nozzle(), k = Math.min(0.35, 0.08 + e.eatT * 0.015); e.x += (n.x - e.x) * k; e.y += (n.y + e.h / 2 - e.y) * k; e.face = Math.sign(pcx() - e.x) || e.face;
+      if (e.body) { e.body.x = e.x - e.w / 2; e.body.y = e.y - e.h; e.body.vx = 0; e.body.vy = 0; }
+      if (Math.hypot(n.x - e.x, n.y - (e.y - e.h / 2)) < 12 || e.eatT > CONFIG.eat.pullMax) eatCritter(e);
+      return; } }
   const px = pcx(), py = pcy(), dx = px - e.x, dy = py - (e.y - e.h / 2), dist = Math.hypot(dx, dy);
   switch (e.type) {
     case 'bat': {

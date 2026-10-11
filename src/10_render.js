@@ -16,7 +16,7 @@ function startNewGame() {
 }
 function continueGame() { const d = loadSave(); if (!d) return startNewGame(); applySave(d); enterGame(progress.saveRoom || 'foyer', false); say('……ん。つづき、やろっか', 150); }
 function enterGame(roomId, atStart) {
-  P.hp = progress.maxHP; P.dead = false; P.tank = []; P.inv = 0; P.tug = null; P.hover = CONFIG.hoverFrames;
+  P.hp = progress.maxHP; P.dead = false; P.tank = []; P.gabu = 0; P.inv = 0; P.tug = null; P.hover = CONFIG.hoverFrames;
   loadRoom(roomId, { start: true });
   const sp = (atStart && room.start) || room.save || room.start || { x: 3 * TS, y: 15 * TS };
   placePlayer(sp.x + (room.save && !atStart ? 22 : 0), sp.y, 1); entrySafety();
@@ -131,6 +131,22 @@ function drawWisps(front) {
     const r = { w: IMG.wisp.width, h: IMG.wisp.height }; g.drawImage(IMG.wisp, Math.round(x - r.w / 2), Math.round(y - r.h / 2)); g.globalAlpha = 1;
   }
 }
+// the mimic vacuum's chomp: jaws open wide then snap shut (eating a critter / GABU-powered SPIT)
+function drawJaws(x, y, f, open, sc) {
+  g.fillStyle = '#3a0a1a'; g.beginPath(); g.ellipse(x + f * 6 * sc, y, 9 * sc, Math.max(1, open), 0, 0, 7); g.fill();
+  g.fillStyle = '#ffffff';
+  for (let i = 0; i < 4; i++) { const fx = x + f * (i * 4 + 1) * sc; // upper fangs point down, lower fangs point up
+    g.beginPath(); g.moveTo(fx, y - open); g.lineTo(fx + f * 3 * sc, y - open); g.lineTo(fx + f * 1.5 * sc, y - open + 4 * sc); g.fill();
+    g.beginPath(); g.moveTo(fx, y + open); g.lineTo(fx + f * 3 * sc, y + open); g.lineTo(fx + f * 1.5 * sc, y + open - 4 * sc); g.fill(); }
+  g.fillStyle = '#ff6a8a'; g.fillRect(Math.round(x - f * 2), Math.round(y - open - 2), 2, Math.round(open * 2 + 4));
+}
+function drawChomp() {
+  const n = nozzle(), x = n.x - cam.x, y = n.y - cam.y, f = P.face;
+  if (P.chomp > 0) { const k = P.chomp / 16, open = k > 0.55 ? (1 - k) / 0.45 * 7 + 1 : k / 0.55 * 8;
+    drawJaws(x, y, f, open, 1); if (P.chomp > 6) drawTextShadow('GABU!', Math.round(x + f * 10), Math.round(y - 22 - (16 - P.chomp)), 'r', 1, 'c'); }
+  if (P.gabuShot > 0) { const k = 1 - P.gabuShot / 22, gx = x + f * (14 + k * CONFIG.eat.biteRange * 0.8); g.globalAlpha = 1 - k * 0.6;
+    drawJaws(gx, y, f, P.gabuShot > 11 ? 10 : (P.gabuShot / 11) * 10, 1.8); g.globalAlpha = 1; }
+}
 function drawPlayer() {
   if (P.inv > 0 && !P.dead && (P.inv >> 2) % 2 === 0) return;
   drawWisps(false);
@@ -143,6 +159,7 @@ function drawPlayer() {
     g.globalCompositeOperation = 'source-over';
   }
   drawHero(heroPose(), Math.round(pcx() - cam.x), Math.round(P.y + P.h - cam.y), P.face < 0, false);
+  if (P.chomp > 0 || P.gabuShot > 0) drawChomp();
   drawWisps(true);
   // tug rope
   if (P.tug) {
@@ -267,9 +284,11 @@ function drawItem(it) {
 }
 function drawShot(s) {
   const x = s.x - cam.x, y = s.y - cam.y, r = rectOf('items', s.kind);
+  if (s.power) { g.fillStyle = (frame & 2) ? 'rgba(255,138,168,0.55)' : 'rgba(255,255,255,0.4)'; g.beginPath(); g.ellipse(x + s.w / 2, y + s.h / 2, s.w * 0.8, s.h * 0.8, 0, 0, 7); g.fill(); if (frame % 2 === 0) parts.push({ x: s.x + s.w / 2, y: s.y + s.h / 2, vx: -s.vx * 0.2, vy: rnd(-0.4, 0.4), life: 12, col: '#ff8aa8', size: 2, glow: 1 }); }
+  const sc = s.power ? 1.4 : 1;
   if (s.heavy) { g.fillStyle = 'rgba(255,255,255,0.25)'; g.fillRect(Math.round(x - s.vx * 2), Math.round(y + 2), s.w, s.h - 4); }
   g.save(); g.translate(Math.round(x + s.w / 2), Math.round(y + s.h / 2)); g.rotate(s.kind === 'plate' ? 0 : s.spin * 0.3 * Math.sign(s.vx));
-  g.drawImage(IMG.items, r.x, r.y, r.w, r.h, -r.w >> 1, -r.h >> 1, r.w, r.h); g.restore();
+  g.scale(sc, sc); g.drawImage(IMG.items, r.x, r.y, r.w, r.h, -r.w >> 1, -r.h >> 1, r.w, r.h); g.restore();
 }
 function drawEBullet(b) {
   const x = b.x - cam.x, y = b.y - cam.y;
@@ -363,6 +382,11 @@ function drawHUD() {
     if (i < P.tank.length) { const r = rectOf('items', P.tank[i]); const sc = Math.min(1, 11 / Math.max(r.w, r.h)); g.drawImage(IMG.items, r.x, r.y, r.w, r.h, Math.round(x + 6.5 - r.w * sc / 2), Math.round(y + 6.5 - r.h * sc / 2), Math.round(r.w * sc), Math.round(r.h * sc)); }
   }
   spr('items', 'coin0', 82, 20); drawTextShadow(String(progress.coins), 94, 22, 'y', 1);
+  { // GABU gauge (critters eaten -> powered SPIT)
+    const E = CONFIG.eat, full = P.gabu >= E.max; g.fillStyle = 'rgba(8,6,20,0.72)'; g.fillRect(4, 35, 18 + E.max * 9, 11); rectLine(4, 35, 18 + E.max * 9, 11, full && (frame & 8) ? '#ff8aa8' : '#4e4876');
+    drawText('GABU', 6, 37, full ? 'r' : 'b', 1);
+    for (let i = 0; i < E.max; i++) { const x = 25 + i * 9; g.fillStyle = i < P.gabu ? (full ? ((frame & 4) ? '#ffffff' : '#ff8aa8') : '#ff8aa8') : '#2a2440';
+      g.beginPath(); g.moveTo(x, 38); g.lineTo(x + 6, 38); g.lineTo(x + 3, 44); g.fill(); } }
   let ax = 112; for (const k of ['float', 'turbo', 'djump']) if (hasAbil(k)) { drawAbilIcon(k, ax, 20, true); ax += 11; }
   if (progress.hasKey) spr('items', 'key', 46 + hearts * 9 - 2, 6);
   // mini-map: 7 x 5 cells around the current room

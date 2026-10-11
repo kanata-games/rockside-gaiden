@@ -20,7 +20,7 @@ ROOM_DEFS.push(
 
   { id: 'laundry', jp: '洗濯場', en: 'LAUNDRY', area: 'laundry', theme: 'laundry', tiles: 't', cx: 6, cy: 3, cw: 2, ch: 1, dark: 0.48,
     build(R) { R.box(); R.open('R', 0, 11, 14); R.open('L', 0, 5, 8); R.solid(1, 9, 4, 14); R.plat(20, 26, 11); R.plat(28, 33, 7); R.plat(36, 42, 11); },
-    ents: [['save', 31, 15], ['sheet', 24, 8], ['sheet', 40, 8], ['rat', 14, 15], ['rat', 38, 15], ['bottle', 7, 15], ['bottle', 9, 15], ['bottle', 11, 15],
+    ents: [['save', 31, 15], ['sheet', 24, 8], ['sheet', 40, 8], ['rat', 14, 15], ['bottle', 7, 15], ['bottle', 9, 15], ['bottle', 11, 15],
       ['plate', 22, 11], ['soap', 30, 7], ['chair', 44, 15], ['curtain', 17, 15, { sprite: 'sheet', drop: ['coin', 'coin', 'heart'] }], ['dust', 34, 15, { drop: ['coin', 'coin'] }],
       ['hint', 8, 15, { need: 'float', text: '扉が高すぎて届かない…' }, ], ['hint', 7, 15, { have: 'float', text: '高い扉。物を吸ってSPIT長押し→ふわり足場に乗ってジャンプ！' }]],
     decor: [['washtub', 12, 15], ['washtub', 26, 15], ['washtub', 41, 15], ['pipes', 18, 15], ['pipes', 46, 15], ['boiler', 35, 15],
@@ -29,7 +29,7 @@ ROOM_DEFS.push(
 
   { id: 'drying', jp: '物干し部屋', en: 'DRYING ROOM', area: 'laundry', theme: 'laundry', tiles: 't', cx: 4, cy: 3, cw: 2, ch: 1, dark: 0.55,
     build(R) { R.box(); R.open('R', 0, 5, 8); R.solid(43, 9, 46, 14); R.open('B', 0, 4, 7); R.open('T', 1, 4, 7); R.plat(18, 24, 11); R.plat(27, 33, 7); R.plat(10, 15, 11); },
-    ents: [['bats', 16, 4], ['bats', 38, 4], ['sheet', 10, 7], ['bottle', 40, 15], ['bottle', 36, 15], ['chair', 22, 15], ['candle', 12, 11], ['plate', 20, 11],
+    ents: [['bats', 38, 4], ['sheet', 10, 7], ['bottle', 40, 15], ['bottle', 36, 15], ['chair', 22, 15], ['candle', 12, 11], ['plate', 20, 11],
       ['curtain', 26, 15, { sprite: 'sheet', drop: ['coin', 'coin', 'coin'] }], ['curtain', 34, 15, { sprite: 'sheet', drop: ['heart'] }],
       ['lever', 32, 7, { room: 'cellar', gate: 'grate' }], ['hint', 31, 7, { need: 'turbo', text: 'レバーが固くて動かない… もっと強く吸えたら' }]],
     decor: [['sheetline', 8, 3, { top: 1 }], ['sheetline', 20, 3, { top: 1 }], ['sheetline', 40, 3, { top: 1 }], ['pipes', 2, 15], ['pipes', 16, 15],
@@ -37,14 +37,14 @@ ROOM_DEFS.push(
 
   { id: 'boiler', jp: 'ボイラー室', en: 'BOILER ROOM', area: 'laundry', theme: 'boiler', tiles: 't', cx: 4, cy: 4, cw: 1, ch: 1, dark: 0.55,
     build(R) { R.box(); R.open('T', 0, 4, 7); R.open('R', 0, 11, 14); R.plat(10, 16, 11); R.plat(3, 9, 7); },
-    ents: [['rat', 8, 15], ['rat', 11, 15], ['skeleton', 15, 15], ['pot', 4, 15], ['pot', 20, 11], ['pan', 12, 11], ['pan', 6, 7], ['bottle', 21, 15],
+    ents: [['rat', 8, 15], ['skeleton', 15, 15], ['pot', 4, 15], ['pot', 20, 11], ['pan', 12, 11], ['pan', 6, 7], ['bottle', 21, 15],
       ['hint', 5, 15, { need: 'turbo', text: '鉄なべは重くて吸い込めない…' }]],
     decor: [['boiler', 12, 15], ['pipes', 2, 15], ['pipes', 20, 15], ['pipes', 22, 7], ['lamp_wall', 8, 10, { light: 1 }], ['lamp_wall', 17, 8, { light: 1 }]] },
 
   { id: 'kitchen', jp: '亡霊の厨房', en: 'PHANTOM KITCHEN', area: 'laundry', theme: 'kitchen', tiles: 't', cx: 5, cy: 4, cw: 3, ch: 1, dark: 0.46,
     build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.solid(10, 13, 17, 14); R.plat(20, 27, 11); R.solid(30, 13, 36, 14); R.plat(38, 44, 10);
       R.plat(46, 52, 7); R.solid(55, 13, 62, 14); R.plat(64, 70, 11); },
-    ents: [['skeleton', 24, 15], ['skeleton', 58, 13], ['rat', 40, 15], ['rat', 54, 15], ['dish', 34, 6], ['puff', 50, 4],
+    ents: [['skeleton', 24, 15], ['skeleton', 58, 13], ['rat', 40, 15], ['dish', 34, 6], ['puff', 50, 4],
       ['plate', 11, 13], ['plate', 13, 13], ['plate', 16, 13], ['plate', 32, 13], ['plate', 35, 13], ['pan', 22, 11], ['pan', 42, 10], ['pan', 57, 13],
       ['pot', 6, 15], ['pot', 48, 15], ['chair', 28, 15], ['chair', 52, 15], ['bottle', 45, 7], ['bottle', 61, 13], ['candle', 50, 7],
       ['dust', 68, 15, { drop: ['coin', 'heart'] }], ['vase', 4, 15, { drop: ['coin', 'coin', 'coin'] }]],

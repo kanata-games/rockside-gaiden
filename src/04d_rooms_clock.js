@@ -7,7 +7,7 @@ ROOM_DEFS.push(
   { id: 'attic', jp: 'ほこりの屋根裏', en: 'DUSTY ATTIC', area: 'clock', theme: 'attic', tiles: 'w', cx: 6, cy: -1, cw: 3, ch: 1, dark: 0.55,
     build(R) { R.box(); R.open('B', 1, 18, 21); R.open('T', 2, 8, 11); R.secret(0, 11, 14); R.plat(8, 14, 11); R.plat(18, 24, 7); R.plat(30, 36, 11);
       R.plat(46, 51, 11); R.plat(53, 62, 8); R.plat(65, 70, 11); },
-    ents: [['save', 32, 15], ['cursedbook', 12, 6], ['cursedbook', 40, 6], ['cursedbook', 60, 5], ['bats', 22, 3], ['rat', 26, 15], ['rat', 56, 15], ['puppet', 66, 15],
+    ents: [['save', 32, 15], ['cursedbook', 12, 6], ['cursedbook', 40, 6], ['cursedbook', 60, 5], ['rat', 26, 15], ['puppet', 66, 15],
       ['chair', 6, 15], ['chair', 36, 15], ['book', 10, 11], ['book', 20, 7], ['book', 49, 11], ['bottle', 28, 15], ['gear', 58, 8], ['plate', 33, 11],
       ['curtain', 2.5, 15, { secret: 1, sprite: 'ivy' }], ['dust', 16, 15, { drop: ['coin', 'coin'] }], ['dust', 50, 15, { drop: ['heart'] }], ['dust', 68, 15, { drop: ['coin', 'coin', 'coin'] }]],
     decor: [['crate', 8, 15], ['crate', 9.5, 13.5], ['trunk', 22, 15], ['dollshelf', 38, 15], ['crate', 62, 15], ['trunk', 70, 15], ['round_window', 14, 6],
@@ -35,7 +35,7 @@ ROOM_DEFS.push(
 
   { id: 'clockback', jp: '文字盤の裏側', en: 'BEHIND THE CLOCKFACE', area: 'clock', theme: 'gears', tiles: 'w', cx: 6, cy: -2, cw: 2, ch: 1, dark: 0.52,
     build(R) { R.box(); R.open('T', 0, 4, 7); R.plat(10, 16, 11); R.plat(2, 9, 7); R.plat(22, 28, 11); R.plat(32, 38, 8); },
-    ents: [['lever', 42, 15, { room: 'pendulum', gate: 'belfry' }], ['gargoyle', 34, 4], ['bats', 26, 4], ['rat', 20, 15], ['rat', 38, 15], ['cursedbook', 14, 5],
+    ents: [['lever', 42, 15, { room: 'pendulum', gate: 'belfry' }], ['gargoyle', 34, 4], ['rat', 20, 15], ['cursedbook', 14, 5],
       ['gear', 24, 11], ['gear', 26, 11], ['gear', 35, 8], ['pot', 44, 15], ['chair', 30, 15], ['bottle', 8, 15]],
     decor: [['gear_big', 8, 15], ['gear_big', 30, 13], ['gear_med', 18, 7], ['gear_med', 40, 9], ['clockface', 24, 6], ['sconce', 14, 9, { light: 1 }], ['sconce', 36, 12, { light: 1 }],
       ['sconce', 46, 9, { light: 1 }]] },

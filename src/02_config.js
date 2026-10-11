@@ -20,6 +20,8 @@ const CONFIG = {
   hurtInsetX: 3, hurtInsetTop: 12,  // damage hurtbox inset (see hurtBox())
   foeRecoil: 60, foeEdge: 34,        // normal enemies back off this long after hitting Kanata; never closer than this to the room edge (doorways)
   entryGrace: 50, entrySafe: 112,     // after entering a room: no damage for N frames; enemies kept this far (px) from the entry point
+  // v0.3: the mimic vacuum EATS tiny critters (rat, bat): +heal and +1 GABU gauge; a full gauge powers up the next SPIT
+  eat: { heal: 1, max: 3, pullMax: 40, biteDmg: 3, biteRange: 96, shotMul: 2 },
   maxHP: 10, invFrames: 100, knockFrames: 16, knockVx: 1.6, knockVy: 2.6,
 
   // ---- vacuum (Luigi's Mansion style) ----
