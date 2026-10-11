@@ -120,7 +120,7 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       ok('fewer rats and bat swarms (<= 15 rats, <= 6 swarms)', crit.rats <= 15 && crit.bats <= 6, crit);
       ok('a warp room in every area', ['east', 'laundry', 'garden', 'clock', 'crypt', 'bath'].every(a => crit.warps.includes(a)), crit.warps);
       ok('title has no PROTOTYPE', !(await E(page, () => document.documentElement.innerHTML.includes('PROTOTYPE'))));
-      ok('version 0.3.0', await E(page, () => (typeof GAME_VERSION !== 'undefined' && GAME_VERSION === '0.3.0') || GAIDEN.CONFIG.version === '0.3.0'));
+      ok('version 0.3.1', await E(page, () => (typeof GAME_VERSION !== 'undefined' && GAME_VERSION === '0.3.1') || GAIDEN.CONFIG.version === '0.3.1'));
       await ctx.close(); }
 
     // ---- world reachability / ability gating (static check over the stitched tile grid)
@@ -223,6 +223,20 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       await page.keyboard.down('z'); await sleep(250); await page.keyboard.up('z'); await sleep(120); await page.keyboard.down('z'); await sleep(250); await page.keyboard.up('z');
       ok('double jump in the air', await waitFor(page, n => GAIDEN.stats.djumps > n, 1500, d0));
       await ctx.close(); }
+
+    // ---- v0.3.1 regression: telegraphed from-above attacks must actually drop something that reaches the floor
+    { const { ctx, page } = await open(browser, '?room=washroom&x=4&y=16&god=1&abil=float,turbo');
+      await waitFor(page, () => GAIDEN.state === 'play', 5000);
+      const r = await E(page, async () => { const G = GAIDEN; G.ebullets.push({ kind: 'sock', x: 200, y: 20, w: 10, h: 12, vx: 0, vy: 1.4, g: 0.24, dmg: 1, life: 200 });
+        const q = G.ebullets[G.ebullets.length - 1]; const y0 = q.y; await new Promise(res => setTimeout(res, 700)); return { y0, y: Math.round(q.y), dead: q.dead, fell: Math.round(q.y - y0) }; });
+      ok('engine: a falling bullet spawned inside the ceiling drops out of it (is not culled on frame 1)', r.fell > 40, r);
+      await ctx.close(); }
+    { const DROPS = require('./drops.js'); const out = await DROPS(URL0, { speed: 4 });
+      for (const c of out) ok(`drop attack ${c.boss}.${c.atk}${c.rage ? ' (enraged)' : ''}: projectiles fall and reach the floor`, c.pass, { n: c.n, bad: c.bad, e: c.sample && { kind: c.sample.kind, spawnY: c.sample.y0, lowest: Math.round(c.sample.maxB), frames: c.sample.frames } }); }
+    { const { ctx, page } = await open(browser, '?room=clockroom&x=2&y=16&god=1&abil=float,turbo,djump,phase&bossatk=hands');
+      await waitFor(page, () => GAIDEN.state === 'play', 5000);
+      await E(page, () => { const G = GAIDEN; window.__bot = () => { const K = G._test.keys; K.left = K.right = false; if (G.P.x < 8 * 16) K.right = true; }; window.__speed = 4; });
+      ok('clock hands: the marked stab actually comes down from the ceiling', await waitFor(page, () => GAIDEN.ebullets.some(q => q.kind === 'hand' && q.h > 150), 20000)); await ctx.close(); }
 
     // ---- bosses 2-4, played by the bot (god mode; balance runs without god mode: tools/bossrun.js)
     for (const [kind, roomId, abil] of [['golem', 'washroom', 'float,turbo'], ['rose', 'rosebed', 'float,turbo,djump'], ['organ', 'choir', 'float,turbo,djump'], ['serpent', 'yubune', 'float,turbo,djump,phase'], ['clock', 'clockroom', 'float,turbo,djump,phase']]) {

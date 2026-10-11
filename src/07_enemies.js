@@ -203,7 +203,10 @@ function updateEBullets() {
         continue;
       }
     }
-    else if (b.y + b.h > room.H - 3 * TS + 1 || solidAtPx(b.x + b.w / 2, b.y + b.h) || solidAtPx(b.x + b.w / 2, b.y) || b.x < -10 || b.x > room.W + 10) {
+    // v0.3.1: the "top is inside a solid tile" test only applies to bullets moving UP (hitting the ceiling). A falling bullet that
+    // starts inside the ceiling (e.g. the golem's sock rain spawned at y=26 in the 2-row ceiling) used to count as "landed" on its
+    // very first frame: the telegraph played, the splash ran, but nothing ever fell. Now it simply drops out of the ceiling.
+    else if (b.y + b.h > room.H - 3 * TS + 1 || (solidAtPx(b.x + b.w / 2, b.y + b.h) && !(b.vy > 0 && solidAtPx(b.x + b.w / 2, b.y))) || (b.vy < 0 && solidAtPx(b.x + b.w / 2, b.y)) || b.x < -10 || b.x > room.W + 10) {
       b.dead = true; if (b.onLand) b.onLand(b);
       else { const col = b.kind === 'plate' ? '#f4f4fc' : b.kind === 'needle' ? '#e8e8f0' : '#a8e0ff'; for (let i = 0; i < 6; i++) parts.push({ x: b.x + b.w / 2, y: b.y + b.h / 2, vx: rnd(-1.5, 1.5), vy: rnd(-2, 0), life: 18, col, size: 2, grav: 1 }); sfx('tink'); }
       continue;

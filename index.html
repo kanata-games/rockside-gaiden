@@ -65,7 +65,7 @@ body.land #hint{display:none;}
 <script>
 'use strict';
 // Version label (title screen + footer). Bump on every release.
-const GAME_VERSION = '0.3.0';
+const GAME_VERSION = '0.3.1';
 // =====================================================================
 //  ROCKSIDE外伝 清掃員カナタ  -  haunted-mansion exploration + vacuum action (prototype)
 //  All gameplay tuning lives in CONFIG. Units: pixels and frames @60Hz.
@@ -1869,7 +1869,10 @@ function updateEBullets() {
         continue;
       }
     }
-    else if (b.y + b.h > room.H - 3 * TS + 1 || solidAtPx(b.x + b.w / 2, b.y + b.h) || solidAtPx(b.x + b.w / 2, b.y) || b.x < -10 || b.x > room.W + 10) {
+    // v0.3.1: the "top is inside a solid tile" test only applies to bullets moving UP (hitting the ceiling). A falling bullet that
+    // starts inside the ceiling (e.g. the golem's sock rain spawned at y=26 in the 2-row ceiling) used to count as "landed" on its
+    // very first frame: the telegraph played, the splash ran, but nothing ever fell. Now it simply drops out of the ceiling.
+    else if (b.y + b.h > room.H - 3 * TS + 1 || (solidAtPx(b.x + b.w / 2, b.y + b.h) && !(b.vy > 0 && solidAtPx(b.x + b.w / 2, b.y))) || (b.vy < 0 && solidAtPx(b.x + b.w / 2, b.y)) || b.x < -10 || b.x > room.W + 10) {
       b.dead = true; if (b.onLand) b.onLand(b);
       else { const col = b.kind === 'plate' ? '#f4f4fc' : b.kind === 'needle' ? '#e8e8f0' : '#a8e0ff'; for (let i = 0; i < 6; i++) parts.push({ x: b.x + b.w / 2, y: b.y + b.h / 2, vx: rnd(-1.5, 1.5), vy: rnd(-2, 0), life: 18, col, size: 2, grav: 1 }); sfx('tink'); }
       continue;
@@ -2493,7 +2496,7 @@ BOSS_DEFS.golem = { jp: 'リネン・ゴーレム', en: 'LINEN GOLEM', cfg: 'gol
         if (b.t === 1) { const n = bossP('socks'), px = pcx(); b.marks = []; const xs = [px]; for (let k = 1; xs.length < n; k++) { xs.push(px + k * 56); if (xs.length < n) xs.push(px - k * 56); }
           for (const x of xs) b.marks.push(clamp(x, 24, room.W - 24)); sfx('warn'); }
         if (b.t < warn && b.t % 12 === 0) sfx('warn');
-        if (b.t === warn) { for (const mx of b.marks) ebullets.push({ kind: 'sock', x: mx - 5, y: 26, w: 10, h: 12, vx: 0, vy: 1.4, g: 0.24, dmg: C.sockDamage, life: 200, onLand: q => { for (let k = 0; k < 5; k++) parts.push({ x: q.x + 5, y: FLOOR_Y - 2, vx: rnd(-1.2, 1.2), vy: rnd(-1.6, -0.4), life: 16, col: '#9ad0ff', size: 1, grav: 1 }); } }); b.marks = []; sfx('splash'); }
+        if (b.t === warn) { for (const mx of b.marks) ebullets.push({ kind: 'sock', x: mx - 5, y: 2 * TS + 2, w: 10, h: 12, vx: 0, vy: 1.4, g: 0.24, dmg: C.sockDamage, life: 200, onLand: q => { for (let k = 0; k < 5; k++) parts.push({ x: q.x + 5, y: FLOOR_Y - 2, vx: rnd(-1.2, 1.2), vy: rnd(-1.6, -0.4), life: 16, col: '#9ad0ff', size: 1, grav: 1 }); } }); b.marks = []; sfx('splash'); }
         if (b.t >= warn + 46) { b.state = 'idle'; b.t = 0; } break; }
       case 'leap': {
         const warn = bossP('leapWarn'), air = 40;
