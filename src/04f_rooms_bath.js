@@ -6,12 +6,12 @@
 ROOM_DEFS.push(
   { id: 'well', jp: '湯けむりの井戸', en: 'STEAMY WELL', area: 'bath', theme: 'cistern', tiles: 'b', cx: 12, cy: 2, cw: 1, ch: 1, dark: 0.55,
     build(R) { R.box(); R.open('T', 0, 8, 11); R.open('R', 0, 11, 14); R.plat(2, 7, 11); R.plat(9, 14, 7); R.plat(16, 21, 11); },
-    ents: [['crab', 18, 15], ['duck', 4, 11], ['duck', 19, 11], ['coin', 11, 7], ['coin', 12, 7]],
+    ents: [['crab', 13, 15], ['duck', 4, 11], ['duck', 19, 11], ['coin', 11, 7], ['coin', 12, 7]],
     decor: [['pipes', 4, 15], ['spiritlamp', 14, 15, { light: 1 }], ['buckets', 20, 15]] },
 
   { id: 'grandbath', jp: '大浴場', en: 'GRAND BATH', area: 'bath', theme: 'bath', tiles: 'b', cx: 13, cy: 2, cw: 2, ch: 1, dark: 0.36,
     build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.open('B', 1, 8, 11); R.solid(14, 13, 28, 14); R.plat(4, 9, 11); R.plat(17, 25, 8); R.plat(37, 43, 11); },
-    ents: [['save', 7, 15], ['crab', 20, 13], ['crab', 41, 15], ['puff', 30, 6], ['sheet', 12, 6], ['duck', 16, 13], ['duck', 26, 13], ['soap', 38, 11], ['bottle', 5, 11],
+    ents: [['save', 7, 15], ['crab', 20, 13], ['crab', 36, 15], ['puff', 30, 6], ['sheet', 12, 6], ['duck', 16, 13], ['duck', 26, 13], ['soap', 38, 11], ['bottle', 5, 11],
       ['coin', 20, 8], ['coin', 22, 8], ['dust', 30, 15, { drop: ['heart'] }]],
     decor: [['liontap', 21, 11], ['bathstool', 3, 15], ['bathstool', 44, 15], ['buckets', 11, 15], ['duckprop', 25, 13], ['lamp_wall', 8, 8, { light: 1 }], ['lamp_wall', 40, 8, { light: 1 }],
       ['round_window', 32, 7], ['cobweb', 1, 2, { top: 1 }]] },

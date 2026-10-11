@@ -7,7 +7,7 @@ ROOM_DEFS.push(
   { id: 'attic', jp: 'ほこりの屋根裏', en: 'DUSTY ATTIC', area: 'clock', theme: 'attic', tiles: 'w', cx: 6, cy: -1, cw: 3, ch: 1, dark: 0.55,
     build(R) { R.box(); R.open('B', 1, 18, 21); R.open('T', 2, 8, 11); R.secret(0, 11, 14); R.open('R', 0, 11, 14); R.plat(8, 14, 11); R.plat(18, 24, 7); R.plat(30, 36, 11);
       R.plat(46, 51, 11); R.plat(53, 62, 8); R.plat(65, 70, 11); },
-    ents: [['save', 32, 15], ['cursedbook', 12, 6], ['cursedbook', 40, 6], ['cursedbook', 60, 5], ['rat', 26, 15], ['puppet', 66, 15],
+    ents: [['save', 32, 15], ['cursedbook', 12, 6], ['cursedbook', 40, 6], ['cursedbook', 60, 5], ['rat', 26, 15], ['puppet', 58, 15],
       ['chair', 6, 15], ['chair', 36, 15], ['book', 10, 11], ['book', 20, 7], ['book', 49, 11], ['bottle', 28, 15], ['gear', 58, 8], ['plate', 33, 11],
       ['curtain', 2.5, 15, { secret: 1, sprite: 'ivy' }], ['dust', 16, 15, { drop: ['coin', 'coin'] }], ['dust', 50, 15, { drop: ['heart'] }], ['dust', 68, 15, { drop: ['coin', 'coin', 'coin'] }]],
     decor: [['crate', 8, 15], ['crate', 9.5, 13.5], ['trunk', 22, 15], ['dollshelf', 38, 15], ['crate', 62, 15], ['trunk', 70, 15], ['round_window', 14, 6],

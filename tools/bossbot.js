@@ -18,7 +18,9 @@ window.__bot = function () {
   const go = (tx, tol) => { if (pcx < tx - (tol || 4)) move = 1; else if (pcx > tx + (tol || 4)) move = -1; };
   const clampX = x => Math.max(L, Math.min(R, x));
   const away = (x, d) => { let tx = pcx < x ? x - d : x + d; if (tx < L || tx > R) tx = pcx < x ? x + d : x - d; go(clampX(tx), 6); };
-  const aim = b.aimAt ? b.aimAt() : null;
+  let aim = b.aimAt ? b.aimAt() : null;
+  const books = G.ents.filter(e => e.type === 'cursedbook' && !e.dead && e.hp > 0);
+  if (books.length && P.tank.length && b.state !== 'stunned' && b.state !== 'dizzy') { const bk = books.reduce((a, e) => Math.abs(e.x - pcx) < Math.abs(a.x - pcx) ? e : a); aim = { x: bk.x, y: bk.y, foe: 1 }; }
   // ---- danger model --------------------------------------------------
   const danger = []; // x positions to keep away from: [x, radius]
   // human-ish reaction time: new floor marks are only noticed REACT frames after they appear
@@ -28,16 +30,25 @@ window.__bot = function () {
   if (kind === 'golem') { if (b.state === 'slam') danger.push([b.x, 96]); if (b.state === 'idle' || b.state === 'bubbles') danger.push([b.x, 46]); }
   if (kind === 'clock' && b.state !== 'stopped') danger.push([b.x, 46]);
   if (kind === 'rose' && !b.burrow) danger.push([b.x, 34]);
+  
+  if (kind === 'organ' && b.state !== 'stunned') danger.push([b.x - 52, b.state === 'fortissimo' ? 80 : 44]);
+  for (const e of books) if (e.state === 'warn' || e.state === 'dash') danger.push([e.state === 'warn' ? e.tx : e.x, 34]);
+  if (kind === 'serpent' && !b.hidden && b.state !== 'dizzy' && b.state !== 'flung' && b.state !== 'sweep' && b.hy > FY - 70) danger.push([b.hx, 40]);
+  if (kind === 'serpent' && b.state === 'sweep' && b.sweepVx) { const d = b.hx - pcx; if (Math.sign(d) === Math.sign(b.sweepVx) * -1 && Math.abs(d) < 56) { if (!b.petalHigh) { if (P.onGround) jump = true; holdJump = true; } } }
   for (const q of G.ebullets) {
     const qx = q.x + q.w / 2, toward = Math.sign(pcx - qx) === Math.sign(q.vx) || !q.vx, dx = Math.abs(qx - pcx);
     if ((q.kind === 'wave' || q.kind === 'suds' || q.kind === 'rgear') && toward && dx < 40 && dx > 8 && P.onGround) { jump = true; holdJump = true; S.waveDir = Math.sign(q.vx) || 1; S.waveT = 40; }
     if (q.kind === 'bubble' && P.tank.length >= 3 && dx < 50 && Math.abs(q.y - P.y - 20) < 40) danger.push([qx, 50]);
-    if (q.kind === 'firepatch') danger.push([qx, 24]);
+    if (q.kind === 'firepatch' || q.kind === 'puddle') danger.push([qx, q.kind === 'puddle' ? 30 : 24]);
+    if (q.kind === 'blast' || q.kind === 'geyser') danger.push([qx, 26]);
+    if (q.kind === 'hotwater' && q.tx !== undefined) danger.push([q.tx + 6, 28]);
     if (q.kind === 'seedpod' && q.tx !== undefined) danger.push([q.tx, 22]);
-    if ((q.kind === 'shard' || q.kind === 'candle' || q.kind === 'dropbottle' || q.kind === 'sock') && q.vy > 0 && q.y < P.y + P.h) danger.push([qx, 18]);
+    if ((q.kind === 'shard' || q.kind === 'candle' || q.kind === 'dropbottle' || q.kind === 'sock' || q.kind === 'drop') && q.vy > 0 && q.y < P.y + P.h) danger.push([qx, 18]);
+    if (q.kind === 'chord' && toward && dx < 60 && q.y > FY - 40 && P.onGround && dx < 36) { jump = true; holdJump = true; }
     if (q.kind === 'petal' && toward && dx < 60) { if (q.y > FY - 40) { if (P.onGround && dx < 34) { jump = true; holdJump = true; } } }
   }
-  if (kind === 'rose' && b.state === 'petals' && b.petalHigh) jump = false;   // HIGH stream: stay on the floor
+  if (kind === 'rose' && b.state === 'petals' && b.petalHigh) jump = false;
+  if ((kind === 'organ' && b.state === 'chord' || kind === 'serpent' && b.state === 'sweep') && b.petalHigh && !G.ebullets.some(q => q.kind === 'chord' && q.y > FY - 40)) jump = false;   // HIGH stream: stay on the floor
   if (kind === 'rose' && b.state === 'petals' && !b.petalHigh) holdJump = true;
   // golem ball: jump it when it is close and coming at us
   if (kind === 'golem' && b.ball && b.state === 'roll') { const d = b.x - pcx; if (Math.sign(d) === -Math.sign(b.face) || Math.abs(d) < 10) { if (Math.abs(d) < 64 && P.onGround) jump = true; holdJump = true; } }
@@ -58,13 +69,13 @@ window.__bot = function () {
       if (Math.abs(d) < 40) away(w.x, 70); else if (Math.abs(d) < 120) { face = Math.sign(d); vac = Math.abs(w.y - (P.y + 26)) < 40; } else go(w.x - Math.sign(d) * 80, 10); }
     else if (suck.length && P.tank.length < 3) { const q = suck[0]; face = Math.sign(q.x - pcx) || 1; vac = true; if (Math.abs(q.x - pcx) < 24) away(q.x, 50); }
     else if (P.tank.length && aim) { // spit from the side, at range
-      const want = kind === 'rose' ? 110 : 96; let side = pcx < aim.x ? -1 : 1, tx = aim.x + side * want; if (tx < L || tx > R) tx = aim.x - side * want; go(tx, 12);
+      const want = aim.foe ? 64 : kind === 'rose' ? 110 : 96; let side = pcx < aim.x ? -1 : 1, tx = aim.x + side * want; if (tx < L || tx > R) tx = aim.x - side * want; go(tx, 12);
       face = aim.x > pcx ? 1 : -1; if (Math.abs(pcx - tx) < 34 && P.spitCD <= 0 && G.frame % 6 === 0 && P.face === face) { I.spitPressed = true; S.spits++; }
     } else if (items.length && P.tank.length < 3) { const a = items.reduce((p, q) => Math.abs(q.x - pcx) < Math.abs(p.x - pcx) ? q : p); const d = a.x - pcx;
       if (Math.abs(d) > 70) go(a.x - Math.sign(d) * 50, 10); else { face = Math.sign(d) || 1; vac = true; } }
     else { const bx = aim ? aim.x : b.x; let side = pcx < bx ? -1 : 1, tx = bx + side * 110; if (tx < L || tx > R) tx = bx - side * 110; go(tx, 12); }
   }
-  if (S.waveT > 0) { S.waveT--; if (!P.onGround && !P.tug) move = -S.waveDir; }
+  if (S.waveT > 0) { S.waveT--; if (!P.onGround && !P.tug && kind !== 'organ') move = -S.waveDir; }
   if (face && !move && !P.tug) { if (P.face !== face) move = face; }
   if (move > 0) K.right = true; else if (move < 0) K.left = true;
   if (vac) K.vac = true; K._v = vac;

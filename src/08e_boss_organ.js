@@ -9,7 +9,7 @@
 // =====================================================================
 BOSS_DEFS.organ = { jp: '呪いのパイプオルガン', en: 'CURSED PIPE ORGAN', cfg: 'organ', cols: ['#d8b8ff', '#c8b088', '#ffffff', '#6a3a54'], rageText: 'オルガンが怒った！ 音が割れている',
   sayIntro: '……オルガン、ひとりで鳴ってる。……うるさい', sayCore: '……オルガン弾きの、ゴースト……',
-  make(b) { b.x = 280; b.petalHigh = false; },
+  make(b) { b.x = room.W - 100; b.petalHigh = false; },
   hitBox(b) { return { x0: b.x - 58, x1: b.x + 58, y0: FLOOR_Y - 120, y1: FLOOR_Y }; },
   aim(b) { return { x: b.x - 30, y: FLOOR_Y - 60 }; },
   update(b) {
@@ -40,18 +40,19 @@ BOSS_DEFS.organ = { jp: '呪いのパイプオルガン', en: 'CURSED PIPE ORGAN
           ebullets.push({ kind: 'chord', x: b.x - 70, y, w: 18, h, vx: -bossP('chordSpeed'), vy: 0, g: 0, dmg: C.chordDamage, life: 260, static: 1, wall: 1 }); sfx('bell'); cam.shake = 3; }
         if (b.t >= warn + (b.rage ? 130 : 84)) { b.state = 'idle'; b.t = 0; } break; }
       case 'fortissimo': {
-        if (b.t === 1) { sfx('warn'); tip('organFF', 'オルガンが息を吸い込んでいる… 床の衝撃波はジャンプでかわせ！'); }
+        if (b.t === 1) { sfx('warn'); tip('organFF', 'オルガンが息を吸い込んでいる… 床の衝撃波はジャンプでかわせ！（呪いの本も呼ぶぞ）'); }
         if (b.t < 56) { if (b.t % 8 === 0) sfx('warn'); break; }
-        if (b.t === 56 || b.t === 96 || b.t === 136) { sfx('boom'); cam.shake = 9; hitStop = 2;
-          for (const d of [-1]) ebullets.push({ kind: 'wave', x: b.x - 70, y: FLOOR_Y - 14, w: 16, h: 14, vx: d * 2.6, vy: 0, dmg: 1, life: 200 });
+        if (b.t === 56 || b.t === 116 || (b.rage && b.t === 176)) { sfx('boom'); cam.shake = 9; hitStop = 2;
+          for (const d of [-1]) ebullets.push({ kind: 'wave', x: b.x - 70, y: FLOOR_Y - 14, w: 16, h: 14, vx: d * 2.4, vy: 0, dmg: 1, life: 200 });
           for (let i = 0; i < 14; i++) parts.push({ x: b.x - 40 + rnd(-30, 30), y: FLOOR_Y - 100 + rnd(-20, 20), vx: rnd(-2, 1), vy: rnd(-2, 1), life: 30, col: '#d8b8ff', size: 2, glow: 1 }); }
-        if (b.t === 176) { b.state = 'stunned'; b.t = 0; b.winLen = bossP('stun'); sfx('crash'); cam.shake = 8;
+        if (b.t === (b.rage ? 236 : 176)) { b.state = 'stunned'; b.t = 0; b.winLen = bossP('stun'); sfx('crash'); cam.shake = 8;
           b.core = makeCore(b, b.x - 90, FLOOR_Y - 34, () => ({ x: boss.x - 40, y: FLOOR_Y - 60 }), 'ocore');
           tip('ocore', 'オルガンが息切れした！ 出てきたオルガン弾きのゴーストを VAC で吸い込め！', true); }
         break; }
       case 'stunned': coreBob(b, b.x - 90, FLOOR_Y - 34); if (coreWindowOver(b)) { b.state = 'idle'; b.t = 0; } break;
     }
-    if (b.state !== 'stunned' && overlapBox(b.x - 52, FLOOR_Y - 60, b.x + 60, FLOOR_Y)) hurtPlayer(C.contactDamage, b.x - 60, 'organ');
+    // the organ console is a solid wall of pipes: push Kanata out (no cheap contact damage)
+    if (P.x + P.w > b.x - 52) { P.x = b.x - 52 - P.w; if (P.vx > 0) P.vx = 0; }
   },
   onDefeat(b) { bossReward(b, b.x - 80); say('……しずかになった。……耳が、きーんってする', 200); tip('organDown', '呪いのパイプオルガンをやっつけた！ 祭壇に新しい力が…', true); },
   draw(b, lights) {

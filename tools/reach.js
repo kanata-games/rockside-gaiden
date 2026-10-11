@@ -19,7 +19,7 @@ const CC = 24, CR = 18;
   const ents = []; for (const d of defs) for (const [t, x, y, o] of d.ents) ents.push({ room: d.id, t, o, c: gx(d, Math.floor(x)), r: gy(d, Math.round(y)) });
   const start = ents.find(e => e.t === 'start');
   const S = { abil: new Set(), key: false, open: new Set(), beat: new Set() };
-  const passT = i => { const t = base[i]; if (t === 0 || t === 2 || t === 3) return true; if (t === 4) return S.key; if (t === 5) { for (const g of S.open) if (gatesAt[g] && gatesAt[g].includes(i)) return true; return false; } return false; };
+  const passT = i => { const t = base[i]; if (t === 0 || t === 2 || t === 3) return true; if (t === 4) return S.key; if (t === 5) { if (S.abil.has('phase')) for (const g in gatesAt) if (/:spirit/.test(g) && gatesAt[g].includes(i)) return true; for (const g of S.open) if (gatesAt[g] && gatesAt[g].includes(i)) return true; return false; } return false; };
   // movement model (tiles): body 1 wide x 3 tall (50px). From ground: climb budget K rows (jump 4, +4 with
   // double jump, +2 standing on a float platform) and an air budget HB of horizontal tiles (rise ~2.5 + hover
   // 70f x 1.7px ~ 7.4 tiles; double jump adds airtime). Falling one row lets you drift about one tile.
@@ -79,7 +79,7 @@ const CC = 24, CR = 18;
     let ok = false; for (let r = 0; r < CR && !ok; r++) for (let c = 0; c < CC; c++) if (best[gy(d, y * CR + r) * W + gx(d, x * CC + c)] >= 0) { ok = true; break; }
     if (!ok) missCells.push(d.id + '[' + x + ',' + y + ']');
   }
-  const PICK = new Set(['key', 'heartbig', 'ability', 'coin', 'candle', 'book', 'bottle', 'chair', 'plate', 'pan', 'pot', 'barrel', 'gear', 'seed', 'flowerpot', 'soap', 'crystal', 'save', 'lever', 'heavy', 'vines']);
+  const PICK = new Set(['key', 'heartbig', 'ability', 'coin', 'candle', 'book', 'bottle', 'chair', 'plate', 'pan', 'pot', 'barrel', 'gear', 'seed', 'flowerpot', 'soap', 'crystal', 'save', 'lever', 'heavy', 'vines', 'warp', 'bone', 'duck']);
   const missEnts = ents.filter(e => PICK.has(e.t) && !near(best, e, e.t === 'lever' || e.t === 'heavy' ? 4 : 2, 3)).map(e => e.t + '@' + e.room + '(' + (e.c % CC) + ',' + (e.r % CR) + ')');
   const unbeaten = defs.filter(d => d.boss && !S.beat.has(d.boss)).map(d => d.boss);
   console.log('abilities:', [...S.abil].join(','), '| bosses:', [...S.beat].join(','));

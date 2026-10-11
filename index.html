@@ -178,7 +178,7 @@ const CONFIG = {
     seeds: 4, seedsRage: 6, seedDamage: 1, petalWarn: 44, petalWarnRage: 36, petalSpeed: 2.6, petalDamage: 1, bloom: 170, bloomRage: 140, burnBonus: 3, contactDamage: 1 },
   // ---- v0.3 boss: 呪いのパイプオルガン CURSED PIPE ORGAN (chapel) ----
   organ: { hp: 200, idle: 54, idleRage: 40, noteWarn: 30, notes: 5, notesRage: 7, noteSpeed: 1.4, noteDamage: 1, pipeWarn: 44, pipeWarnRage: 36, pipes: 3, pipesRage: 4, pipeDamage: 2,
-    chordWarn: 46, chordWarnRage: 38, chordSpeed: 2.6, chordDamage: 1, books: 2, booksRage: 3, stun: 160, stunRage: 130, contactDamage: 1 },
+    chordWarn: 46, chordWarnRage: 38, chordSpeed: 2.6, chordDamage: 1, books: 0, booksRage: 1, stun: 160, stunRage: 130, contactDamage: 1 },
   // ---- v0.3 boss: 大浴場の主 ユブネ BATHWATER SERPENT (grand bath) ----
   serpent: { hp: 210, idle: 50, idleRage: 38, arcWarn: 36, arcs: 3, arcsRage: 4, arcDamage: 1, puddle: 120, puddleDamage: 1, sweepWarn: 44, sweepWarnRage: 36, sweepSpeed: 3.0, sweepDamage: 2,
     rainWarn: 40, rainWarnRage: 32, drops: 4, dropsRage: 6, dropDamage: 1, geyserWarn: 40, dizzy: 160, dizzyRage: 130, contactDamage: 1 },
@@ -812,7 +812,7 @@ ROOM_DEFS.push(
   { id: 'attic', jp: 'ほこりの屋根裏', en: 'DUSTY ATTIC', area: 'clock', theme: 'attic', tiles: 'w', cx: 6, cy: -1, cw: 3, ch: 1, dark: 0.55,
     build(R) { R.box(); R.open('B', 1, 18, 21); R.open('T', 2, 8, 11); R.secret(0, 11, 14); R.open('R', 0, 11, 14); R.plat(8, 14, 11); R.plat(18, 24, 7); R.plat(30, 36, 11);
       R.plat(46, 51, 11); R.plat(53, 62, 8); R.plat(65, 70, 11); },
-    ents: [['save', 32, 15], ['cursedbook', 12, 6], ['cursedbook', 40, 6], ['cursedbook', 60, 5], ['rat', 26, 15], ['puppet', 66, 15],
+    ents: [['save', 32, 15], ['cursedbook', 12, 6], ['cursedbook', 40, 6], ['cursedbook', 60, 5], ['rat', 26, 15], ['puppet', 58, 15],
       ['chair', 6, 15], ['chair', 36, 15], ['book', 10, 11], ['book', 20, 7], ['book', 49, 11], ['bottle', 28, 15], ['gear', 58, 8], ['plate', 33, 11],
       ['curtain', 2.5, 15, { secret: 1, sprite: 'ivy' }], ['dust', 16, 15, { drop: ['coin', 'coin'] }], ['dust', 50, 15, { drop: ['heart'] }], ['dust', 68, 15, { drop: ['coin', 'coin', 'coin'] }]],
     decor: [['crate', 8, 15], ['crate', 9.5, 13.5], ['trunk', 22, 15], ['dollshelf', 38, 15], ['crate', 62, 15], ['trunk', 70, 15], ['round_window', 14, 6],
@@ -875,10 +875,10 @@ ROOM_DEFS.push(
     decor: [['stainedglass', 8, 9], ['stainedglass', 24, 9], ['stainedglass', 40, 9], ['pew', 5, 15], ['pew', 10.5, 15], ['pew', 21, 15], ['pew', 39, 15], ['altar', 27, 15],
       ['candelabra', 24, 15, { light: 1 }], ['candelabra', 30, 15, { light: 1 }], ['sconce', 16, 9, { light: 1 }], ['sconce', 32, 9, { light: 1 }], ['organpipes', 45, 15], ['cobweb', 1, 2, { top: 1 }], ['cobweb', 46.75, 2, { top: 1, flip: 1 }]] },
 
-  { id: 'choir', jp: 'パイプオルガンの聖歌隊席', en: 'ORGAN LOFT', area: 'crypt', theme: 'chapel', tiles: 'k', cx: 12, cy: -1, cw: 1, ch: 1, dark: 0.4, boss: 'organ',
-    build(R) { R.box(); R.open('L', 0, 11, 14); R.plat(2, 5, 11); },
-    ents: [['boss', 16, 15], ['ability', 4, 15, { abil: 'phase', after: 'organ' }]],
-    decor: [['stainedglass', 6, 9], ['stainedglass', 18, 9], ['sconce', 12, 7, { light: 1 }], ['pew', 4, 15], ['cobweb', 1, 2, { top: 1 }], ['cobweb', 22.75, 2, { top: 1, flip: 1 }]] },
+  { id: 'choir', jp: 'パイプオルガンの聖歌隊席', en: 'ORGAN LOFT', area: 'crypt', theme: 'chapel', tiles: 'k', cx: 12, cy: -1, cw: 2, ch: 1, dark: 0.4, boss: 'organ',
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.plat(2, 5, 11); R.plat(16, 20, 10); },
+    ents: [['boss', 40, 15], ['ability', 4, 15, { abil: 'phase', after: 'organ' }]],
+    decor: [['stainedglass', 6, 9], ['stainedglass', 18, 9], ['stainedglass', 30, 9], ['sconce', 12, 7, { light: 1 }], ['sconce', 24, 7, { light: 1 }], ['pew', 4, 15], ['pew', 10, 15], ['cobweb', 1, 2, { top: 1 }], ['cobweb', 46.75, 2, { top: 1, flip: 1 }]] },
 
   { id: 'catacomb', jp: '地下墓所', en: 'CATACOMBS', area: 'crypt', theme: 'crypt', tiles: 'k', cx: 10, cy: 0, cw: 2, ch: 1, dark: 0.62,
     build(R) { R.box(); R.open('T', 1, 8, 11); R.open('R', 0, 11, 14); R.open('L', 0, 11, 14); R.gate(0, 11, 0, 14, 'spirit_reliq'); R.plat(25, 30, 11); R.plat(33, 38, 7);
@@ -908,12 +908,12 @@ ROOM_DEFS.push(
 ROOM_DEFS.push(
   { id: 'well', jp: '湯けむりの井戸', en: 'STEAMY WELL', area: 'bath', theme: 'cistern', tiles: 'b', cx: 12, cy: 2, cw: 1, ch: 1, dark: 0.55,
     build(R) { R.box(); R.open('T', 0, 8, 11); R.open('R', 0, 11, 14); R.plat(2, 7, 11); R.plat(9, 14, 7); R.plat(16, 21, 11); },
-    ents: [['crab', 18, 15], ['duck', 4, 11], ['duck', 19, 11], ['coin', 11, 7], ['coin', 12, 7]],
+    ents: [['crab', 13, 15], ['duck', 4, 11], ['duck', 19, 11], ['coin', 11, 7], ['coin', 12, 7]],
     decor: [['pipes', 4, 15], ['spiritlamp', 14, 15, { light: 1 }], ['buckets', 20, 15]] },
 
   { id: 'grandbath', jp: '大浴場', en: 'GRAND BATH', area: 'bath', theme: 'bath', tiles: 'b', cx: 13, cy: 2, cw: 2, ch: 1, dark: 0.36,
     build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.open('B', 1, 8, 11); R.solid(14, 13, 28, 14); R.plat(4, 9, 11); R.plat(17, 25, 8); R.plat(37, 43, 11); },
-    ents: [['save', 7, 15], ['crab', 20, 13], ['crab', 41, 15], ['puff', 30, 6], ['sheet', 12, 6], ['duck', 16, 13], ['duck', 26, 13], ['soap', 38, 11], ['bottle', 5, 11],
+    ents: [['save', 7, 15], ['crab', 20, 13], ['crab', 36, 15], ['puff', 30, 6], ['sheet', 12, 6], ['duck', 16, 13], ['duck', 26, 13], ['soap', 38, 11], ['bottle', 5, 11],
       ['coin', 20, 8], ['coin', 22, 8], ['dust', 30, 15, { drop: ['heart'] }]],
     decor: [['liontap', 21, 11], ['bathstool', 3, 15], ['bathstool', 44, 15], ['buckets', 11, 15], ['duckprop', 25, 13], ['lamp_wall', 8, 8, { light: 1 }], ['lamp_wall', 40, 8, { light: 1 }],
       ['round_window', 32, 7], ['cobweb', 1, 2, { top: 1 }]] },
@@ -2703,7 +2703,7 @@ BOSS_DEFS.clock = { jp: '大時計の番人 チクタク', en: 'GRANDFATHER TICK
 // =====================================================================
 BOSS_DEFS.organ = { jp: '呪いのパイプオルガン', en: 'CURSED PIPE ORGAN', cfg: 'organ', cols: ['#d8b8ff', '#c8b088', '#ffffff', '#6a3a54'], rageText: 'オルガンが怒った！ 音が割れている',
   sayIntro: '……オルガン、ひとりで鳴ってる。……うるさい', sayCore: '……オルガン弾きの、ゴースト……',
-  make(b) { b.x = 280; b.petalHigh = false; },
+  make(b) { b.x = room.W - 100; b.petalHigh = false; },
   hitBox(b) { return { x0: b.x - 58, x1: b.x + 58, y0: FLOOR_Y - 120, y1: FLOOR_Y }; },
   aim(b) { return { x: b.x - 30, y: FLOOR_Y - 60 }; },
   update(b) {
@@ -2734,18 +2734,19 @@ BOSS_DEFS.organ = { jp: '呪いのパイプオルガン', en: 'CURSED PIPE ORGAN
           ebullets.push({ kind: 'chord', x: b.x - 70, y, w: 18, h, vx: -bossP('chordSpeed'), vy: 0, g: 0, dmg: C.chordDamage, life: 260, static: 1, wall: 1 }); sfx('bell'); cam.shake = 3; }
         if (b.t >= warn + (b.rage ? 130 : 84)) { b.state = 'idle'; b.t = 0; } break; }
       case 'fortissimo': {
-        if (b.t === 1) { sfx('warn'); tip('organFF', 'オルガンが息を吸い込んでいる… 床の衝撃波はジャンプでかわせ！'); }
+        if (b.t === 1) { sfx('warn'); tip('organFF', 'オルガンが息を吸い込んでいる… 床の衝撃波はジャンプでかわせ！（呪いの本も呼ぶぞ）'); }
         if (b.t < 56) { if (b.t % 8 === 0) sfx('warn'); break; }
-        if (b.t === 56 || b.t === 96 || b.t === 136) { sfx('boom'); cam.shake = 9; hitStop = 2;
-          for (const d of [-1]) ebullets.push({ kind: 'wave', x: b.x - 70, y: FLOOR_Y - 14, w: 16, h: 14, vx: d * 2.6, vy: 0, dmg: 1, life: 200 });
+        if (b.t === 56 || b.t === 116 || (b.rage && b.t === 176)) { sfx('boom'); cam.shake = 9; hitStop = 2;
+          for (const d of [-1]) ebullets.push({ kind: 'wave', x: b.x - 70, y: FLOOR_Y - 14, w: 16, h: 14, vx: d * 2.4, vy: 0, dmg: 1, life: 200 });
           for (let i = 0; i < 14; i++) parts.push({ x: b.x - 40 + rnd(-30, 30), y: FLOOR_Y - 100 + rnd(-20, 20), vx: rnd(-2, 1), vy: rnd(-2, 1), life: 30, col: '#d8b8ff', size: 2, glow: 1 }); }
-        if (b.t === 176) { b.state = 'stunned'; b.t = 0; b.winLen = bossP('stun'); sfx('crash'); cam.shake = 8;
+        if (b.t === (b.rage ? 236 : 176)) { b.state = 'stunned'; b.t = 0; b.winLen = bossP('stun'); sfx('crash'); cam.shake = 8;
           b.core = makeCore(b, b.x - 90, FLOOR_Y - 34, () => ({ x: boss.x - 40, y: FLOOR_Y - 60 }), 'ocore');
           tip('ocore', 'オルガンが息切れした！ 出てきたオルガン弾きのゴーストを VAC で吸い込め！', true); }
         break; }
       case 'stunned': coreBob(b, b.x - 90, FLOOR_Y - 34); if (coreWindowOver(b)) { b.state = 'idle'; b.t = 0; } break;
     }
-    if (b.state !== 'stunned' && overlapBox(b.x - 52, FLOOR_Y - 60, b.x + 60, FLOOR_Y)) hurtPlayer(C.contactDamage, b.x - 60, 'organ');
+    // the organ console is a solid wall of pipes: push Kanata out (no cheap contact damage)
+    if (P.x + P.w > b.x - 52) { P.x = b.x - 52 - P.w; if (P.vx > 0) P.vx = 0; }
   },
   onDefeat(b) { bossReward(b, b.x - 80); say('……しずかになった。……耳が、きーんってする', 200); tip('organDown', '呪いのパイプオルガンをやっつけた！ 祭壇に新しい力が…', true); },
   draw(b, lights) {

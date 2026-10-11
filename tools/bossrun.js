@@ -2,7 +2,7 @@
 // wins / deaths / hits taken / fight length.  node tools/bossrun.js [runs=4] [kinds=chandelier,golem,rose,clock] [--god]
 const { chromium } = require('playwright'); const path = require('path');
 const SERVE = require('./serve.js'); const BOT = require('./bossbot.js'); const ROOT = path.resolve(__dirname, '..');
-const BOSSES = { chandelier: ['ballroom', ''], golem: ['washroom', 'float,turbo'], rose: ['rosebed', 'float,turbo,djump'], clock: ['clockroom', 'float,turbo,djump'] };
+const BOSSES = { chandelier: ['ballroom', ''], golem: ['washroom', 'float,turbo'], rose: ['rosebed', 'float,turbo,djump'], clock: ['clockroom', 'float,turbo,djump,phase'], organ: ['choir', 'float,turbo,djump'], serpent: ['yubune', 'float,turbo,djump,phase'] };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 async function fight(browser, url, kind, god) {
   const [roomId, abil] = BOSSES[kind];

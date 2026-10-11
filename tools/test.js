@@ -115,7 +115,7 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       const areas = await E(page, () => { const n = {}; for (const d of GAIDEN.ROOM_DEFS) n[d.area] = (n[d.area] || 0) + 1; return n; });
       ok('all rooms load (' + ids.length + ')', ids.length >= 30, areas);
       ok('3 new areas with 6-10 rooms each', ['laundry', 'garden', 'clock'].every(a => areas[a] >= 6 && areas[a] <= 10), areas);
-      ok('version 0.2.0', await E(page, () => GAIDEN.CONFIG.version === '0.2.0' || document.body.innerText.includes('0.2.0') || (typeof GAME_VERSION !== 'undefined' && GAME_VERSION === '0.2.0')));
+      ok('version 0.3.0', await E(page, () => (typeof GAME_VERSION !== 'undefined' && GAME_VERSION === '0.3.0') || GAIDEN.CONFIG.version === '0.3.0'));
       await ctx.close(); }
 
     // ---- world reachability / ability gating (static check over the stitched tile grid)
@@ -142,7 +142,7 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       ok('heavy barrel cannot be sucked without turbo', await E(page, () => !GAIDEN.P.tank.includes('barrel')));
       // v0.3: tiny critters are EATEN by the mimic vacuum (heal + GABU gauge); a full gauge powers up SPIT
       await E(page, () => { for (let i = GAIDEN.ents.length - 1; i >= 0; i--) if (GAIDEN.ents[i].ghost || GAIDEN.ents[i].foe) GAIDEN.ents.splice(i, 1);
-        GAIDEN.ents.push(GAIDEN.makeFoe('rat', GAIDEN.P.x + 60, GAIDEN.P.y + GAIDEN.P.h)); GAIDEN.P.face = 1; GAIDEN.P.tank = []; GAIDEN.P.hp = 4; GAIDEN.P.gabu = 0; });
+        GAIDEN.items.length = 0; GAIDEN.ents.push(GAIDEN.makeFoe('rat', GAIDEN.P.x + 60, GAIDEN.P.y + GAIDEN.P.h)); GAIDEN.P.face = 1; GAIDEN.P.tank = []; GAIDEN.P.hp = 4; GAIDEN.P.gabu = 0; });
       await page.keyboard.down('x'); await sleep(1200); await page.keyboard.up('x');
       ok('rat gets eaten (chomp): heal + GABU gauge, not stored in the tank', await E(page, () => GAIDEN.foes().length === 0 && GAIDEN.stats.eaten === 1 && GAIDEN.P.hp === 5 && GAIDEN.P.gabu === 1 && GAIDEN.P.tank.length === 0),
         await E(page, () => ({ foes: GAIDEN.foes().length, eaten: GAIDEN.stats.eaten, hp: GAIDEN.P.hp, gabu: GAIDEN.P.gabu, tank: GAIDEN.P.tank })));
