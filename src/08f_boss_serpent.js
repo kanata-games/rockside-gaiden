@@ -66,7 +66,7 @@ BOSS_DEFS.serpent = { jp: '大浴場の主 ユブネ', en: 'BATHWATER SERPENT', 
       case 'dizzy': coreBob(b, b.hx - 40, FLOOR_Y - 30); if (coreWindowOver(b)) { b.state = 'return'; b.t = 0; } break;
       case 'return': b.hx += (D.BASE - 22 - b.hx) * 0.05; b.hy += (FLOOR_Y - 112 - b.hy) * 0.05; if (b.t > 70) { b.state = 'idle'; b.t = 0; } break;
     }
-    if (!b.hidden && b.state !== 'dizzy' && b.state !== 'flung' && overlapBox(b.hx - 18, b.hy - 14, b.hx + 18, b.hy + 14)) hurtPlayer(b.state === 'sweep' ? C.sweepDamage : C.contactDamage, b.hx, 'serpent');
+    if (!b.hidden && (b.state === 'sweep' || b.state === 'idle' || b.state === 'arcs' || b.state === 'rain') && overlapBox(b.hx - 18, b.hy - 14, b.hx + 18, b.hy + 14)) hurtPlayer(b.state === 'sweep' ? C.sweepDamage : C.contactDamage, b.hx, 'serpent');
   },
   dying(b) { b.hy += 0.4; },
   onDefeat(b) { bossReward(b, 180); say('……お湯、ぬるくなった。……いいお湯だった', 200); tip('serpentDown', '大浴場の主ユブネをやっつけた！', true); },

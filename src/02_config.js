@@ -118,8 +118,8 @@ const CONFIG = {
   organ: { hp: 260, idle: 36, idleRage: 26, noteWarn: 26, notes: 6, notesRage: 8, noteSpeed: 1.6, noteDamage: 1, pipeWarn: 38, pipeWarnRage: 32, pipes: 4, pipesRage: 5, pipeDamage: 2,
     chordWarn: 40, chordWarnRage: 34, chordSpeed: 3.0, chordDamage: 1, books: 0, booksRage: 1, stun: 120, stunRage: 100, contactDamage: 1, coreCap: 20, specialEvery: 4 },
   // ---- v0.3 boss: 大浴場の主 ユブネ BATHWATER SERPENT (grand bath) ----
-  serpent: { hp: 210, idle: 50, idleRage: 38, arcWarn: 36, arcs: 3, arcsRage: 4, arcDamage: 1, puddle: 80, puddleDamage: 1, sweepWarn: 44, sweepWarnRage: 36, sweepSpeed: 3.0, sweepDamage: 2,
-    rainWarn: 40, rainWarnRage: 32, drops: 4, dropsRage: 6, dropDamage: 1, geyserWarn: 40, dizzy: 160, dizzyRage: 130, contactDamage: 1 },
+  serpent: { hp: 200, idle: 54, idleRage: 42, arcWarn: 42, arcs: 3, arcsRage: 4, arcDamage: 1, puddle: 80, puddleDamage: 1, sweepWarn: 44, sweepWarnRage: 36, sweepSpeed: 3.0, sweepDamage: 1,
+    rainWarn: 40, rainWarnRage: 32, drops: 4, dropsRage: 6, dropDamage: 1, geyserWarn: 48, dizzy: 160, dizzyRage: 130, contactDamage: 1 },
   // ---- boss 4: 大時計の番人 グランドファーザー・チクタク GRANDFATHER TICKTOCK (clock tower) ----
   // v0.3b: the final boss, hardest by a clear margin - 3 phases (rage at 50%, OVERDRIVE at 25%), hand barrages,
   //   pendulum + hands combo, MIDNIGHT (chasing hand barrage + gears), short + capped stop windows, special every 4th
