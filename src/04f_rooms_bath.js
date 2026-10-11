@@ -33,6 +33,6 @@ ROOM_DEFS.push(
 
   { id: 'cistern', jp: '地下貯水槽', en: 'UNDERGROUND CISTERN', area: 'bath', theme: 'cistern', tiles: 'b', cx: 12, cy: 3, cw: 2, ch: 1, dark: 0.6,
     build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.plat(6, 11, 11); R.plat(15, 20, 8); R.plat(26, 31, 11); R.plat(35, 40, 7); },
-    ents: [['crab', 14, 15], ['crab', 34, 15], ['puff', 24, 6], ['bats', 38, 4], ['duck', 8, 11], ['bottle', 28, 11], ['coin', 36, 7], ['coin', 38, 7], ['dust', 44, 15, { drop: ['coin', 'coin', 'coin'] }]],
+    ents: [['crab', 14, 15], ['crab', 34, 15], ['puff', 24, 6], ['duck', 8, 11], ['bottle', 28, 11], ['coin', 36, 7], ['coin', 38, 7], ['dust', 44, 15, { drop: ['coin', 'coin', 'coin'] }]],
     decor: [['pipes', 3, 15], ['pipes', 46, 15], ['spiritlamp', 18, 15, { light: 1 }], ['spiritlamp', 30, 15, { light: 1 }], ['buckets', 22, 15]] },
 );

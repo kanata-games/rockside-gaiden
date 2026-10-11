@@ -38,7 +38,7 @@ ROOM_DEFS.push(
   { id: 'ossuary', jp: '納骨堂の縦穴', en: 'OSSUARY SHAFT', area: 'crypt', theme: 'crypt', tiles: 'k', cx: 12, cy: 0, cw: 1, ch: 2, dark: 0.6,
     build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 1, 11, 14); R.open('B', 0, 8, 11); R.gate(8, 33, 11, 35, 'spirit_well'); R.solid(1, 15, 6, 16);
       R.plat(10, 14, 18); R.plat(3, 8, 21); R.plat(12, 17, 25); R.plat(3, 8, 29); R.plat(17, 21, 12); },
-    ents: [['skullwisp', 14, 8], ['skullwisp', 8, 24], ['bats', 18, 20], ['bone', 5, 21], ['bone', 14, 25], ['coin', 18, 12], ['coin', 20, 12],
+    ents: [['skullwisp', 14, 8], ['skullwisp', 8, 24], ['bone', 5, 21], ['bone', 14, 25], ['coin', 18, 12], ['coin', 20, 12],
       ['hint', 12, 33, { need: 'phase', text: '床の下から水の音… 青白い結界でふさがれている' }], ['dust', 18, 33, { drop: ['heart'] }]],
     decor: [['skullpile', 4, 15], ['skullpile', 20, 33], ['urn', 15, 33], ['coffin', 4, 33], ['sconce', 12, 10, { light: 1 }], ['sconce', 6, 26, { light: 1 }], ['spiritlamp', 13, 33, { light: 1 }]] },
 );

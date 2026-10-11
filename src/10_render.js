@@ -581,7 +581,7 @@ requestAnimationFrame(loop);
 window.GAIDEN = { CONFIG, P, cam, layout, stats, progress, ents, items, ebullets, playerShots, parts, ROOM_DEFS, CELL_ROOM,
   get state() { return state; }, get stateT() { return stateT; }, get room() { return room; }, get boss() { return boss; }, get frame() { return frame; }, get tipBox() { return tipBox; },
   get music() { return Music; }, nozzle, inCone, loadRoom, placePlayer, startNewGame, continueGame, enterGame, eraseSave, saveGame, loadSave, mapPercent, setState, snapCamera, buildRoomGrid, roomOpenings,
-  spawnItem, makeGhost, startTug, floats, foes: () => ents.filter(e => FOE_SIZE[e.type]), hasAbil, openGate, gainAbility, AREAS, ROOM_BY_ID, TOTAL_CELLS, makeFoe, BOSS_DEFS,
+  spawnItem, makeGhost, startTug, floats, foes: () => ents.filter(e => FOE_SIZE[e.type]), hasAbil, openGate, gainAbility, AREAS, ROOM_BY_ID, TOTAL_CELLS, makeFoe, BOSS_DEFS, entrySafety, openWarpMenu, warpTo,
   get debugBossAtk() { return QS.get('bossatk'); }, _test: { keys, inp, touch } };
 </script>
 </body>
