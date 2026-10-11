@@ -36,7 +36,7 @@ BOSS_DEFS.clock = { jp: '大時計の番人 チクタク', en: 'GRANDFATHER TICK
         if (b.t === 1) { b.pdir = pcx() < 192 ? 1 : -1; b.pend = -b.pdir * 1.25; sfx('warn'); }
         if (b.t < warn) { if (b.t % 12 === 0) sfx('tick'); break; }
         const k = Math.min(1, (b.t - warn) / 100); b.pendOut = k < 1; b.pend = -b.pdir * 1.25 * Math.cos(k * Math.PI);
-        if (b.pendOut) { const bb = D.bob(b); if (Math.hypot(pcx() - bb.x, clamp(bb.y, P.y, P.y + P.h) - bb.y) < 16 + P.w / 2) hurtPlayer(C.pendDamage, bb.x, 'pendulum');
+        if (b.pendOut) { const bb = D.bob(b); if (Math.hypot(pcx() - bb.x, clamp(bb.y, hurtBox().y0, hurtBox().y1) - bb.y) < 14 + (P.w / 2 - CONFIG.hurtInsetX)) hurtPlayer(C.pendDamage, bb.x, 'pendulum');
           if (frame % 2 === 0) parts.push({ x: bb.x + rnd(-6, 6), y: bb.y + rnd(-6, 6), vx: 0, vy: 0, life: 12, col: '#ffe080', size: 2, glow: 1 }); }
         if (b.t === warn + 50) sfx('whoosh');
         if (b.t >= warn + 120) { b.state = 'idle'; b.t = 0; b.pendOut = false; } break; }

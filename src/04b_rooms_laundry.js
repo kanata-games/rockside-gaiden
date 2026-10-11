@@ -37,14 +37,14 @@ ROOM_DEFS.push(
 
   { id: 'boiler', jp: 'ボイラー室', en: 'BOILER ROOM', area: 'laundry', theme: 'boiler', tiles: 't', cx: 4, cy: 4, cw: 1, ch: 1, dark: 0.55,
     build(R) { R.box(); R.open('T', 0, 4, 7); R.open('R', 0, 11, 14); R.plat(10, 16, 11); R.plat(3, 9, 7); },
-    ents: [['rat', 8, 15], ['rat', 18, 15], ['skeleton', 15, 15], ['pot', 4, 15], ['pot', 20, 11], ['pan', 12, 11], ['pan', 6, 7], ['bottle', 21, 15],
+    ents: [['rat', 8, 15], ['rat', 11, 15], ['skeleton', 15, 15], ['pot', 4, 15], ['pot', 20, 11], ['pan', 12, 11], ['pan', 6, 7], ['bottle', 21, 15],
       ['hint', 5, 15, { need: 'turbo', text: '鉄なべは重くて吸い込めない…' }]],
     decor: [['boiler', 12, 15], ['pipes', 2, 15], ['pipes', 20, 15], ['pipes', 22, 7], ['lamp_wall', 8, 10, { light: 1 }], ['lamp_wall', 17, 8, { light: 1 }]] },
 
   { id: 'kitchen', jp: '亡霊の厨房', en: 'PHANTOM KITCHEN', area: 'laundry', theme: 'kitchen', tiles: 't', cx: 5, cy: 4, cw: 3, ch: 1, dark: 0.46,
     build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.solid(10, 13, 17, 14); R.plat(20, 27, 11); R.solid(30, 13, 36, 14); R.plat(38, 44, 10);
       R.plat(46, 52, 7); R.solid(55, 13, 62, 14); R.plat(64, 70, 11); },
-    ents: [['skeleton', 24, 15], ['skeleton', 58, 13], ['rat', 40, 15], ['rat', 66, 15], ['dish', 34, 6], ['puff', 50, 4],
+    ents: [['skeleton', 24, 15], ['skeleton', 58, 13], ['rat', 40, 15], ['rat', 54, 15], ['dish', 34, 6], ['puff', 50, 4],
       ['plate', 11, 13], ['plate', 13, 13], ['plate', 16, 13], ['plate', 32, 13], ['plate', 35, 13], ['pan', 22, 11], ['pan', 42, 10], ['pan', 57, 13],
       ['pot', 6, 15], ['pot', 48, 15], ['chair', 28, 15], ['chair', 52, 15], ['bottle', 45, 7], ['bottle', 61, 13], ['candle', 50, 7],
       ['dust', 68, 15, { drop: ['coin', 'heart'] }], ['vase', 4, 15, { drop: ['coin', 'coin', 'coin'] }]],
@@ -54,7 +54,7 @@ ROOM_DEFS.push(
 
   { id: 'pantry', jp: '食料庫', en: 'PANTRY', area: 'laundry', theme: 'kitchen', tiles: 't', cx: 8, cy: 4, cw: 1, ch: 1, dark: 0.44,
     build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.solid(14, 9, 20, 14); },
-    ents: [['save', 5, 15], ['ability', 17, 9, { abil: 'turbo' }], ['bottle', 9, 15], ['chair', 11, 15], ['plate', 3, 15], ['rat', 22, 15],
+    ents: [['save', 5, 15], ['ability', 17, 9, { abil: 'turbo' }], ['bottle', 9, 15], ['chair', 11, 15], ['plate', 3, 15], ['rat', 12, 15],
       ['hint', 11, 15, { have: 'float', text: '棚の上に何か光ってる… ふわり足場で登ろう' }]],
     decor: [['potshelf', 9, 11], ['sack', 13, 15], ['sack', 21, 15], ['barrel', 2, 15], ['hangpans', 17, 2, { top: 1 }], ['lamp_wall', 5, 9, { light: 1 }], ['lamp_wall', 21, 7, { light: 1 }]] },
 

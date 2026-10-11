@@ -224,8 +224,27 @@ function exitRoom(side) {
   else if (side === 'T') { P.y = room.H - P.h - 6; P.vy = -CONFIG.jumpVel; P.hover = CONFIG.hoverFrames; }
   else { P.y = 2; }
   P.spawnX = P.x; P.spawnY = P.y;
+  entrySafety();
   snapCamera(); sfx('door');
   return true;
+}
+// Entering a room: a short no-damage grace, and no enemy may start inside the safe zone around the entry point
+// (walkers are moved further into the room onto solid ground, flyers just slide over; if there is no room, they are removed).
+function entrySafety() {
+  P.grace = Math.max(P.grace, CONFIG.entryGrace);
+  const S = CONFIG.entrySafe, px = pcx(), feet = P.y + P.h, dir = px < room.W / 2 ? 1 : -1;
+  for (let i = ents.length - 1; i >= 0; i--) {
+    const e = ents[i]; if (!(e.foe || e.ghost || e.type === 'armor') || e.type === 'firewisp') continue;
+    const ey = e.body ? e.body.y + e.body.h : e.y;
+    if (Math.abs(e.x - px) >= S || Math.abs(ey - feet) > 90) continue;
+    let nx = px + dir * (S + 24 + Math.random() * 40);
+    if (nx < CONFIG.foeEdge + 10 || nx > room.W - CONFIG.foeEdge - 10) { ents.splice(i, 1); continue; }
+    if (e.body) { // walker: needs floor under the new spot and no wall in it
+      const fy = e.body.y + e.body.h + 2;
+      if (!solidAtPx(nx, fy) || solidAtPx(nx, e.body.y + e.body.h / 2)) { ents.splice(i, 1); continue; }
+      e.body.x = nx - e.body.w / 2; e.x = nx; e.face = -dir; if (e.homeX !== undefined) e.homeX = nx;
+    } else { e.x = nx; if (e.homeX !== undefined) e.homeX = nx; }
+  }
 }
 function snapCamera() { cam.x = clamp(P.x + P.w / 2 - VW / 2, 0, room.W - VW); cam.y = clamp(P.y + P.h / 2 - VH * 0.55, 0, room.H - VH); }
 function updateCamera() {

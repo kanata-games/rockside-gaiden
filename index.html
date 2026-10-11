@@ -83,7 +83,10 @@ const CONFIG = {
   coyote: 6, jumpBuffer: 7,
   hoverFrames: 70,         // half-ghost float: hold JUMP while falling -> slow descent for this long (refills on the ground)
   hoverFall: 0.45,         // max fall speed while hovering
-  maxHP: 10, invFrames: 80, knockFrames: 16, knockVx: 1.6, knockVy: 2.6,
+  hurtInsetX: 3, hurtInsetTop: 12,  // damage hurtbox inset (see hurtBox())
+  foeRecoil: 60, foeEdge: 34,        // normal enemies back off this long after hitting Kanata; never closer than this to the room edge (doorways)
+  entryGrace: 50, entrySafe: 112,     // after entering a room: no damage for N frames; enemies kept this far (px) from the entry point
+  maxHP: 10, invFrames: 100, knockFrames: 16, knockVx: 1.6, knockVy: 2.6,
 
   // ---- vacuum (Luigi's Mansion style) ----
   vac: {
@@ -682,14 +685,14 @@ ROOM_DEFS.push(
 
   { id: 'boiler', jp: 'ボイラー室', en: 'BOILER ROOM', area: 'laundry', theme: 'boiler', tiles: 't', cx: 4, cy: 4, cw: 1, ch: 1, dark: 0.55,
     build(R) { R.box(); R.open('T', 0, 4, 7); R.open('R', 0, 11, 14); R.plat(10, 16, 11); R.plat(3, 9, 7); },
-    ents: [['rat', 8, 15], ['rat', 18, 15], ['skeleton', 15, 15], ['pot', 4, 15], ['pot', 20, 11], ['pan', 12, 11], ['pan', 6, 7], ['bottle', 21, 15],
+    ents: [['rat', 8, 15], ['rat', 11, 15], ['skeleton', 15, 15], ['pot', 4, 15], ['pot', 20, 11], ['pan', 12, 11], ['pan', 6, 7], ['bottle', 21, 15],
       ['hint', 5, 15, { need: 'turbo', text: '鉄なべは重くて吸い込めない…' }]],
     decor: [['boiler', 12, 15], ['pipes', 2, 15], ['pipes', 20, 15], ['pipes', 22, 7], ['lamp_wall', 8, 10, { light: 1 }], ['lamp_wall', 17, 8, { light: 1 }]] },
 
   { id: 'kitchen', jp: '亡霊の厨房', en: 'PHANTOM KITCHEN', area: 'laundry', theme: 'kitchen', tiles: 't', cx: 5, cy: 4, cw: 3, ch: 1, dark: 0.46,
     build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.solid(10, 13, 17, 14); R.plat(20, 27, 11); R.solid(30, 13, 36, 14); R.plat(38, 44, 10);
       R.plat(46, 52, 7); R.solid(55, 13, 62, 14); R.plat(64, 70, 11); },
-    ents: [['skeleton', 24, 15], ['skeleton', 58, 13], ['rat', 40, 15], ['rat', 66, 15], ['dish', 34, 6], ['puff', 50, 4],
+    ents: [['skeleton', 24, 15], ['skeleton', 58, 13], ['rat', 40, 15], ['rat', 54, 15], ['dish', 34, 6], ['puff', 50, 4],
       ['plate', 11, 13], ['plate', 13, 13], ['plate', 16, 13], ['plate', 32, 13], ['plate', 35, 13], ['pan', 22, 11], ['pan', 42, 10], ['pan', 57, 13],
       ['pot', 6, 15], ['pot', 48, 15], ['chair', 28, 15], ['chair', 52, 15], ['bottle', 45, 7], ['bottle', 61, 13], ['candle', 50, 7],
       ['dust', 68, 15, { drop: ['coin', 'heart'] }], ['vase', 4, 15, { drop: ['coin', 'coin', 'coin'] }]],
@@ -699,7 +702,7 @@ ROOM_DEFS.push(
 
   { id: 'pantry', jp: '食料庫', en: 'PANTRY', area: 'laundry', theme: 'kitchen', tiles: 't', cx: 8, cy: 4, cw: 1, ch: 1, dark: 0.44,
     build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.solid(14, 9, 20, 14); },
-    ents: [['save', 5, 15], ['ability', 17, 9, { abil: 'turbo' }], ['bottle', 9, 15], ['chair', 11, 15], ['plate', 3, 15], ['rat', 22, 15],
+    ents: [['save', 5, 15], ['ability', 17, 9, { abil: 'turbo' }], ['bottle', 9, 15], ['chair', 11, 15], ['plate', 3, 15], ['rat', 12, 15],
       ['hint', 11, 15, { have: 'float', text: '棚の上に何か光ってる… ふわり足場で登ろう' }]],
     decor: [['potshelf', 9, 11], ['sack', 13, 15], ['sack', 21, 15], ['barrel', 2, 15], ['hangpans', 17, 2, { top: 1 }], ['lamp_wall', 5, 9, { light: 1 }], ['lamp_wall', 21, 7, { light: 1 }]] },
 
@@ -797,7 +800,7 @@ ROOM_DEFS.push(
 
   { id: 'dollroom', jp: '人形の隠し部屋', en: 'HIDDEN DOLL ROOM', area: 'clock', theme: 'attic', tiles: 'w', cx: 5, cy: -1, cw: 1, ch: 1, dark: 0.4, secret: true,
     build(R) { R.box(); R.open('R', 0, 11, 14); R.plat(3, 8, 11); },
-    ents: [['heartbig', 5.5, 9], ['puppet', 14, 15], ['puppet', 18, 15], ['coin', 10, 15], ['coin', 12, 15], ['coin', 4, 11], ['coin', 7, 11], ['book', 20, 15], ['chair', 9, 15]],
+    ents: [['heartbig', 5.5, 9], ['puppet', 14, 15], ['puppet', 13, 15], ['coin', 10, 15], ['coin', 12, 15], ['coin', 4, 11], ['coin', 7, 11], ['book', 20, 15], ['chair', 9, 15]],
     decor: [['dollshelf', 12, 15], ['dollshelf', 20, 15], ['round_window', 12, 7], ['candelabra', 5, 11, { light: 1 }], ['cobweb', 1, 2, { top: 1 }]] },
 
   { id: 'gearshaft', jp: '歯車の縦穴', en: 'GEAR SHAFT', area: 'clock', theme: 'gears', tiles: 'w', cx: 8, cy: -3, cw: 1, ch: 2, dark: 0.5,
@@ -1104,8 +1107,27 @@ function exitRoom(side) {
   else if (side === 'T') { P.y = room.H - P.h - 6; P.vy = -CONFIG.jumpVel; P.hover = CONFIG.hoverFrames; }
   else { P.y = 2; }
   P.spawnX = P.x; P.spawnY = P.y;
+  entrySafety();
   snapCamera(); sfx('door');
   return true;
+}
+// Entering a room: a short no-damage grace, and no enemy may start inside the safe zone around the entry point
+// (walkers are moved further into the room onto solid ground, flyers just slide over; if there is no room, they are removed).
+function entrySafety() {
+  P.grace = Math.max(P.grace, CONFIG.entryGrace);
+  const S = CONFIG.entrySafe, px = pcx(), feet = P.y + P.h, dir = px < room.W / 2 ? 1 : -1;
+  for (let i = ents.length - 1; i >= 0; i--) {
+    const e = ents[i]; if (!(e.foe || e.ghost || e.type === 'armor') || e.type === 'firewisp') continue;
+    const ey = e.body ? e.body.y + e.body.h : e.y;
+    if (Math.abs(e.x - px) >= S || Math.abs(ey - feet) > 90) continue;
+    let nx = px + dir * (S + 24 + Math.random() * 40);
+    if (nx < CONFIG.foeEdge + 10 || nx > room.W - CONFIG.foeEdge - 10) { ents.splice(i, 1); continue; }
+    if (e.body) { // walker: needs floor under the new spot and no wall in it
+      const fy = e.body.y + e.body.h + 2;
+      if (!solidAtPx(nx, fy) || solidAtPx(nx, e.body.y + e.body.h / 2)) { ents.splice(i, 1); continue; }
+      e.body.x = nx - e.body.w / 2; e.x = nx; e.face = -dir; if (e.homeX !== undefined) e.homeX = nx;
+    } else { e.x = nx; if (e.homeX !== undefined) e.homeX = nx; }
+  }
 }
 function snapCamera() { cam.x = clamp(P.x + P.w / 2 - VW / 2, 0, room.W - VW); cam.y = clamp(P.y + P.h / 2 - VH * 0.55, 0, room.H - VH); }
 function updateCamera() {
@@ -1140,11 +1162,14 @@ function updateTips() {
 //  PLAYER: 清掃員カナタ  -  walk / jump / half-ghost hover, vacuum (catch + tug-of-war), SPIT
 // =====================================================================
 const P = { x: 0, y: 0, w: CONFIG.playerW, h: CONFIG.playerH, vx: 0, vy: 0, face: 1, onGround: false, coyote: 0, jumpBuf: 0, hover: CONFIG.hoverFrames, hovering: false,
-  hp: CONFIG.maxHP, inv: 0, knock: 0, dead: false, deadT: 0, vacOn: false, tug: null, tank: [], spitCD: 0, spitPose: 0, animT: 0, airT: 0, spawnX: 0, spawnY: 0, god: false,
+  hp: CONFIG.maxHP, inv: 0, grace: 0, knock: 0, dead: false, deadT: 0, vacOn: false, tug: null, tank: [], spitCD: 0, spitPose: 0, animT: 0, airT: 0, spawnX: 0, spawnY: 0, god: false,
   dj: false, djT: 0, spitHold: 0, onFloat: null };
 const stats = { floats: 0, djumps: 0, foeKills: 0, foeHits: 0, levers: 0, abilities: [], updates: 0, frames: 0, captures: 0, spits: 0, puffs: 0, swallowed: 0, rooms: 0, hurts: 0, deaths: 0, saves: 0, secrets: 0, tugs: 0, maxTugFrames: 0, tips: [], bossHits: 0 };
 const playerShots = [], ebullets = [], items = [], parts = [], floats = [];
 const pcx = () => P.x + P.w / 2, pcy = () => P.y + P.h / 2;
+// damage hurtbox: a bit smaller than the 16x50 body (the sprite is drawn even bigger), so near-misses feel fair
+const hurtBox = () => ({ x0: P.x + CONFIG.hurtInsetX, x1: P.x + P.w - CONFIG.hurtInsetX, y0: P.y + CONFIG.hurtInsetTop, y1: P.y + P.h - 1 });
+function hitsKanata(x0, y0, x1, y1) { const h = hurtBox(); return h.x0 < x1 && h.x1 > x0 && h.y0 < y1 && h.y1 > y0; }
 function nozzle() { const V = CONFIG.vac; return { x: pcx() + P.face * V.nozzleX, y: P.y + P.h - V.nozzleY }; }
 const vacRange = () => CONFIG.vac.range * (hasAbil('turbo') ? CONFIG.turboRange : 1);
 // vacuum cone test (point)
@@ -1163,7 +1188,7 @@ function placePlayer(x, feetY, face) {
   P.spawnX = P.x; P.spawnY = P.y;
 }
 function hurtPlayer(dmg, fromX, why) {
-  if (P.inv > 0 || P.dead || state !== 'play') return false;
+  if (P.inv > 0 || P.grace > 0 || P.dead || state !== 'play') return false;
   if (P.god) { P.inv = 30; return false; }
   P.hp -= dmg; P.inv = CONFIG.invFrames; P.knock = CONFIG.knockFrames; stats.hurts++; stats.lastHurt = why || '';
   const d = Math.sign(pcx() - fromX) || -P.face; P.vx = d * CONFIG.knockVx; P.vy = -CONFIG.knockVy;
@@ -1232,7 +1257,7 @@ function updateTug() {
 function updatePlayer() {
   const C = CONFIG;
   if (P.dead) { P.deadT++; P.vx *= 0.9; P.vy = Math.min(P.vy + C.gravity, C.maxFall); moveBody(P, true); return; }
-  if (P.inv > 0) P.inv--;
+  if (P.inv > 0) P.inv--; if (P.grace > 0) P.grace--;
   if (P.spitCD > 0) P.spitCD--;
   if (P.spitPose > 0) P.spitPose--;
   P.animT++;
@@ -1273,8 +1298,8 @@ function updatePlayer() {
   // SPIT
   updateSpitButton();
   // room exits
-  if (P.x + P.w / 2 < 0) { if (!exitRoom('L')) P.x = -P.w / 2; }
-  else if (P.x + P.w / 2 > room.W) { if (!exitRoom('R')) P.x = room.W - P.w / 2; }
+  if (P.x + P.w / 2 < 0) { if (P.knock > 0 || !exitRoom('L')) { P.x = -P.w / 2; if (P.knock > 0) P.vx = Math.max(0, P.vx); } }
+  else if (P.x + P.w / 2 > room.W) { if (P.knock > 0 || !exitRoom('R')) { P.x = room.W - P.w / 2; if (P.knock > 0) P.vx = Math.min(0, P.vx); } }
   else if (P.y < -10 && P.vy < 0) { if (!exitRoom('T')) { P.y = -10; P.vy = 0; } }
   else if (P.y + P.h / 2 > room.H) { if (!exitRoom('B')) { P.y = P.spawnY; P.x = P.spawnX; P.vy = 0; hurtPlayer(2, pcx(), 'pit'); } }
 }
@@ -1544,7 +1569,7 @@ function makeGhost(kind, x, y, extra) {
 }
 function ghostTouchDamage(e, dmg) {
   if (e.state === 'caught' || e.state === 'swallow' || e.stunT > 0 || P.dead) return;
-  if (Math.abs(e.x - pcx()) < e.w / 2 + P.w / 2 - 3 && Math.abs(e.y - pcy()) < e.h / 2 + P.h / 2 - 4) hurtPlayer(dmg, e.x, e.type);
+  if (hitsKanata(e.x - e.w / 2 + 3, e.y - e.h / 2 + 4, e.x + e.w / 2 - 3, e.y + e.h / 2 - 4) && hurtPlayer(dmg, e.x, e.type) && e.type !== 'firewisp' && e.state !== 'caught') { e.state = 'flee'; e.t = 0; } // drift away after a hit
 }
 function updateGhost(e) {
   e.t++; if (e.flash > 0) e.flash--; if (e.inCone > 0) e.inCone--; else if (e.catchT > 0 && e.state !== 'caught') e.catchT = Math.max(0, e.catchT - 2);
@@ -1582,7 +1607,7 @@ function updateGhost(e) {
     ghostTouchDamage(e, C.damage);
   }
 }
-function clampGhost(e) { e.x = clamp(e.x, 14, room.W - 14); e.y = clamp(e.y, 40, room.H - 24); }
+function clampGhost(e) { const m = e.state === 'caught' ? 14 : CONFIG.foeEdge; e.x = clamp(e.x, m, room.W - m); e.y = clamp(e.y, 40, room.H - 24); }
 function updateDish(e, dx, dy, dist) {
   const C = CONFIG.dish;
   const wantX = pcx() - Math.sign(dx || 1) * C.keep, wantY = Math.max(56, P.y - 30);
@@ -1617,18 +1642,19 @@ function breakArmor(a) {
   tip('armorghost', 'よろいから中身が出てきた！ 吸い込もう');
 }
 function updateArmor(a) {
-  const A = CONFIG.armor, b = a.body; a.t++; if (a.flash > 0) a.flash--;
+  const A = CONFIG.armor, b = a.body; a.t++; if (a.flash > 0) a.flash--; if (a.recoil > 0) a.recoil--;
   const dx = pcx() - a.x, near = Math.abs(dx) < 150 && Math.abs(pcy() - (a.y - 24)) < 60;
   if (a.state === 'walk') {
-    if (near) a.face = Math.sign(dx) || a.face;
+    if (a.recoil > 0) a.face = -(Math.sign(dx) || 1);
+    else if (near) a.face = Math.sign(dx) || a.face;
     else if (Math.abs(a.x - a.homeX) > 64) a.face = Math.sign(a.homeX - a.x);
     b.vx = a.face * A.walk;
-    if (near && Math.abs(dx) < A.swingRange + 14 && Math.sign(dx) === a.face) { a.state = 'windup'; a.t = 0; b.vx = 0; sfx('warn'); }
+    if (!a.recoil && near && Math.abs(dx) < A.swingRange + 14 && Math.sign(dx) === a.face) { a.state = 'windup'; a.t = 0; b.vx = 0; sfx('warn'); }
   } else if (a.state === 'windup') { b.vx = 0; if (a.t >= A.swingWarn) { a.state = 'swing'; a.t = 0; sfx('jump'); } }
   else if (a.state === 'swing') {
     b.vx = 0;
     const hx = a.face > 0 ? a.x : a.x - A.swingRange, hy = a.y - 40;
-    if (P.x < hx + A.swingRange && P.x + P.w > hx && P.y < hy + 34 && P.y + P.h > hy) hurtPlayer(A.damage, a.x, 'armor');
+    if (hitsKanata(hx, hy, hx + A.swingRange, hy + 34) && hurtPlayer(A.damage, a.x, 'armor')) a.recoil = CONFIG.foeRecoil;
     if (a.t >= A.swingFrames) { a.state = 'recover'; a.t = 0; }
   } else if (a.state === 'recover') { b.vx = 0; if (a.t >= 34) { a.state = 'walk'; a.t = 0; } }
   b.vy = Math.min(b.vy + CONFIG.gravity, CONFIG.maxFall); moveBody(b, true);
@@ -1636,7 +1662,7 @@ function updateArmor(a) {
   // don't walk off ledges
   if (b.onGround && !solidAtPx(b.x + (a.face > 0 ? b.w + 2 : -2), b.y + b.h + 4) && tileAt(Math.floor((b.x + (a.face > 0 ? b.w + 2 : -2)) / TS), Math.floor((b.y + b.h + 4) / TS)) !== T_PLAT) { a.face = -a.face; b.x -= b.vx; }
   a.x = b.x + b.w / 2; a.y = b.y + b.h;
-  if (Math.abs(a.x - pcx()) < 14 && P.y + P.h > a.y - 46 && P.y < a.y) hurtPlayer(1, a.x, 'armor-touch');
+  if (!a.recoil && hitsKanata(a.x - 10, a.y - 46, a.x + 10, a.y) && hurtPlayer(1, a.x, 'armor-touch')) a.recoil = CONFIG.foeRecoil;
 }
 // ---------------------------------------------------------------------
 //  curtain / dust / vase / save / locked door
@@ -1702,7 +1728,7 @@ function updateEBullets() {
       else { const col = b.kind === 'plate' ? '#f4f4fc' : b.kind === 'needle' ? '#e8e8f0' : '#a8e0ff'; for (let i = 0; i < 6; i++) parts.push({ x: b.x + b.w / 2, y: b.y + b.h / 2, vx: rnd(-1.5, 1.5), vy: rnd(-2, 0), life: 18, col, size: 2, grav: 1 }); sfx('tink'); }
       continue;
     }
-    if (!P.dead && b.x < P.x + P.w - 2 && b.x + b.w > P.x + 2 && b.y < P.y + P.h - 2 && b.y + b.h > P.y + 6) {
+    if (!P.dead && hitsKanata(b.x, b.y, b.x + b.w, b.y + b.h)) {
       if (b.kind !== 'firepatch' || P.onGround) { if (hurtPlayer(b.dmg, b.x + b.w / 2, b.kind) && !PERSIST_BULLETS.has(b.kind)) b.dead = true; }
     }
   }
@@ -1780,10 +1806,11 @@ function killFoe(e) {
 function foeTouch(e, dmg) {
   if (e.dead || P.dead) return;
   const top = e.y - e.h, l = e.x - e.w / 2;
-  if (P.x < l + e.w - 2 && P.x + P.w > l + 2 && P.y < e.y - 2 && P.y + P.h > top + 2) hurtPlayer(dmg, e.x, e.type);
+  if (e.recoil > 0) return;
+  if (hitsKanata(l + 2, top + 2, l + e.w - 2, e.y - 2) && hurtPlayer(dmg, e.x, e.type)) { e.recoil = CONFIG.foeRecoil; e.face = Math.sign(e.x - pcx()) || -e.face; } // back off after a hit: no re-hit loops
 }
 function updateFoe(e) {
-  const C = CONFIG.foes[e.type]; e.t++; if (e.flash > 0) e.flash--; if (e.inCone > 0) e.inCone--; if (e.tinkT > 0) e.tinkT--;
+  const C = CONFIG.foes[e.type]; e.t++; if (e.recoil > 0) e.recoil--; if (e.flash > 0) e.flash--; if (e.inCone > 0) e.inCone--; if (e.tinkT > 0) e.tinkT--;
   if (e.burnT > 0) { e.burnT--; if (e.burnT % 30 === 0) { e.hp -= 1; e.flash = 6; if (e.hp <= 0) { killFoe(e); return; } }
     if (frame % 3 === 0) parts.push({ x: e.x + rnd(-e.w / 2, e.w / 2), y: e.y - rnd(0, e.h), vx: rnd(-0.3, 0.3), vy: -rnd(0.5, 1.2), life: 14, col: '#ffb040', size: 2, glow: 1 }); }
   const px = pcx(), py = pcy(), dx = px - e.x, dy = py - (e.y - e.h / 2), dist = Math.hypot(dx, dy);
@@ -1793,12 +1820,13 @@ function updateFoe(e) {
       const tx = px + Math.sin(e.t * 0.05 + e.seed) * 30, ty = P.y + 10 + Math.sin(e.t * 0.09 + e.seed * 2) * 26;
       e.vx += clamp((tx - e.x) * 0.01, -0.12, 0.12); e.vy += clamp((ty - (e.y - e.h / 2)) * 0.01, -0.12, 0.12);
       e.vx = clamp(e.vx, -C.speed, C.speed); e.vy = clamp(e.vy, -C.speed, C.speed);
-      e.x += e.vx; e.y += e.vy; e.x = clamp(e.x, 10, room.W - 10); e.y = clamp(e.y, 2 * TS + e.h, room.H - 10);
+      e.x += e.vx; e.y += e.vy; e.x = clamp(e.x, CONFIG.foeEdge, room.W - CONFIG.foeEdge); e.y = clamp(e.y, 2 * TS + e.h, room.H - 10);
       e.face = Math.sign(e.vx) || e.face; foeTouch(e, C.damage); break; }
     case 'rat': {
       const b = e.body; const near = Math.abs(dx) < 120 && Math.abs(P.y + P.h - e.y) < 40;
-      if (near && e.t % 40 === 0) e.face = Math.sign(dx) || e.face;
-      b.vx = e.face * (near ? C.speed : C.speed * 0.6);
+      if (e.recoil > 0) e.face = -(Math.sign(dx) || 1);
+      else if (near && e.t % 40 === 0) e.face = Math.sign(dx) || e.face;
+      b.vx = e.face * (near && !e.recoil ? C.speed : C.speed * 0.6);
       walkFoe(e); foeTouch(e, C.damage); break; }
     case 'puppet': case 'skeleton': {
       const b = e.body;
@@ -1829,7 +1857,7 @@ function updateFoe(e) {
       } else if (e.state === 'warn') {
         if (e.t >= C.warn) { const d = Math.hypot(e.tx - e.x, e.ty - (e.y - e.h / 2)) || 1; e.vx = (e.tx - e.x) / d * C.dash; e.vy = (e.ty - (e.y - e.h / 2)) / d * C.dash; e.state = 'dash'; e.t = 0; sfx('flap'); }
       } else if (e.state === 'dash') { e.x += e.vx; e.y += e.vy; if (e.t > 30) { e.state = 'float'; e.t = 0; e.cd = C.every + Math.random() * 60; e.vx *= 0.2; e.vy *= 0.2; } }
-      e.x = clamp(e.x, 12, room.W - 12); e.y = clamp(e.y, 2 * TS + e.h + 4, room.H - 3 * TS);
+      e.x = clamp(e.x, CONFIG.foeEdge, room.W - CONFIG.foeEdge); e.y = clamp(e.y, 2 * TS + e.h + 4, room.H - 3 * TS);
       if (e.state === 'dash' || e.state === 'float') foeTouch(e, C.damage); break; }
     case 'gargoyle': {
       if (e.state === 'perch') { if (Math.abs(dx) < C.wake && py > e.y - 30) { e.state = 'warn'; e.t = 0; sfx('warn'); } break; }
@@ -1847,7 +1875,7 @@ function walkFoe(e) {
   if (b.hitWall) e.face = -e.face;
   const ax = b.x + (e.face > 0 ? b.w + 2 : -2), ay = b.y + b.h + 4;
   if (b.onGround && !solidAtPx(ax, ay) && tileAt(Math.floor(ax / TS), Math.floor(ay / TS)) !== T_PLAT) { e.face = -e.face; b.x -= b.vx; }
-  if (b.x < 4) { b.x = 4; e.face = 1; } if (b.x + b.w > room.W - 4) { b.x = room.W - 4 - b.w; e.face = -1; }
+  const M = CONFIG.foeEdge; if (b.x < M) { b.x = M; e.face = 1; } if (b.x + b.w > room.W - M) { b.x = room.W - M - b.w; e.face = -1; }
   e.x = b.x + b.w / 2; e.y = b.y + b.h;
 }
 
@@ -2000,7 +2028,7 @@ function chooseAttack(b, normal, special) {
   b.lastAtk = pick; b.state = pick; b.t = 0; return pick;
 }
 function bossReward(b, x) { popItems(['heart', 'heart', 'coin', 'coin', 'coin', 'coin', 'coin'], x, FLOOR_Y - 60); P.hp = progress.maxHP; }
-function overlapBox(x0, y0, x1, y1) { return P.x < x1 && P.x + P.w > x0 && P.y < y1 && P.y + P.h > y0; }
+function overlapBox(x0, y0, x1, y1) { return hitsKanata(x0, y0, x1, y1); }
 
 // =====================================================================
 //  BOSS 1: 呪いのシャンデリア グラン・ルミエール (ballroom)
@@ -2096,7 +2124,7 @@ BOSS_DEFS.chandelier = { jp: '呪いのシャンデリア', en: 'GRAND LUMIERE',
     drawCore(b, lights, 'core');
   },
 };
-function overlapBossBody() { const b = boss; return P.x < b.x + 54 && P.x + P.w > b.x - 54 && P.y < b.y + 80 && P.y + P.h > b.y + 30; }
+function overlapBossBody() { const b = boss; return hitsKanata(b.x - 50, b.y + 30, b.x + 50, b.y + 80); }
 function dropCandle(x) {
   const B = CONFIG.boss;
   ebullets.push({ kind: 'candle', x: x - 3, y: boss.y + 30, w: 6, h: 12, vx: 0, vy: 1, g: 0.22, dmg: B.candleDamage, life: 200, suckable: true,
@@ -2323,7 +2351,7 @@ BOSS_DEFS.clock = { jp: '大時計の番人 チクタク', en: 'GRANDFATHER TICK
         if (b.t === 1) { b.pdir = pcx() < 192 ? 1 : -1; b.pend = -b.pdir * 1.25; sfx('warn'); }
         if (b.t < warn) { if (b.t % 12 === 0) sfx('tick'); break; }
         const k = Math.min(1, (b.t - warn) / 100); b.pendOut = k < 1; b.pend = -b.pdir * 1.25 * Math.cos(k * Math.PI);
-        if (b.pendOut) { const bb = D.bob(b); if (Math.hypot(pcx() - bb.x, clamp(bb.y, P.y, P.y + P.h) - bb.y) < 16 + P.w / 2) hurtPlayer(C.pendDamage, bb.x, 'pendulum');
+        if (b.pendOut) { const bb = D.bob(b); if (Math.hypot(pcx() - bb.x, clamp(bb.y, hurtBox().y0, hurtBox().y1) - bb.y) < 14 + (P.w / 2 - CONFIG.hurtInsetX)) hurtPlayer(C.pendDamage, bb.x, 'pendulum');
           if (frame % 2 === 0) parts.push({ x: bb.x + rnd(-6, 6), y: bb.y + rnd(-6, 6), vx: 0, vy: 0, life: 12, col: '#ffe080', size: 2, glow: 1 }); }
         if (b.t === warn + 50) sfx('whoosh');
         if (b.t >= warn + 120) { b.state = 'idle'; b.t = 0; b.pendOut = false; } break; }
@@ -2736,7 +2764,7 @@ function enterGame(roomId, atStart) {
   P.hp = progress.maxHP; P.dead = false; P.tank = []; P.inv = 0; P.tug = null; P.hover = CONFIG.hoverFrames;
   loadRoom(roomId, { start: true });
   const sp = (atStart && room.start) || room.save || room.start || { x: 3 * TS, y: 15 * TS };
-  placePlayer(sp.x + (room.save && !atStart ? 22 : 0), sp.y, 1);
+  placePlayer(sp.x + (room.save && !atStart ? 22 : 0), sp.y, 1); entrySafety();
   for (const e of ents) if (e.type === 'save') e.used = true; // don't re-save on spawn
   snapCamera(); setState('play');
 }

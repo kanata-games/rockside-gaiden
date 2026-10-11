@@ -19,7 +19,7 @@ function enterGame(roomId, atStart) {
   P.hp = progress.maxHP; P.dead = false; P.tank = []; P.inv = 0; P.tug = null; P.hover = CONFIG.hoverFrames;
   loadRoom(roomId, { start: true });
   const sp = (atStart && room.start) || room.save || room.start || { x: 3 * TS, y: 15 * TS };
-  placePlayer(sp.x + (room.save && !atStart ? 22 : 0), sp.y, 1);
+  placePlayer(sp.x + (room.save && !atStart ? 22 : 0), sp.y, 1); entrySafety();
   for (const e of ents) if (e.type === 'save') e.used = true; // don't re-save on spawn
   snapCamera(); setState('play');
 }

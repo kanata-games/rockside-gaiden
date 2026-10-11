@@ -3,11 +3,14 @@
 //  PLAYER: 清掃員カナタ  -  walk / jump / half-ghost hover, vacuum (catch + tug-of-war), SPIT
 // =====================================================================
 const P = { x: 0, y: 0, w: CONFIG.playerW, h: CONFIG.playerH, vx: 0, vy: 0, face: 1, onGround: false, coyote: 0, jumpBuf: 0, hover: CONFIG.hoverFrames, hovering: false,
-  hp: CONFIG.maxHP, inv: 0, knock: 0, dead: false, deadT: 0, vacOn: false, tug: null, tank: [], spitCD: 0, spitPose: 0, animT: 0, airT: 0, spawnX: 0, spawnY: 0, god: false,
+  hp: CONFIG.maxHP, inv: 0, grace: 0, knock: 0, dead: false, deadT: 0, vacOn: false, tug: null, tank: [], spitCD: 0, spitPose: 0, animT: 0, airT: 0, spawnX: 0, spawnY: 0, god: false,
   dj: false, djT: 0, spitHold: 0, onFloat: null };
 const stats = { floats: 0, djumps: 0, foeKills: 0, foeHits: 0, levers: 0, abilities: [], updates: 0, frames: 0, captures: 0, spits: 0, puffs: 0, swallowed: 0, rooms: 0, hurts: 0, deaths: 0, saves: 0, secrets: 0, tugs: 0, maxTugFrames: 0, tips: [], bossHits: 0 };
 const playerShots = [], ebullets = [], items = [], parts = [], floats = [];
 const pcx = () => P.x + P.w / 2, pcy = () => P.y + P.h / 2;
+// damage hurtbox: a bit smaller than the 16x50 body (the sprite is drawn even bigger), so near-misses feel fair
+const hurtBox = () => ({ x0: P.x + CONFIG.hurtInsetX, x1: P.x + P.w - CONFIG.hurtInsetX, y0: P.y + CONFIG.hurtInsetTop, y1: P.y + P.h - 1 });
+function hitsKanata(x0, y0, x1, y1) { const h = hurtBox(); return h.x0 < x1 && h.x1 > x0 && h.y0 < y1 && h.y1 > y0; }
 function nozzle() { const V = CONFIG.vac; return { x: pcx() + P.face * V.nozzleX, y: P.y + P.h - V.nozzleY }; }
 const vacRange = () => CONFIG.vac.range * (hasAbil('turbo') ? CONFIG.turboRange : 1);
 // vacuum cone test (point)
@@ -26,7 +29,7 @@ function placePlayer(x, feetY, face) {
   P.spawnX = P.x; P.spawnY = P.y;
 }
 function hurtPlayer(dmg, fromX, why) {
-  if (P.inv > 0 || P.dead || state !== 'play') return false;
+  if (P.inv > 0 || P.grace > 0 || P.dead || state !== 'play') return false;
   if (P.god) { P.inv = 30; return false; }
   P.hp -= dmg; P.inv = CONFIG.invFrames; P.knock = CONFIG.knockFrames; stats.hurts++; stats.lastHurt = why || '';
   const d = Math.sign(pcx() - fromX) || -P.face; P.vx = d * CONFIG.knockVx; P.vy = -CONFIG.knockVy;
@@ -95,7 +98,7 @@ function updateTug() {
 function updatePlayer() {
   const C = CONFIG;
   if (P.dead) { P.deadT++; P.vx *= 0.9; P.vy = Math.min(P.vy + C.gravity, C.maxFall); moveBody(P, true); return; }
-  if (P.inv > 0) P.inv--;
+  if (P.inv > 0) P.inv--; if (P.grace > 0) P.grace--;
   if (P.spitCD > 0) P.spitCD--;
   if (P.spitPose > 0) P.spitPose--;
   P.animT++;
@@ -136,8 +139,8 @@ function updatePlayer() {
   // SPIT
   updateSpitButton();
   // room exits
-  if (P.x + P.w / 2 < 0) { if (!exitRoom('L')) P.x = -P.w / 2; }
-  else if (P.x + P.w / 2 > room.W) { if (!exitRoom('R')) P.x = room.W - P.w / 2; }
+  if (P.x + P.w / 2 < 0) { if (P.knock > 0 || !exitRoom('L')) { P.x = -P.w / 2; if (P.knock > 0) P.vx = Math.max(0, P.vx); } }
+  else if (P.x + P.w / 2 > room.W) { if (P.knock > 0 || !exitRoom('R')) { P.x = room.W - P.w / 2; if (P.knock > 0) P.vx = Math.min(0, P.vx); } }
   else if (P.y < -10 && P.vy < 0) { if (!exitRoom('T')) { P.y = -10; P.vy = 0; } }
   else if (P.y + P.h / 2 > room.H) { if (!exitRoom('B')) { P.y = P.spawnY; P.x = P.spawnX; P.vy = 0; hurtPlayer(2, pcx(), 'pit'); } }
 }

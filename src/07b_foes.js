@@ -45,10 +45,11 @@ function killFoe(e) {
 function foeTouch(e, dmg) {
   if (e.dead || P.dead) return;
   const top = e.y - e.h, l = e.x - e.w / 2;
-  if (P.x < l + e.w - 2 && P.x + P.w > l + 2 && P.y < e.y - 2 && P.y + P.h > top + 2) hurtPlayer(dmg, e.x, e.type);
+  if (e.recoil > 0) return;
+  if (hitsKanata(l + 2, top + 2, l + e.w - 2, e.y - 2) && hurtPlayer(dmg, e.x, e.type)) { e.recoil = CONFIG.foeRecoil; e.face = Math.sign(e.x - pcx()) || -e.face; } // back off after a hit: no re-hit loops
 }
 function updateFoe(e) {
-  const C = CONFIG.foes[e.type]; e.t++; if (e.flash > 0) e.flash--; if (e.inCone > 0) e.inCone--; if (e.tinkT > 0) e.tinkT--;
+  const C = CONFIG.foes[e.type]; e.t++; if (e.recoil > 0) e.recoil--; if (e.flash > 0) e.flash--; if (e.inCone > 0) e.inCone--; if (e.tinkT > 0) e.tinkT--;
   if (e.burnT > 0) { e.burnT--; if (e.burnT % 30 === 0) { e.hp -= 1; e.flash = 6; if (e.hp <= 0) { killFoe(e); return; } }
     if (frame % 3 === 0) parts.push({ x: e.x + rnd(-e.w / 2, e.w / 2), y: e.y - rnd(0, e.h), vx: rnd(-0.3, 0.3), vy: -rnd(0.5, 1.2), life: 14, col: '#ffb040', size: 2, glow: 1 }); }
   const px = pcx(), py = pcy(), dx = px - e.x, dy = py - (e.y - e.h / 2), dist = Math.hypot(dx, dy);
@@ -58,12 +59,13 @@ function updateFoe(e) {
       const tx = px + Math.sin(e.t * 0.05 + e.seed) * 30, ty = P.y + 10 + Math.sin(e.t * 0.09 + e.seed * 2) * 26;
       e.vx += clamp((tx - e.x) * 0.01, -0.12, 0.12); e.vy += clamp((ty - (e.y - e.h / 2)) * 0.01, -0.12, 0.12);
       e.vx = clamp(e.vx, -C.speed, C.speed); e.vy = clamp(e.vy, -C.speed, C.speed);
-      e.x += e.vx; e.y += e.vy; e.x = clamp(e.x, 10, room.W - 10); e.y = clamp(e.y, 2 * TS + e.h, room.H - 10);
+      e.x += e.vx; e.y += e.vy; e.x = clamp(e.x, CONFIG.foeEdge, room.W - CONFIG.foeEdge); e.y = clamp(e.y, 2 * TS + e.h, room.H - 10);
       e.face = Math.sign(e.vx) || e.face; foeTouch(e, C.damage); break; }
     case 'rat': {
       const b = e.body; const near = Math.abs(dx) < 120 && Math.abs(P.y + P.h - e.y) < 40;
-      if (near && e.t % 40 === 0) e.face = Math.sign(dx) || e.face;
-      b.vx = e.face * (near ? C.speed : C.speed * 0.6);
+      if (e.recoil > 0) e.face = -(Math.sign(dx) || 1);
+      else if (near && e.t % 40 === 0) e.face = Math.sign(dx) || e.face;
+      b.vx = e.face * (near && !e.recoil ? C.speed : C.speed * 0.6);
       walkFoe(e); foeTouch(e, C.damage); break; }
     case 'puppet': case 'skeleton': {
       const b = e.body;
@@ -94,7 +96,7 @@ function updateFoe(e) {
       } else if (e.state === 'warn') {
         if (e.t >= C.warn) { const d = Math.hypot(e.tx - e.x, e.ty - (e.y - e.h / 2)) || 1; e.vx = (e.tx - e.x) / d * C.dash; e.vy = (e.ty - (e.y - e.h / 2)) / d * C.dash; e.state = 'dash'; e.t = 0; sfx('flap'); }
       } else if (e.state === 'dash') { e.x += e.vx; e.y += e.vy; if (e.t > 30) { e.state = 'float'; e.t = 0; e.cd = C.every + Math.random() * 60; e.vx *= 0.2; e.vy *= 0.2; } }
-      e.x = clamp(e.x, 12, room.W - 12); e.y = clamp(e.y, 2 * TS + e.h + 4, room.H - 3 * TS);
+      e.x = clamp(e.x, CONFIG.foeEdge, room.W - CONFIG.foeEdge); e.y = clamp(e.y, 2 * TS + e.h + 4, room.H - 3 * TS);
       if (e.state === 'dash' || e.state === 'float') foeTouch(e, C.damage); break; }
     case 'gargoyle': {
       if (e.state === 'perch') { if (Math.abs(dx) < C.wake && py > e.y - 30) { e.state = 'warn'; e.t = 0; sfx('warn'); } break; }
@@ -112,7 +114,7 @@ function walkFoe(e) {
   if (b.hitWall) e.face = -e.face;
   const ax = b.x + (e.face > 0 ? b.w + 2 : -2), ay = b.y + b.h + 4;
   if (b.onGround && !solidAtPx(ax, ay) && tileAt(Math.floor(ax / TS), Math.floor(ay / TS)) !== T_PLAT) { e.face = -e.face; b.x -= b.vx; }
-  if (b.x < 4) { b.x = 4; e.face = 1; } if (b.x + b.w > room.W - 4) { b.x = room.W - 4 - b.w; e.face = -1; }
+  const M = CONFIG.foeEdge; if (b.x < M) { b.x = M; e.face = 1; } if (b.x + b.w > room.W - M) { b.x = room.W - M - b.w; e.face = -1; }
   e.x = b.x + b.w / 2; e.y = b.y + b.h;
 }
 

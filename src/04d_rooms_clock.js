@@ -16,7 +16,7 @@ ROOM_DEFS.push(
 
   { id: 'dollroom', jp: '人形の隠し部屋', en: 'HIDDEN DOLL ROOM', area: 'clock', theme: 'attic', tiles: 'w', cx: 5, cy: -1, cw: 1, ch: 1, dark: 0.4, secret: true,
     build(R) { R.box(); R.open('R', 0, 11, 14); R.plat(3, 8, 11); },
-    ents: [['heartbig', 5.5, 9], ['puppet', 14, 15], ['puppet', 18, 15], ['coin', 10, 15], ['coin', 12, 15], ['coin', 4, 11], ['coin', 7, 11], ['book', 20, 15], ['chair', 9, 15]],
+    ents: [['heartbig', 5.5, 9], ['puppet', 14, 15], ['puppet', 13, 15], ['coin', 10, 15], ['coin', 12, 15], ['coin', 4, 11], ['coin', 7, 11], ['book', 20, 15], ['chair', 9, 15]],
     decor: [['dollshelf', 12, 15], ['dollshelf', 20, 15], ['round_window', 12, 7], ['candelabra', 5, 11, { light: 1 }], ['cobweb', 1, 2, { top: 1 }]] },
 
   { id: 'gearshaft', jp: '歯車の縦穴', en: 'GEAR SHAFT', area: 'clock', theme: 'gears', tiles: 'w', cx: 8, cy: -3, cw: 1, ch: 2, dark: 0.5,

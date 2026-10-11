@@ -17,7 +17,10 @@ const CONFIG = {
   coyote: 6, jumpBuffer: 7,
   hoverFrames: 70,         // half-ghost float: hold JUMP while falling -> slow descent for this long (refills on the ground)
   hoverFall: 0.45,         // max fall speed while hovering
-  maxHP: 10, invFrames: 80, knockFrames: 16, knockVx: 1.6, knockVy: 2.6,
+  hurtInsetX: 3, hurtInsetTop: 12,  // damage hurtbox inset (see hurtBox())
+  foeRecoil: 60, foeEdge: 34,        // normal enemies back off this long after hitting Kanata; never closer than this to the room edge (doorways)
+  entryGrace: 50, entrySafe: 112,     // after entering a room: no damage for N frames; enemies kept this far (px) from the entry point
+  maxHP: 10, invFrames: 100, knockFrames: 16, knockVx: 1.6, knockVy: 2.6,
 
   // ---- vacuum (Luigi's Mansion style) ----
   vac: {

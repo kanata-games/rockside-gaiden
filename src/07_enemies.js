@@ -48,7 +48,7 @@ function makeGhost(kind, x, y, extra) {
 }
 function ghostTouchDamage(e, dmg) {
   if (e.state === 'caught' || e.state === 'swallow' || e.stunT > 0 || P.dead) return;
-  if (Math.abs(e.x - pcx()) < e.w / 2 + P.w / 2 - 3 && Math.abs(e.y - pcy()) < e.h / 2 + P.h / 2 - 4) hurtPlayer(dmg, e.x, e.type);
+  if (hitsKanata(e.x - e.w / 2 + 3, e.y - e.h / 2 + 4, e.x + e.w / 2 - 3, e.y + e.h / 2 - 4) && hurtPlayer(dmg, e.x, e.type) && e.type !== 'firewisp' && e.state !== 'caught') { e.state = 'flee'; e.t = 0; } // drift away after a hit
 }
 function updateGhost(e) {
   e.t++; if (e.flash > 0) e.flash--; if (e.inCone > 0) e.inCone--; else if (e.catchT > 0 && e.state !== 'caught') e.catchT = Math.max(0, e.catchT - 2);
@@ -86,7 +86,7 @@ function updateGhost(e) {
     ghostTouchDamage(e, C.damage);
   }
 }
-function clampGhost(e) { e.x = clamp(e.x, 14, room.W - 14); e.y = clamp(e.y, 40, room.H - 24); }
+function clampGhost(e) { const m = e.state === 'caught' ? 14 : CONFIG.foeEdge; e.x = clamp(e.x, m, room.W - m); e.y = clamp(e.y, 40, room.H - 24); }
 function updateDish(e, dx, dy, dist) {
   const C = CONFIG.dish;
   const wantX = pcx() - Math.sign(dx || 1) * C.keep, wantY = Math.max(56, P.y - 30);
@@ -121,18 +121,19 @@ function breakArmor(a) {
   tip('armorghost', 'よろいから中身が出てきた！ 吸い込もう');
 }
 function updateArmor(a) {
-  const A = CONFIG.armor, b = a.body; a.t++; if (a.flash > 0) a.flash--;
+  const A = CONFIG.armor, b = a.body; a.t++; if (a.flash > 0) a.flash--; if (a.recoil > 0) a.recoil--;
   const dx = pcx() - a.x, near = Math.abs(dx) < 150 && Math.abs(pcy() - (a.y - 24)) < 60;
   if (a.state === 'walk') {
-    if (near) a.face = Math.sign(dx) || a.face;
+    if (a.recoil > 0) a.face = -(Math.sign(dx) || 1);
+    else if (near) a.face = Math.sign(dx) || a.face;
     else if (Math.abs(a.x - a.homeX) > 64) a.face = Math.sign(a.homeX - a.x);
     b.vx = a.face * A.walk;
-    if (near && Math.abs(dx) < A.swingRange + 14 && Math.sign(dx) === a.face) { a.state = 'windup'; a.t = 0; b.vx = 0; sfx('warn'); }
+    if (!a.recoil && near && Math.abs(dx) < A.swingRange + 14 && Math.sign(dx) === a.face) { a.state = 'windup'; a.t = 0; b.vx = 0; sfx('warn'); }
   } else if (a.state === 'windup') { b.vx = 0; if (a.t >= A.swingWarn) { a.state = 'swing'; a.t = 0; sfx('jump'); } }
   else if (a.state === 'swing') {
     b.vx = 0;
     const hx = a.face > 0 ? a.x : a.x - A.swingRange, hy = a.y - 40;
-    if (P.x < hx + A.swingRange && P.x + P.w > hx && P.y < hy + 34 && P.y + P.h > hy) hurtPlayer(A.damage, a.x, 'armor');
+    if (hitsKanata(hx, hy, hx + A.swingRange, hy + 34) && hurtPlayer(A.damage, a.x, 'armor')) a.recoil = CONFIG.foeRecoil;
     if (a.t >= A.swingFrames) { a.state = 'recover'; a.t = 0; }
   } else if (a.state === 'recover') { b.vx = 0; if (a.t >= 34) { a.state = 'walk'; a.t = 0; } }
   b.vy = Math.min(b.vy + CONFIG.gravity, CONFIG.maxFall); moveBody(b, true);
@@ -140,7 +141,7 @@ function updateArmor(a) {
   // don't walk off ledges
   if (b.onGround && !solidAtPx(b.x + (a.face > 0 ? b.w + 2 : -2), b.y + b.h + 4) && tileAt(Math.floor((b.x + (a.face > 0 ? b.w + 2 : -2)) / TS), Math.floor((b.y + b.h + 4) / TS)) !== T_PLAT) { a.face = -a.face; b.x -= b.vx; }
   a.x = b.x + b.w / 2; a.y = b.y + b.h;
-  if (Math.abs(a.x - pcx()) < 14 && P.y + P.h > a.y - 46 && P.y < a.y) hurtPlayer(1, a.x, 'armor-touch');
+  if (!a.recoil && hitsKanata(a.x - 10, a.y - 46, a.x + 10, a.y) && hurtPlayer(1, a.x, 'armor-touch')) a.recoil = CONFIG.foeRecoil;
 }
 // ---------------------------------------------------------------------
 //  curtain / dust / vase / save / locked door
@@ -206,7 +207,7 @@ function updateEBullets() {
       else { const col = b.kind === 'plate' ? '#f4f4fc' : b.kind === 'needle' ? '#e8e8f0' : '#a8e0ff'; for (let i = 0; i < 6; i++) parts.push({ x: b.x + b.w / 2, y: b.y + b.h / 2, vx: rnd(-1.5, 1.5), vy: rnd(-2, 0), life: 18, col, size: 2, grav: 1 }); sfx('tink'); }
       continue;
     }
-    if (!P.dead && b.x < P.x + P.w - 2 && b.x + b.w > P.x + 2 && b.y < P.y + P.h - 2 && b.y + b.h > P.y + 6) {
+    if (!P.dead && hitsKanata(b.x, b.y, b.x + b.w, b.y + b.h)) {
       if (b.kind !== 'firepatch' || P.onGround) { if (hurtPlayer(b.dmg, b.x + b.w / 2, b.kind) && !PERSIST_BULLETS.has(b.kind)) b.dead = true; }
     }
   }
