@@ -17,10 +17,10 @@ ROOM_DEFS.push(
     decor: [['stainedglass', 8, 9], ['stainedglass', 24, 9], ['stainedglass', 40, 9], ['pew', 5, 15], ['pew', 10.5, 15], ['pew', 21, 15], ['pew', 39, 15], ['altar', 27, 15],
       ['candelabra', 24, 15, { light: 1 }], ['candelabra', 30, 15, { light: 1 }], ['sconce', 16, 9, { light: 1 }], ['sconce', 32, 9, { light: 1 }], ['organpipes', 45, 15], ['cobweb', 1, 2, { top: 1 }], ['cobweb', 46.75, 2, { top: 1, flip: 1 }]] },
 
-  { id: 'choir', jp: 'パイプオルガンの聖歌隊席', en: 'ORGAN LOFT', area: 'crypt', theme: 'chapel', tiles: 'k', cx: 12, cy: -1, cw: 2, ch: 1, dark: 0.4, boss: 'organ',
-    build(R) { R.box(); R.open('L', 0, 11, 14); R.plat(2, 5, 11); R.plat(16, 20, 10); },
-    ents: [['boss', 40, 15], ['ability', 4, 15, { abil: 'phase', after: 'organ' }]],
-    decor: [['stainedglass', 6, 9], ['stainedglass', 18, 9], ['stainedglass', 30, 9], ['sconce', 12, 7, { light: 1 }], ['sconce', 24, 7, { light: 1 }], ['pew', 4, 15], ['pew', 10, 15], ['cobweb', 1, 2, { top: 1 }], ['cobweb', 46.75, 2, { top: 1, flip: 1 }]] },
+  { id: 'choir', jp: 'パイプオルガンの聖歌隊席', en: 'ORGAN LOFT', area: 'crypt', theme: 'chapel', tiles: 'k', cx: 12, cy: -1, cw: 1, ch: 1, dark: 0.4, boss: 'organ',
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.plat(2, 5, 11); },
+    ents: [['boss', 18, 15], ['ability', 4, 15, { abil: 'phase', after: 'organ' }]],
+    decor: [['stainedglass', 6, 9], ['stainedglass', 13, 9], ['sconce', 10, 7, { light: 1 }], ['pew', 4, 15], ['cobweb', 1, 2, { top: 1 }], ['cobweb', 22.75, 2, { top: 1, flip: 1 }]] },
 
   { id: 'catacomb', jp: '地下墓所', en: 'CATACOMBS', area: 'crypt', theme: 'crypt', tiles: 'k', cx: 10, cy: 0, cw: 2, ch: 1, dark: 0.62,
     build(R) { R.box(); R.open('T', 1, 8, 11); R.open('R', 0, 11, 14); R.open('L', 0, 11, 14); R.gate(0, 11, 0, 14, 'spirit_reliq'); R.plat(25, 30, 11); R.plat(33, 38, 7);

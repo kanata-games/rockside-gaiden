@@ -72,7 +72,7 @@ function renderWarpMenu() {
   drawText('< >: SELECT   JUMP: WARP   VAC: BACK', VW / 2, VH - 22, 'b', 1, 'c');
   blit();
   drawHiText('ワープの間 ― 行き先をえらぶ', VW / 2, 10, 11, '#e8dcff', '#1a0e28');
-  for (const b of warpButtons()) drawHiText(AREAS[b.d.area].jp.replace('幽霊屋敷 ', '').replace(/^(.{0,6}).*$/, '$1'), b.x + b.w / 2, b.y + 11, 6.5, '#ffffff', null);
+  for (const b of warpButtons()) drawHiText((AREAS[b.d.area].short || AREAS[b.d.area].jp), b.x + b.w / 2, b.y + 11, 6.5, '#ffffff', null);
   if (sel) drawHiText(sel.id === room.id ? '（いまいる場所）' : AREAS[sel.area].jp + ' の ' + sel.jp + ' へワープ', VW / 2, 250, 8, sel.id === room.id ? '#a8a0d8' : '#fff4c0', '#1a0e28');
 }
 

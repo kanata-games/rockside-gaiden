@@ -398,9 +398,9 @@ function drawHUD() {
   }
   const cx0 = 82 + (CONFIG.vac.tankMax - 3) * 15; spr('items', 'coin0', cx0, 20); drawTextShadow(String(progress.coins), cx0 + 12, 22, 'y', 1);
   { // GABU gauge (critters eaten -> powered SPIT)
-    const E = CONFIG.eat, full = P.gabu >= E.max; g.fillStyle = 'rgba(8,6,20,0.72)'; g.fillRect(4, 35, 18 + E.max * 9, 11); rectLine(4, 35, 18 + E.max * 9, 11, full && (frame & 8) ? '#ff8aa8' : '#4e4876');
+    const E = CONFIG.eat, full = P.gabu >= E.max; g.fillStyle = 'rgba(8,6,20,0.72)'; g.fillRect(4, 35, 30 + E.max * 9, 11); rectLine(4, 35, 30 + E.max * 9, 11, full && (frame & 8) ? '#ff8aa8' : '#4e4876');
     drawText('GABU', 6, 37, full ? 'r' : 'b', 1);
-    for (let i = 0; i < E.max; i++) { const x = 25 + i * 9; g.fillStyle = i < P.gabu ? (full ? ((frame & 4) ? '#ffffff' : '#ff8aa8') : '#ff8aa8') : '#2a2440';
+    for (let i = 0; i < E.max; i++) { const x = 32 + i * 9; g.fillStyle = i < P.gabu ? (full ? ((frame & 4) ? '#ffffff' : '#ff8aa8') : '#ff8aa8') : '#2a2440';
       g.beginPath(); g.moveTo(x, 38); g.lineTo(x + 6, 38); g.lineTo(x + 3, 44); g.fill(); } }
   let ax = 112 + (CONFIG.vac.tankMax - 3) * 15; for (const k in ABIL_INFO) if (hasAbil(k)) { drawAbilIcon(k, ax, 20, true); ax += 11; }
   if (progress.hasKey) spr('items', 'key', 46 + hearts * 9 - 2, 6);
@@ -478,13 +478,14 @@ function renderMap() {
   const tsec = Math.floor(progress.time / 60); drawText('TIME ' + Math.floor(tsec / 60) + ':' + String(tsec % 60).padStart(2, '0'), 160, by, 'b', 1);
   drawText('BOSS ' + progress.bosses.size + '/' + BOSS_TOTAL, 240, by, 'r', 1);
   drawText('GHOST ' + progress.captures, 306, by, 'c', 1);
-  let ax = 14; for (const k in ABIL_INFO) { drawAbilIcon(k, ax, by + 12, hasAbil(k)); ax += 74; }
+  const abW = k => 26 + (hasAbil(k) ? ABIL_INFO[k].jp.length : 3) * 10;
+  let ax = 14; for (const k in ABIL_INFO) { drawAbilIcon(k, ax, by + 12, hasAbil(k)); ax += abW(k); }
   // area legend
   let lx = 14; for (const k in AREAS) { g.fillStyle = AREAS[k].col; g.fillRect(lx, by + 40, 8, 8); rectLine(lx, by + 40, 8, 8, '#a8b8e8'); lx += 62; }
   drawText('TAP / MAP: BACK', VW / 2, VH - 10, 'b', 1, 'c');
   blit();
   drawHiText((AREAS[room.def.area] || AREAS.east).jp + '　' + room.def.jp, VW / 2, 12, 10, '#fff4e0', '#1a0e28');
-  ax = 14; for (const k in ABIL_INFO) { drawHiText(hasAbil(k) ? ABIL_INFO[k].jp : '？？？', ax + 13, by + 11, 6.5, hasAbil(k) ? ABIL_INFO[k].col : '#5a5488', null, 'left'); ax += 74; }
+  ax = 14; for (const k in ABIL_INFO) { drawHiText(hasAbil(k) ? ABIL_INFO[k].jp : '？？？', ax + 13, by + 11, 6.5, hasAbil(k) ? ABIL_INFO[k].col : '#5a5488', null, 'left'); ax += abW(k); }
   lx = 14; for (const k in AREAS) { drawHiText(AREAS[k].short, lx + 11, by + 39, 6, '#c8c0f0', null, 'left'); lx += 62; }
   drawHiText('■セーブ  B＝ボス  W＝ワープの間  ・光＝新しい力  黄色＝とびら' + (progress.hasKey ? '  舞踏会場の鍵あり' : ''), VW / 2, by + 54, 6.5, '#a8a0d8', null);
 }
