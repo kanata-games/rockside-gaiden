@@ -1,0 +1,209 @@
+
+// =====================================================================
+//  ENTITIES: ghosts (ふわゴースト / お皿ゴースト / よろい亡霊), interactables (curtain, dust, vase), save altar, locked door
+// =====================================================================
+const ents = [];
+let boss = null;
+function spawnRoomEntities() {
+  ents.length = 0; items.length = 0; playerShots.length = 0; ebullets.length = 0; parts.length = 0; boss = null;
+  const d = room.def;
+  d.ents.forEach((e, i) => {
+    const [type, c, r, o] = e, opt = o || {}, x = c * TS, y = r * TS, id = d.id + ':' + i;
+    if (progress.perm.has(id) && type !== 'curtain' && type !== 'vase') return;
+    switch (type) {
+      case 'start': room.start = { x, y }; break;
+      case 'save': ents.push({ type: 'save', x, y, w: 28, h: 40, used: false }); room.save = { x, y }; break;
+      case 'coin': case 'heart': spawnItem(type, x, y, { perm: id }); break;
+      case 'book': case 'plate': case 'candle': case 'crystal': spawnItem(type, x, y); break;
+      case 'key': case 'heartbig': { const it = spawnItem(type, x, y, { perm: id, fixed: true }); it.baseY = it.y; break; }
+      case 'curtain': ents.push(makeCurtain(x, y, opt, id)); break;
+      case 'dust': ents.push({ type: 'dust', x, y, w: 20, h: 12, stage: 0, suckT: 0, drop: opt.drop || [], id, onSuck() { this.suckT++; this.inCone = 3; } }); break;
+      case 'vase': ents.push({ type: 'vase', x, y, w: 14, h: 22, suckT: 0, empty: progress.perm.has(id), drop: opt.drop || [], id, onSuck() { if (!this.empty) { this.suckT++; this.inCone = 3; } }, hitBy(s) { if (!this.empty) { this.suckT = 99; } return false; } }); break;
+      case 'puff': ents.push(makeGhost('puff', x, y)); break;
+      case 'dish': ents.push(makeGhost('dish', x, y)); break;
+      case 'armor': ents.push(makeArmor(x, y)); break;
+      case 'boss': if (!progress.bossDone) boss = makeBoss(x, y); break;
+    }
+  });
+}
+// ---------------------------------------------------------------------
+//  ghosts
+// ---------------------------------------------------------------------
+function makeGhost(kind, x, y, extra) {
+  const C = CONFIG[kind === 'armorghost' ? 'puff' : kind] || CONFIG.puff;
+  const hp = kind === 'armorghost' ? CONFIG.armor.ghostHp : C.hp;
+  return Object.assign({ type: kind, ghost: true, x, y, w: kind === 'dish' ? 24 : 20, h: kind === 'dish' ? 24 : 20, hp, maxHp: hp, state: 'float', t: 0, catchT: 0, stunT: 0,
+    vx: 0, vy: 0, homeX: x, homeY: y, seed: Math.random() * 10, dashCD: 60 + Math.random() * 80, throwCD: 60 + Math.random() * 60, inCone: 0, flash: 0,
+    hitBy(s) { if (this.state === 'swallow') return false; this.stunT = CONFIG.spit.stunFrames; this.hp = Math.max(8, this.hp - CONFIG.spit.ghostDamage * s.dmg); this.flash = 8; sfx('hit');
+      if (this.state === 'caught') return true; this.state = 'float'; tip('stun', '目を回したゴーストはすぐにつかまえられる！'); return true; } }, extra || {});
+}
+function ghostTouchDamage(e, dmg) {
+  if (e.state === 'caught' || e.state === 'swallow' || e.stunT > 0 || P.dead) return;
+  if (Math.abs(e.x - pcx()) < e.w / 2 + P.w / 2 - 3 && Math.abs(e.y - pcy()) < e.h / 2 + P.h / 2 - 4) hurtPlayer(dmg, e.x, e.type);
+}
+function updateGhost(e) {
+  e.t++; if (e.flash > 0) e.flash--; if (e.inCone > 0) e.inCone--; else if (e.catchT > 0 && e.state !== 'caught') e.catchT = Math.max(0, e.catchT - 2);
+  const px = pcx(), py = P.y + 14, dx = px - e.x, dy = py - e.y, dist = Math.hypot(dx, dy);
+  const C = e.type === 'dish' ? CONFIG.dish : CONFIG.puff, fast = e.type === 'armorghost' ? 1.45 : 1;
+  if (e.state === 'swallow') {
+    const n = nozzle(), k = Math.min(1, e.t / 18); e.x = e.sx + (n.x - e.sx) * k * k; e.y = e.sy + (n.y - e.sy) * k * k;
+    if (e.t >= 18) { e.dead = true; stats.swallowed++; if (e.onSwallowed) { e.onSwallowed(); return; } const nn = e.type === 'dish' ? CONFIG.dish.coins : e.type === 'armorghost' ? CONFIG.armor.coins : CONFIG.puff.coins;
+      const list = []; for (let i = 0; i < nn; i++) list.push('coin'); if (Math.random() < 0.35) list.push('heart'); popItems(list, n.x + P.face * 30, n.y);
+      for (let i = 0; i < 14; i++) parts.push({ x: n.x, y: n.y, vx: rnd(-2, 2), vy: rnd(-2, 2), life: 20, col: '#bff4ff', size: 2, glow: 1 }); }
+    return;
+  }
+  if (e.state === 'caught') return;              // driven by updateTug
+  if (e.stunT > 0) { e.stunT--; e.vx *= 0.85; e.vy *= 0.85; e.x += e.vx; e.y += e.vy; return; }
+  if (e.state === 'flee') { e.x -= Math.sign(dx) * 1.2; e.y += Math.sin(e.t * 0.1) * 0.6 - 0.2; if (e.t > 60) { e.state = 'float'; e.t = 0; } clampGhost(e); return; }
+  if (e.type === 'firewisp') updateFireWisp(e);
+  else if (e.type === 'dish') updateDish(e, dx, dy, dist);
+  else {
+    if (e.state === 'float') {
+      if (dist < C.aggro) { e.vx += Math.sign(dx) * 0.04 * fast; e.vy += Math.sign(dy) * 0.03; }
+      else { e.vx += (e.homeX - e.x) * 0.0008; e.vy += (e.homeY - e.y) * 0.0008; }
+      const sp = C.speed * fast; e.vx = clamp(e.vx, -sp, sp); e.vy = clamp(e.vy, -sp * 0.8, sp * 0.8);
+      e.x += e.vx; e.y += e.vy + Math.sin(e.t * 0.08 + e.seed) * 0.35;
+      if (--e.dashCD <= 0 && dist < 150) { e.state = 'warn'; e.t = 0; e.tx = px; e.ty = py; }
+    } else if (e.state === 'warn') {
+      if (e.t >= C.dashWarn) { e.state = 'dash'; e.t = 0; const d = Math.hypot(e.tx - e.x, e.ty - e.y) || 1; e.vx = (e.tx - e.x) / d * C.dashSpeed * fast; e.vy = (e.ty - e.y) / d * C.dashSpeed * fast; }
+    } else if (e.state === 'dash') {
+      e.x += e.vx; e.y += e.vy; if (e.t > 34) { e.state = 'float'; e.t = 0; e.dashCD = C.dashEvery / fast + Math.random() * 60; e.vx *= 0.3; e.vy *= 0.3; }
+    }
+    clampGhost(e);
+    ghostTouchDamage(e, C.damage);
+  }
+}
+function clampGhost(e) { e.x = clamp(e.x, 14, room.W - 14); e.y = clamp(e.y, 40, room.H - 24); }
+function updateDish(e, dx, dy, dist) {
+  const C = CONFIG.dish;
+  const wantX = pcx() - Math.sign(dx || 1) * C.keep, wantY = Math.max(56, P.y - 30);
+  if (e.state === 'float') {
+    e.vx += clamp((wantX - e.x) * 0.004, -0.05, 0.05); e.vy += clamp((wantY - e.y) * 0.004, -0.04, 0.04);
+    e.vx = clamp(e.vx, -C.speed, C.speed); e.vy = clamp(e.vy, -C.speed, C.speed);
+    e.x += e.vx; e.y += e.vy + Math.sin(e.t * 0.07 + e.seed) * 0.3;
+    if (--e.throwCD <= 0 && dist < 230) { e.state = 'warn'; e.t = 0; }
+  } else if (e.state === 'warn') {
+    if (e.t >= C.throwWarn) {
+      const tf = 46, tx = pcx(), ty = P.y + P.h - 20, vx = clamp((tx - e.x) / tf, -3.2, 3.2), g = 0.1, vy = (ty - e.y - 0.5 * g * tf * tf) / tf;
+      ebullets.push({ kind: 'plate', x: e.x - 7, y: e.y - 18, w: 14, h: 6, vx, vy: clamp(vy, -4, 2), g, dmg: C.damage, suckable: true, life: 200, spin: 0 });
+      e.state = 'float'; e.t = 0; e.throwCD = C.throwEvery + Math.random() * 40; sfx('jump');
+    }
+  }
+  clampGhost(e);
+  ghostTouchDamage(e, C.damage);
+}
+// ---------------------------------------------------------------------
+//  よろい亡霊 (haunted armour): the vacuum can't grab it; SPIT something at it to knock the ghost out
+// ---------------------------------------------------------------------
+function makeArmor(x, y) {
+  return { type: 'armor', x, y, w: 20, h: 48, body: { x: x - 10, y: y - 48, w: 20, h: 48, vx: 0, vy: 0 }, state: 'walk', t: 0, face: -1, homeX: x, flash: 0, tinkT: 0,
+    onSuck() { if (frame % 10 === 0) { sfx('tink'); parts.push({ x: this.x + rnd(-6, 6), y: this.y - rnd(10, 40), vx: rnd(-1, 1), vy: rnd(-1, 0), life: 10, col: '#ffffff', size: 1 }); } tip('armor', 'よろいには掃除機が効かない…何かをぶつけてみよう（SPIT）'); },
+    hitBy(s) { breakArmor(this); return true; } };
+}
+function breakArmor(a) {
+  if (a.dead) return; a.dead = true; sfx('break'); cam.shake = 5; hitStop = 4;
+  ents.push({ type: 'shell', x: a.x, y: a.y, w: 20, h: 48, face: a.face });
+  parts.push({ x: a.x, y: a.y - 44, vx: -a.face * 1.5, vy: -3.5, life: 70, sprite: 'helmet', grav: 1, rot: 1 });
+  const g = makeGhost('armorghost', a.x, a.y - 34); g.stunT = 50; ents.push(g);
+  tip('armorghost', 'よろいから中身が出てきた！ 吸い込もう');
+}
+function updateArmor(a) {
+  const A = CONFIG.armor, b = a.body; a.t++; if (a.flash > 0) a.flash--;
+  const dx = pcx() - a.x, near = Math.abs(dx) < 150 && Math.abs(pcy() - (a.y - 24)) < 60;
+  if (a.state === 'walk') {
+    if (near) a.face = Math.sign(dx) || a.face;
+    else if (Math.abs(a.x - a.homeX) > 64) a.face = Math.sign(a.homeX - a.x);
+    b.vx = a.face * A.walk;
+    if (near && Math.abs(dx) < A.swingRange + 14 && Math.sign(dx) === a.face) { a.state = 'windup'; a.t = 0; b.vx = 0; sfx('warn'); }
+  } else if (a.state === 'windup') { b.vx = 0; if (a.t >= A.swingWarn) { a.state = 'swing'; a.t = 0; sfx('jump'); } }
+  else if (a.state === 'swing') {
+    b.vx = 0;
+    const hx = a.face > 0 ? a.x : a.x - A.swingRange, hy = a.y - 40;
+    if (P.x < hx + A.swingRange && P.x + P.w > hx && P.y < hy + 34 && P.y + P.h > hy) hurtPlayer(A.damage, a.x, 'armor');
+    if (a.t >= A.swingFrames) { a.state = 'recover'; a.t = 0; }
+  } else if (a.state === 'recover') { b.vx = 0; if (a.t >= 34) { a.state = 'walk'; a.t = 0; } }
+  b.vy = Math.min(b.vy + CONFIG.gravity, CONFIG.maxFall); moveBody(b, true);
+  if (b.hitWall) a.face = -a.face;
+  // don't walk off ledges
+  if (b.onGround && !solidAtPx(b.x + (a.face > 0 ? b.w + 2 : -2), b.y + b.h + 4) && tileAt(Math.floor((b.x + (a.face > 0 ? b.w + 2 : -2)) / TS), Math.floor((b.y + b.h + 4) / TS)) !== T_PLAT) { a.face = -a.face; b.x -= b.vx; }
+  a.x = b.x + b.w / 2; a.y = b.y + b.h;
+  if (Math.abs(a.x - pcx()) < 14 && P.y + P.h > a.y - 46 && P.y < a.y) hurtPlayer(1, a.x, 'armor-touch');
+}
+// ---------------------------------------------------------------------
+//  curtain / dust / vase / save / locked door
+// ---------------------------------------------------------------------
+function makeCurtain(x, y, opt, id) {
+  const torn = progress.perm.has(id);
+  return { type: 'curtain', x, y, w: 32, h: 72, suckT: 0, torn, need: 50, secret: !!opt.secret, drop: opt.drop || [], id, inCone: 0,
+    onSuck() { if (!this.torn) { this.suckT++; this.inCone = 3; if (this.suckT === 1) tip('vac', 'VAC長押しで吸い込み中…カーテンやホコリの中に何かあるかも'); } } };
+}
+function updateInteractables(e) {
+  if (e.inCone > 0) e.inCone--; else if (e.suckT > 0 && e.type !== 'vase') e.suckT = Math.max(0, e.suckT - 0.5);
+  if (e.type === 'curtain' && !e.torn && e.suckT >= e.need) {
+    e.torn = true; progress.perm.add(e.id); sfx('rip'); cam.shake = 2;
+    parts.push({ x: e.x, y: e.y - 40, tx: 1, life: 26, sprite: 'curtain', fly: 1, sx: e.x - 16, sy: e.y - 72 });
+    if (e.secret) { revealSecret(); stats.secrets++; }
+    popItems(e.drop, e.x, e.y - 30);
+  }
+  if (e.type === 'dust' && !e.dead) {
+    if (e.inCone > 0 && frame % 3 === 0) { const n = nozzle(); parts.push({ x: e.x + rnd(-8, 8), y: e.y - rnd(0, 8), vx: (n.x - e.x) * 0.04, vy: (n.y - e.y) * 0.04, life: 20, col: '#a8a0b0', size: 2 }); }
+    if (e.suckT >= 26) { e.suckT = 0; e.stage++; sfx('puff'); if (e.stage >= 3) { e.dead = true; progress.perm.add(e.id); popItems(e.drop, e.x, e.y - 6); tip('dust', 'ホコリの中から何か出てきた！'); } }
+  }
+  if (e.type === 'vase' && !e.empty && e.suckT >= 40) { e.empty = true; progress.perm.add(e.id); popItems(e.drop, e.x, e.y - 22); sfx('tink'); }
+  if (e.type === 'save') {
+    const on = Math.abs(pcx() - e.x) < 18 && P.y + P.h > e.y - 44 && P.y < e.y;
+    if (on && !e.used && !P.dead) { e.used = true; P.hp = progress.maxHP; saveGame(room.id); stats.saves++; sfx('save'); tip('save', 'HPが回復して、セーブしました', true); for (let i = 0; i < 16; i++) parts.push({ x: e.x + rnd(-10, 10), y: e.y - rnd(0, 40), vx: 0, vy: -rnd(0.5, 1.5), life: 40, col: '#8ad0ff', size: 2, glow: 1 }); }
+    if (!on) e.used = false;
+  }
+}
+function checkLockedDoor() {
+  for (let r = 0; r < room.rows; r++) {
+    const c = room.cols - 1; if (tileAt(c, r) !== T_LOCK) continue;
+    if (P.x + P.w > c * TS - 6 && P.y < (r + 1) * TS && P.y + P.h > r * TS) {
+      if (progress.hasKey) { openLock(); tip('unlock', '鍵が開いた…この先から強い気配がする', true); }
+      else if (!room.lockTold || frame - room.lockTold > 300) { room.lockTold = frame; tip('locked' + frame, '鍵がかかってる… 屋敷のどこかに鍵があるはず', true); }
+      return;
+    }
+  }
+}
+// ---------------------------------------------------------------------
+//  enemy bullets (plates, candles, crystal shards, fire patches, floor waves)
+// ---------------------------------------------------------------------
+function updateEBullets() {
+  for (const b of ebullets) {
+    if (b.dead) continue;
+    b.life--; if (b.life <= 0) { b.dead = true; if (b.onExpire) b.onExpire(b); continue; }
+    if (!b.captured) { b.vy += b.g || 0; }
+    b.captured = false;
+    b.x += b.vx; b.y += b.vy; b.spin = (b.spin || 0) + 1;
+    if (b.kind === 'wave' || b.kind === 'firepatch') { if (b.kind === 'wave' && (solidAtPx(b.x + (b.vx > 0 ? b.w : 0), b.y + b.h / 2) || b.x < 0 || b.x > room.W)) b.dead = true; }
+    else if (b.y + b.h > room.H - 3 * TS + 1 || solidAtPx(b.x + b.w / 2, b.y + b.h) || solidAtPx(b.x + b.w / 2, b.y)) {
+      b.dead = true; if (b.onLand) b.onLand(b);
+      else { const col = b.kind === 'plate' ? '#f4f4fc' : '#a8e0ff'; for (let i = 0; i < 6; i++) parts.push({ x: b.x + b.w / 2, y: b.y + b.h / 2, vx: rnd(-1.5, 1.5), vy: rnd(-2, 0), life: 18, col, size: 2, grav: 1 }); sfx('tink'); }
+      continue;
+    }
+    if (!P.dead && b.x < P.x + P.w - 2 && b.x + b.w > P.x + 2 && b.y < P.y + P.h - 2 && b.y + b.h > P.y + 6) {
+      if (b.kind !== 'firepatch' || P.onGround) { if (hurtPlayer(b.dmg, b.x + b.w / 2, b.kind) && b.kind !== 'firepatch' && b.kind !== 'wave') b.dead = true; }
+    }
+  }
+  for (let i = ebullets.length - 1; i >= 0; i--) if (ebullets[i].dead) ebullets.splice(i, 1);
+}
+function updateEnts() {
+  for (const e of ents) {
+    if (e.dead) continue;
+    if (e.ghost) updateGhost(e);
+    else if (e.type === 'armor') updateArmor(e);
+    else updateInteractables(e);
+  }
+  for (let i = ents.length - 1; i >= 0; i--) if (ents[i].dead && ents[i] !== P.tug) ents.splice(i, 1);
+}
+function updateParts() {
+  for (const p of parts) {
+    p.life--;
+    if (p.streak) { const n = nozzle(); p.x += (n.x - p.x) * 0.16; p.y += (n.y - p.y) * 0.16; if (Math.abs(n.x - p.x) < 4) p.life = 0; continue; }
+    if (p.fly) { const n = nozzle(); p.sx += (n.x - 16 - p.sx) * 0.14; p.sy += (n.y - 36 - p.sy) * 0.14; continue; }
+    p.x += p.vx; p.y += p.vy; if (p.grav) p.vy += 0.15;
+  }
+  for (let i = parts.length - 1; i >= 0; i--) if (parts[i].life <= 0) parts.splice(i, 1);
+  if (parts.length > 400) parts.splice(0, parts.length - 400);
+}

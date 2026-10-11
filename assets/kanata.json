@@ -1,0 +1,123 @@
+{
+ "frameWidth": 106,
+ "frameHeight": 70,
+ "anchorX": 46,
+ "anchorY": 69,
+ "targetHeight": 68,
+ "frames": [
+  {
+   "i": 0,
+   "sheet": "a",
+   "pose": "idle"
+  },
+  {
+   "i": 1,
+   "sheet": "a",
+   "pose": "blink"
+  },
+  {
+   "i": 2,
+   "sheet": "a",
+   "pose": "move1"
+  },
+  {
+   "i": 3,
+   "sheet": "a",
+   "pose": "move2"
+  },
+  {
+   "i": 4,
+   "sheet": "a",
+   "pose": "suck"
+  },
+  {
+   "i": 5,
+   "sheet": "a",
+   "pose": "spit"
+  },
+  {
+   "i": 6,
+   "sheet": "a",
+   "pose": "hurt"
+  },
+  {
+   "i": 7,
+   "sheet": "a",
+   "pose": "down"
+  },
+  {
+   "i": 8,
+   "sheet": "b",
+   "pose": "idle"
+  },
+  {
+   "i": 9,
+   "sheet": "b",
+   "pose": "blink"
+  },
+  {
+   "i": 10,
+   "sheet": "b",
+   "pose": "move1"
+  },
+  {
+   "i": 11,
+   "sheet": "b",
+   "pose": "move2"
+  },
+  {
+   "i": 12,
+   "sheet": "b",
+   "pose": "suck"
+  },
+  {
+   "i": 13,
+   "sheet": "b",
+   "pose": "spit"
+  },
+  {
+   "i": 14,
+   "sheet": "b",
+   "pose": "hurt"
+  },
+  {
+   "i": 15,
+   "sheet": "b",
+   "pose": "down"
+  }
+ ],
+ "poses": {
+  "idle": [
+   0,
+   8
+  ],
+  "blink": [
+   1,
+   9
+  ],
+  "move1": [
+   2,
+   10
+  ],
+  "move2": [
+   3,
+   11
+  ],
+  "suck": [
+   4,
+   12
+  ],
+  "spit": [
+   5,
+   13
+  ],
+  "hurt": [
+   6,
+   14
+  ],
+  "down": [
+   7,
+   15
+  ]
+ }
+}
