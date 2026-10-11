@@ -169,6 +169,28 @@ const MUSIC_SONGS = {
       A2: { base: 'A', p2: 'echo' } },
     order: ['A', 'B', 'A2'] },
 
+  // ---- v0.4 ----
+  chronoa: { name: 'NOT DONE YET', jp: 'ボス：時計塔管理人クロノア', mood: 'true final boss, C# minor; drowsy music-box intro feel over a relentless clockwork gallop, rewinding runs', bpm: 164,
+    lead: { duty: 0.25, vol: 0.07, gate: 0.82 }, p2v: { duty: 0.125, vol: 0.034 },
+    sections: {
+      A: { chords: ['C#m', 'A', 'F#m', 'G#', 'C#m', 'A', 'D#m7b5,G#', 'C#m'], p2: 'arp16', bass: 'gallop',
+        drums: ['k.hks.hkk.hks.hk'], fill: 'k.hks.hks.s.ssss',
+        mel: ['G#5:2 C#6 E6 G#6 F#6:4 E6', 'E6:2 D#6 C#6 B5 C#6:8', 'A5:2 C#6 F#6 A6 G#6:4 F#6', 'B#5:6 D#6:2 G#5:8',
+              'C#6:2 E6 G#6 C#7 B6:4 G#6', 'A6:4 G#6:2 F#6 E6:8', 'F#6:2 A6 C#7 A6 G#6 B#6 D#7 B#6', 'C#7:12 r:4'] },
+      B: { chords: ['A', 'B', 'G#m', 'C#m', 'F#m', 'G#', 'A,B', 'G#7'], p2: 'harm3', bass: 'oct8',
+        drums: ['k.k.s.k.k.k.s.kk'], fill: 'k.s.s.s.ssssxcx.',
+        mel: ['C#7:4 B6:2 A6 E6:4 A6', 'D#7:4 C#7:2 B6 F#6:4 B6', 'B6:2 A6 G#6 D#6 G#6:8', 'E6:2 G#6 C#7 E7 D#7:4 C#7',
+              'C#7:4 A6:2 F#6 C#6:4 F#6', 'B#6:4 G#6:2 D#6 B#5:4 D#6', 'C#7:2 B6 A6 B6 C#7 D#7 E7 F#7', 'G#7:8 F#7:4 D#7'] },
+      A2: { base: 'A', p2: 'echo' } },
+    order: ['A', 'B', 'A2'] },
+
+  velnight: { name: 'THE SECRETARY', jp: 'エンディング：主人付き秘書', mood: 'slow, polite and unsettling D minor; sparse harpsichord over a low drone, something breathing behind it', bpm: 76,
+    lead: { duty: 0.125, vol: 0.05, gate: 0.9 }, p2v: { duty: 0.5, vol: 0.026 },
+    sections: { A: { chords: ['Dm', 'Bb', 'Gm', 'A', 'Dm', 'Bb', 'Em7b5,A', 'Dm'], p2: 'arp8', bass: 'drone', drums: ['k...............'], fill: null,
+      mel: ['A5:6 F5:2 D5:8', 'D6:6 C6:2 Bb5:8', 'G5:4 Bb5 D6 C#6', 'E6:12 r:4',
+            'F6:6 E6:2 D6:4 A5', 'Bb5:4 D6 F6 E6', 'G5:4 Bb5 E6 C#6', 'D6:12 r:4'] } },
+    order: ['A'] },
+
   jingle_warning: { once: true, name: 'JINGLE: WARNING!', jp: 'ジングル：ボス出現', mood: 'tritone alarm before the boss', bpm: 150,
     lead: { duty: 0.125, vol: 0.06, gate: 0.9 }, p2v: { duty: 0.5, vol: 0.03 },
     sections: { A: { chords: ['E5', 'E5'], p2: 'echo', bass: 'drone', drums: ['t...t...t...t...'], fill: 'x.x.x.x.ssssc...',
@@ -192,7 +214,7 @@ const MUSIC_SONGS = {
 };
 const MUSIC_LIST = ['title', 'mansion', 'laundry', 'garden', 'clock', 'chapel', 'bath', 'boss', 'boss2', 'boss3', 'boss4', 'vault', 'afterglow', 'jingle_warning', 'jingle_save', 'jingle_clear', 'jingle_gameover'];
 const BOSS_THEMES = new Set(['boss', 'boss2', 'boss3']);
-const BOSS_MUSIC = { chandelier: 'boss', golem: 'boss2', rose: 'boss2', clock: 'boss3', organ: 'boss4', serpent: 'boss4' };
+const BOSS_MUSIC = { chronoa: 'chronoa', chandelier: 'boss', golem: 'boss2', rose: 'boss2', clock: 'boss3', organ: 'boss4', serpent: 'boss4' };
 
 // ---------------------------------------------------------------------
 //  compiler: song -> events per 16th step  { ch: 'p1'|'p2'|'tri'|'noi', m: midi, len (steps), vol, duty, kind }
@@ -367,6 +389,7 @@ function musicWanted() {
   if (state === 'clear') return clearT < 200 ? 'jingle_clear' : 'afterglow';
   if (state !== 'play' && state !== 'map') return null;
   if (P.dead) return 'jingle_gameover';
+  if (typeof STORY !== 'undefined' && STORY.scene) return STORY.scene.t < 220 ? null : 'velnight';
   if (boss && boss.state !== 'sleep' && boss.state !== 'done') return boss.state === 'dying' ? null : BOSS_MUSIC[boss.kind] || 'boss';
   if (room && room.def.secret) return 'vault';
   return room && AREAS[room.def.area] ? AREAS[room.def.area].music : 'mansion';

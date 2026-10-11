@@ -188,11 +188,16 @@ function loadRoom(id, entry) {
   spawnRoomEntities();
   for (let y = 0; y < def.ch; y++) for (let x = 0; x < def.cw; x++) progress.visited.add((def.cx + x) + ',' + (def.cy + y));
   fadeT = 14; roomBanner(def);
+  checkBossGates(); storyRoomEnter(def);
   stats.rooms++;
 }
 function revealSecret() {
   for (let i = 0; i < room.grid.length; i++) if (room.grid[i] === T_SECRET) room.grid[i] = T_EMPTY;
   progress.perm.add(room.id + ':secret'); renderRoomStatic(); sfx('secret'); tip('secret', '隠し通路を見つけた！');
+}
+// v0.4: seal doors - def.bossGate = { gate, need: [boss kinds] } opens for good once every listed boss is beaten
+function checkBossGates() {
+  for (const d of ROOM_DEFS) if (d.bossGate && d.bossGate.need.every(k => progress.bosses.has(k))) openGate(d.id, d.bossGate.gate, room && room.id !== d.id);
 }
 // open a gate for good (lever / wardrobe / vines / boss). Works for the current room or a remote one.
 function openGate(roomId, gid, quiet) {

@@ -194,10 +194,14 @@ const CONFIG = {
   clock: { hp: 240, spitMul: 1.0, idle: 36, idleRage: 26, idleOver: 20, handWarn: 34, handWarnRage: 30, handWarnOver: 26, hands: 5, handsRage: 6, handDamage: 1,
     gears: 7, gearsRage: 9, gearSpeed: 3.4, gearDamage: 1, pendWarn: 34, pendWarnRage: 28, pendDamage: 2, chime: 130, chimeRage: 115, chimeOver: 100,
     midWarn: 30, midStabs: 6, midStabsOver: 9, midGap: 16, contactDamage: 2, coreCap: 26, specialEvery: 3, phase3: 0.25 },
+  // ---- v0.4 TRUE FINAL BOSS: 時計塔管理人 クロノア CHRONOA (clock heart) - a bit above the clock, every attack audited
+  chronoa: { hp: 260, idle: 46, idleRage: 34, handWarn: 40, handWarnRage: 34, handDamage: 1, pendWarn: 52, swings: 3, swingsRage: 4, pendDamage: 2,
+    orbs: 5, orbsRage: 6, orbWarn: 40, orbWarnRage: 34, orbSpeed: 2.6, orbDamage: 1, zoneWarn: 34, sandWarn: 44, sandWarnRage: 38, sandDamage: 1, slowMul: 0.55,
+    beamTrack: 50, beamLock: 32, beamLockRage: 30, beamDamage: 2, stun: 150, stunRage: 130, contactDamage: 1, coreCap: 30, specialEvery: 3 },
 };
 
 // ---- sprite metadata embedded at build time (tools/build.py) ----
-const EMBEDDED_META = {"bg":{"wall_foyer":{"x":0,"y":0,"w":32,"h":32},"wain_foyer":{"x":33,"y":0,"w":32,"h":24},"pillar_foyer":{"x":66,"y":0,"w":16,"h":32},"mold_foyer":{"x":83,"y":0,"w":32,"h":10},"wall_gallery":{"x":116,"y":0,"w":32,"h":32},"wain_gallery":{"x":149,"y":0,"w":32,"h":24},"pillar_gallery":{"x":182,"y":0,"w":16,"h":32},"mold_gallery":{"x":199,"y":0,"w":32,"h":10},"wall_library":{"x":232,"y":0,"w":32,"h":32},"wain_library":{"x":265,"y":0,"w":32,"h":24},"pillar_library":{"x":298,"y":0,"w":16,"h":32},"mold_library":{"x":315,"y":0,"w":32,"h":10},"wall_dining":{"x":348,"y":0,"w":32,"h":32},"wain_dining":{"x":381,"y":0,"w":32,"h":24},"pillar_dining":{"x":414,"y":0,"w":16,"h":32},"mold_dining":{"x":431,"y":0,"w":32,"h":10},"wall_cellar":{"x":464,"y":0,"w":32,"h":32},"wain_cellar":{"x":0,"y":33,"w":32,"h":24},"pillar_cellar":{"x":33,"y":33,"w":16,"h":32},"mold_cellar":{"x":50,"y":33,"w":32,"h":10},"wall_vault":{"x":83,"y":33,"w":32,"h":32},"wain_vault":{"x":116,"y":33,"w":32,"h":24},"pillar_vault":{"x":149,"y":33,"w":16,"h":32},"mold_vault":{"x":166,"y":33,"w":32,"h":10},"wall_ballroom":{"x":199,"y":33,"w":32,"h":32},"wain_ballroom":{"x":232,"y":33,"w":32,"h":24},"pillar_ballroom":{"x":265,"y":33,"w":16,"h":32},"mold_ballroom":{"x":282,"y":33,"w":32,"h":10},"wall_laundry":{"x":315,"y":33,"w":32,"h":32},"wain_laundry":{"x":348,"y":33,"w":32,"h":24},"pillar_laundry":{"x":381,"y":33,"w":16,"h":32},"mold_laundry":{"x":398,"y":33,"w":32,"h":10},"wall_kitchen":{"x":431,"y":33,"w":32,"h":32},"wain_kitchen":{"x":464,"y":33,"w":32,"h":24},"pillar_kitchen":{"x":0,"y":66,"w":16,"h":32},"mold_kitchen":{"x":17,"y":66,"w":32,"h":10},"wall_boiler":{"x":50,"y":66,"w":32,"h":32},"wain_boiler":{"x":83,"y":66,"w":32,"h":24},"pillar_boiler":{"x":116,"y":66,"w":16,"h":32},"mold_boiler":{"x":133,"y":66,"w":32,"h":10},"wall_garden":{"x":166,"y":66,"w":32,"h":32},"wain_garden":{"x":199,"y":66,"w":32,"h":24},"pillar_garden":{"x":232,"y":66,"w":16,"h":32},"mold_garden":{"x":249,"y":66,"w":32,"h":10},"wall_courtyard":{"x":282,"y":66,"w":32,"h":32},"wain_courtyard":{"x":315,"y":66,"w":32,"h":24},"pillar_courtyard":{"x":348,"y":66,"w":16,"h":32},"mold_courtyard":{"x":365,"y":66,"w":32,"h":10},"wall_thorn":{"x":398,"y":66,"w":32,"h":32},"wain_thorn":{"x":431,"y":66,"w":32,"h":24},"pillar_thorn":{"x":464,"y":66,"w":16,"h":32},"mold_thorn":{"x":0,"y":99,"w":32,"h":10},"wall_shed":{"x":33,"y":99,"w":32,"h":32},"wain_shed":{"x":66,"y":99,"w":32,"h":24},"pillar_shed":{"x":99,"y":99,"w":16,"h":32},"mold_shed":{"x":116,"y":99,"w":32,"h":10},"wall_attic":{"x":149,"y":99,"w":32,"h":32},"wain_attic":{"x":182,"y":99,"w":32,"h":24},"pillar_attic":{"x":215,"y":99,"w":16,"h":32},"mold_attic":{"x":232,"y":99,"w":32,"h":10},"wall_gears":{"x":265,"y":99,"w":32,"h":32},"wain_gears":{"x":298,"y":99,"w":32,"h":24},"pillar_gears":{"x":331,"y":99,"w":16,"h":32},"mold_gears":{"x":348,"y":99,"w":32,"h":10},"wall_tower":{"x":381,"y":99,"w":32,"h":32},"wain_tower":{"x":414,"y":99,"w":32,"h":24},"pillar_tower":{"x":447,"y":99,"w":16,"h":32},"mold_tower":{"x":464,"y":99,"w":32,"h":10},"wall_chapel":{"x":0,"y":132,"w":32,"h":32},"wain_chapel":{"x":33,"y":132,"w":32,"h":24},"pillar_chapel":{"x":66,"y":132,"w":16,"h":32},"mold_chapel":{"x":83,"y":132,"w":32,"h":10},"wall_crypt":{"x":116,"y":132,"w":32,"h":32},"wain_crypt":{"x":149,"y":132,"w":32,"h":24},"pillar_crypt":{"x":182,"y":132,"w":16,"h":32},"mold_crypt":{"x":199,"y":132,"w":32,"h":10},"wall_bath":{"x":232,"y":132,"w":32,"h":32},"wain_bath":{"x":265,"y":132,"w":32,"h":24},"pillar_bath":{"x":298,"y":132,"w":16,"h":32},"mold_bath":{"x":315,"y":132,"w":32,"h":10},"wall_cistern":{"x":348,"y":132,"w":32,"h":32},"wain_cistern":{"x":381,"y":132,"w":32,"h":24},"pillar_cistern":{"x":414,"y":132,"w":16,"h":32},"mold_cistern":{"x":431,"y":132,"w":32,"h":10}},"boss":{"chandelier":{"x":0,"y":0,"w":128,"h":84,"ax":64,"ay":0},"chandelier_cracked":{"x":129,"y":0,"w":128,"h":84,"ax":64,"ay":0},"core_normal":{"x":258,"y":0,"w":30,"h":30},"core_angry":{"x":289,"y":0,"w":30,"h":30},"core_tug":{"x":320,"y":0,"w":30,"h":30},"core_dizzy":{"x":351,"y":0,"w":30,"h":30},"chain":{"x":382,"y":0,"w":6,"h":10},"gcore_tug":{"x":389,"y":0,"w":30,"h":30},"gcore_dizzy":{"x":420,"y":0,"w":30,"h":30},"rcore_tug":{"x":451,"y":0,"w":30,"h":30},"rcore_dizzy":{"x":482,"y":0,"w":30,"h":30},"ccore_tug":{"x":0,"y":85,"w":30,"h":30},"ccore_dizzy":{"x":31,"y":85,"w":30,"h":30},"golem_idle0":{"x":62,"y":85,"w":72,"h":84},"golem_idle1":{"x":135,"y":85,"w":72,"h":84},"golem_raise":{"x":208,"y":85,"w":72,"h":84},"golem_slam":{"x":281,"y":85,"w":72,"h":84},"golem_puff":{"x":354,"y":85,"w":72,"h":84},"golem_dizzy":{"x":427,"y":85,"w":72,"h":84},"golem_ball0":{"x":0,"y":170,"w":46,"h":46},"golem_ball1":{"x":47,"y":170,"w":46,"h":46},"golem_ball2":{"x":94,"y":170,"w":46,"h":46},"golem_ball3":{"x":141,"y":170,"w":46,"h":46},"rose_stem":{"x":188,"y":170,"w":60,"h":112},"rose_head":{"x":249,"y":170,"w":64,"h":58},"rose_rage":{"x":314,"y":170,"w":64,"h":58},"rose_bloom":{"x":379,"y":170,"w":64,"h":58},"rose_wilt":{"x":444,"y":170,"w":64,"h":58},"rose_mound":{"x":0,"y":283,"w":40,"h":12},"clock_body":{"x":41,"y":283,"w":76,"h":156},"clock_rage":{"x":118,"y":283,"w":76,"h":156},"clock_stop":{"x":195,"y":283,"w":76,"h":156},"pend_bob":{"x":272,"y":283,"w":32,"h":32},"ocore_tug":{"x":305,"y":283,"w":30,"h":30},"ocore_dizzy":{"x":336,"y":283,"w":30,"h":30},"dcore_tug":{"x":367,"y":283,"w":30,"h":30},"dcore_dizzy":{"x":398,"y":283,"w":30,"h":30},"organ_idle":{"x":0,"y":440,"w":132,"h":128},"organ_sing":{"x":133,"y":440,"w":132,"h":128},"organ_rage":{"x":266,"y":440,"w":132,"h":128},"organ_stop":{"x":0,"y":569,"w":132,"h":128},"note":{"x":133,"y":569,"w":12,"h":12},"serp_head":{"x":146,"y":569,"w":56,"h":48},"serp_spit":{"x":203,"y":569,"w":56,"h":48},"serp_rage":{"x":260,"y":569,"w":56,"h":48},"serp_dizzy":{"x":317,"y":569,"w":56,"h":48},"serp_seg":{"x":374,"y":569,"w":30,"h":30},"serp_seg_r":{"x":405,"y":569,"w":30,"h":30},"splashring":{"x":436,"y":569,"w":44,"h":12}},"enemies":{"puff0":{"x":0,"y":0,"w":32,"h":32},"puff1":{"x":33,"y":0,"w":32,"h":32},"puff2":{"x":66,"y":0,"w":32,"h":32},"puff3":{"x":99,"y":0,"w":32,"h":32},"puff_tug":{"x":132,"y":0,"w":32,"h":32},"puff_angry":{"x":165,"y":0,"w":32,"h":32},"dish0":{"x":198,"y":0,"w":36,"h":36},"dish1":{"x":235,"y":0,"w":36,"h":36},"dish2":{"x":272,"y":0,"w":36,"h":36},"dish_throw":{"x":309,"y":0,"w":36,"h":36},"dish_tug":{"x":346,"y":0,"w":36,"h":36},"armor0":{"x":383,"y":0,"w":28,"h":52},"armor1":{"x":412,"y":0,"w":28,"h":52},"armor_shell":{"x":441,"y":0,"w":28,"h":52},"helmet":{"x":470,"y":0,"w":12,"h":12},"firewisp0":{"x":483,"y":0,"w":16,"h":18},"firewisp1":{"x":0,"y":53,"w":16,"h":18},"firewisp2":{"x":17,"y":53,"w":16,"h":18},"bat0":{"x":34,"y":53,"w":20,"h":12},"bat1":{"x":55,"y":53,"w":20,"h":12},"bat_hang":{"x":76,"y":53,"w":12,"h":14},"rat0":{"x":89,"y":53,"w":22,"h":12},"rat1":{"x":112,"y":53,"w":22,"h":12},"garg_stone":{"x":135,"y":53,"w":30,"h":28},"garg_fly0":{"x":166,"y":53,"w":30,"h":28},"garg_fly1":{"x":197,"y":53,"w":30,"h":28},"garg_dive":{"x":228,"y":53,"w":30,"h":28},"puppet0":{"x":259,"y":53,"w":20,"h":34},"puppet1":{"x":280,"y":53,"w":20,"h":34},"puppet_throw":{"x":301,"y":53,"w":20,"h":34},"skel0":{"x":322,"y":53,"w":24,"h":42},"skel1":{"x":347,"y":53,"w":24,"h":42},"skel_throw":{"x":372,"y":53,"w":24,"h":42},"cbook0":{"x":397,"y":53,"w":22,"h":18},"cbook1":{"x":420,"y":53,"w":22,"h":18},"cbook_bite":{"x":443,"y":53,"w":22,"h":18},"sheet0":{"x":466,"y":53,"w":34,"h":34},"sheet1":{"x":0,"y":96,"w":34,"h":34},"sheet_angry":{"x":35,"y":96,"w":34,"h":34},"sheet_tug":{"x":70,"y":96,"w":34,"h":34},"skullwisp0":{"x":105,"y":96,"w":20,"h":22},"skullwisp1":{"x":126,"y":96,"w":20,"h":22},"crab0":{"x":147,"y":96,"w":24,"h":16},"crab1":{"x":172,"y":96,"w":24,"h":16},"crab_snap":{"x":197,"y":96,"w":24,"h":16}},"items":{"coin0":{"x":0,"y":0,"w":10,"h":10},"coin1":{"x":11,"y":0,"w":10,"h":10},"coin2":{"x":22,"y":0,"w":10,"h":10},"coin3":{"x":33,"y":0,"w":10,"h":10},"heart":{"x":44,"y":0,"w":11,"h":10},"heartbig":{"x":56,"y":0,"w":18,"h":16},"plate":{"x":75,"y":0,"w":14,"h":6},"book":{"x":90,"y":0,"w":12,"h":10},"candle":{"x":103,"y":0,"w":6,"h":12},"dustball":{"x":110,"y":0,"w":10,"h":8},"crystal":{"x":121,"y":0,"w":12,"h":12},"spark":{"x":134,"y":0,"w":10,"h":10},"key":{"x":145,"y":0,"w":14,"h":10},"fireball":{"x":160,"y":0,"w":12,"h":12},"bottle":{"x":173,"y":0,"w":8,"h":14},"chair":{"x":182,"y":0,"w":14,"h":16},"pan":{"x":197,"y":0,"w":16,"h":8},"gear":{"x":214,"y":0,"w":12,"h":12},"flowerpot":{"x":227,"y":0,"w":12,"h":12},"soap":{"x":240,"y":0,"w":12,"h":12},"seed":{"x":0,"y":17,"w":10,"h":10},"pot":{"x":11,"y":17,"w":16,"h":14},"barrel":{"x":28,"y":17,"w":16,"h":18},"shard":{"x":45,"y":17,"w":6,"h":6},"bubble":{"x":52,"y":17,"w":16,"h":16},"petal":{"x":69,"y":17,"w":12,"h":8},"orb_float":{"x":82,"y":17,"w":16,"h":16},"orb_turbo":{"x":99,"y":17,"w":16,"h":16},"orb_djump":{"x":116,"y":17,"w":16,"h":16},"orb_phase":{"x":133,"y":17,"w":16,"h":16},"orb_tank":{"x":150,"y":17,"w":16,"h":16},"bone":{"x":167,"y":17,"w":16,"h":8},"duck":{"x":184,"y":17,"w":14,"h":13},"note":{"x":199,"y":17,"w":12,"h":12}},"kanata":{"frameWidth":106,"frameHeight":70,"anchorX":46,"anchorY":69,"targetHeight":68,"frames":[{"i":0,"sheet":"a","pose":"idle"},{"i":1,"sheet":"a","pose":"blink"},{"i":2,"sheet":"a","pose":"move1"},{"i":3,"sheet":"a","pose":"move2"},{"i":4,"sheet":"a","pose":"suck"},{"i":5,"sheet":"a","pose":"spit"},{"i":6,"sheet":"a","pose":"hurt"},{"i":7,"sheet":"a","pose":"down"},{"i":8,"sheet":"b","pose":"idle"},{"i":9,"sheet":"b","pose":"blink"},{"i":10,"sheet":"b","pose":"move1"},{"i":11,"sheet":"b","pose":"move2"},{"i":12,"sheet":"b","pose":"suck"},{"i":13,"sheet":"b","pose":"spit"},{"i":14,"sheet":"b","pose":"hurt"},{"i":15,"sheet":"b","pose":"down"}],"poses":{"idle":[0,8],"blink":[1,9],"move1":[2,10],"move2":[3,11],"suck":[4,12],"spit":[5,13],"hurt":[6,14],"down":[7,15]}},"props":{"window":{"x":0,"y":0,"w":40,"h":76},"window_wide":{"x":41,"y":0,"w":56,"h":84},"portrait_lord":{"x":98,"y":0,"w":28,"h":36},"portrait_lady":{"x":127,"y":0,"w":28,"h":36},"portrait_land":{"x":156,"y":0,"w":44,"h":32},"portrait_big":{"x":201,"y":0,"w":44,"h":56},"sconce":{"x":246,"y":0,"w":12,"h":22},"flame0":{"x":259,"y":0,"w":6,"h":8},"flame1":{"x":266,"y":0,"w":6,"h":8},"flame2":{"x":273,"y":0,"w":6,"h":8},"flame3":{"x":280,"y":0,"w":6,"h":8},"bflame0":{"x":287,"y":0,"w":8,"h":10},"bflame1":{"x":296,"y":0,"w":8,"h":10},"bflame2":{"x":305,"y":0,"w":8,"h":10},"bflame3":{"x":314,"y":0,"w":8,"h":10},"curtain":{"x":323,"y":0,"w":32,"h":72},"curtain_rod":{"x":356,"y":0,"w":32,"h":4},"dust0":{"x":389,"y":0,"w":20,"h":10},"dust1":{"x":410,"y":0,"w":20,"h":10},"dust2":{"x":431,"y":0,"w":20,"h":10},"cobweb":{"x":452,"y":0,"w":20,"h":20},"vase":{"x":473,"y":0,"w":14,"h":22},"table":{"x":0,"y":85,"w":80,"h":30},"chair":{"x":81,"y":85,"w":16,"h":30},"candelabra":{"x":98,"y":85,"w":24,"h":18},"bookshelf":{"x":123,"y":85,"w":40,"h":72},"clock":{"x":164,"y":85,"w":22,"h":64},"save":{"x":187,"y":85,"w":28,"h":40},"doorframe":{"x":216,"y":85,"w":20,"h":64},"door":{"x":237,"y":85,"w":10,"h":48},"chandelier_deco":{"x":248,"y":85,"w":48,"h":30},"rail":{"x":297,"y":85,"w":16,"h":24},"rug":{"x":314,"y":85,"w":96,"h":4},"winerack":{"x":411,"y":85,"w":40,"h":40},"pedestal":{"x":452,"y":85,"w":28,"h":34},"linenshelf":{"x":0,"y":158,"w":36,"h":52},"pipes":{"x":37,"y":158,"w":20,"h":80},"lamp_wall":{"x":58,"y":158,"w":12,"h":18},"sheetline":{"x":71,"y":158,"w":90,"h":40},"basket":{"x":162,"y":158,"w":24,"h":16},"washtub":{"x":187,"y":158,"w":32,"h":22},"boiler":{"x":220,"y":158,"w":40,"h":64},"stove":{"x":261,"y":158,"w":44,"h":34},"potshelf":{"x":306,"y":158,"w":40,"h":40},"hangpans":{"x":347,"y":158,"w":56,"h":30},"sack":{"x":404,"y":158,"w":22,"h":24},"barrel":{"x":427,"y":158,"w":26,"h":30},"crate":{"x":454,"y":158,"w":24,"h":22},"trunk":{"x":0,"y":239,"w":34,"h":22},"dollshelf":{"x":35,"y":239,"w":40,"h":48},"gear_big":{"x":76,"y":239,"w":50,"h":50},"gear_med":{"x":127,"y":239,"w":32,"h":32},"clockface":{"x":160,"y":239,"w":46,"h":46},"bell":{"x":207,"y":239,"w":40,"h":46},"round_window":{"x":248,"y":239,"w":36,"h":36},"glasspane":{"x":285,"y":239,"w":44,"h":72},"fern":{"x":330,"y":239,"w":30,"h":26},"rosebush":{"x":361,"y":239,"w":36,"h":26},"hedge":{"x":398,"y":239,"w":40,"h":36},"fountain":{"x":439,"y":239,"w":72,"h":52},"statue":{"x":0,"y":312,"w":24,"h":56},"vine_hang":{"x":25,"y":312,"w":20,"h":60},"gardenlamp":{"x":46,"y":312,"w":14,"h":60},"wardrobe":{"x":61,"y":312,"w":32,"h":66},"lever_up":{"x":94,"y":312,"w":18,"h":26},"lever_mid":{"x":113,"y":312,"w":18,"h":26},"lever_down":{"x":132,"y":312,"w":18,"h":26},"abil_pedestal":{"x":151,"y":312,"w":30,"h":30},"sheet":{"x":182,"y":312,"w":32,"h":72},"ivy":{"x":215,"y":312,"w":32,"h":72},"vine0":{"x":248,"y":312,"w":16,"h":16},"vine1":{"x":265,"y":312,"w":16,"h":16},"floatpad":{"x":282,"y":312,"w":26,"h":8},"thornspike":{"x":309,"y":312,"w":16,"h":44},"stainedglass":{"x":326,"y":312,"w":36,"h":70},"pew":{"x":363,"y":312,"w":44,"h":20},"altar":{"x":408,"y":312,"w":48,"h":30},"organpipes":{"x":0,"y":385,"w":64,"h":90},"coffin":{"x":65,"y":385,"w":40,"h":16},"skullpile":{"x":106,"y":385,"w":30,"h":22},"urn":{"x":137,"y":385,"w":14,"h":20},"liontap":{"x":152,"y":385,"w":28,"h":26},"bathstool":{"x":181,"y":385,"w":16,"h":12},"buckets":{"x":198,"y":385,"w":26,"h":18},"duckprop":{"x":225,"y":385,"w":16,"h":14},"warp_pad":{"x":242,"y":385,"w":48,"h":10},"spiritlamp":{"x":291,"y":385,"w":14,"h":30}},"tiles":{"brick0":{"x":0,"y":0,"w":16,"h":16},"brick1":{"x":17,"y":0,"w":16,"h":16},"top0":{"x":34,"y":0,"w":16,"h":16},"top1":{"x":51,"y":0,"w":16,"h":16},"secret":{"x":68,"y":0,"w":16,"h":16},"csecret":{"x":85,"y":0,"w":16,"h":16},"tbrick0":{"x":102,"y":0,"w":16,"h":16},"tbrick1":{"x":119,"y":0,"w":16,"h":16},"ttop0":{"x":136,"y":0,"w":16,"h":16},"ttop1":{"x":153,"y":0,"w":16,"h":16},"tsecret":{"x":170,"y":0,"w":16,"h":16},"gbrick0":{"x":187,"y":0,"w":16,"h":16},"gbrick1":{"x":204,"y":0,"w":16,"h":16},"gtop0":{"x":221,"y":0,"w":16,"h":16},"gtop1":{"x":238,"y":0,"w":16,"h":16},"gsecret":{"x":0,"y":17,"w":16,"h":16},"wbrick0":{"x":17,"y":17,"w":16,"h":16},"wbrick1":{"x":34,"y":17,"w":16,"h":16},"wtop0":{"x":51,"y":17,"w":16,"h":16},"wtop1":{"x":68,"y":17,"w":16,"h":16},"wsecret":{"x":85,"y":17,"w":16,"h":16},"kbrick0":{"x":102,"y":17,"w":16,"h":16},"kbrick1":{"x":119,"y":17,"w":16,"h":16},"ktop0":{"x":136,"y":17,"w":16,"h":16},"ktop1":{"x":153,"y":17,"w":16,"h":16},"ksecret":{"x":170,"y":17,"w":16,"h":16},"bbrick0":{"x":187,"y":17,"w":16,"h":16},"bbrick1":{"x":204,"y":17,"w":16,"h":16},"btop0":{"x":221,"y":17,"w":16,"h":16},"btop1":{"x":238,"y":17,"w":16,"h":16},"bsecret":{"x":0,"y":34,"w":16,"h":16},"bars":{"x":17,"y":34,"w":16,"h":16},"grate":{"x":34,"y":34,"w":16,"h":16},"cbrick0":{"x":51,"y":34,"w":16,"h":16},"cbrick1":{"x":68,"y":34,"w":16,"h":16},"ctop0":{"x":85,"y":34,"w":16,"h":16},"ctop1":{"x":102,"y":34,"w":16,"h":16},"platL":{"x":119,"y":34,"w":16,"h":16},"platM":{"x":136,"y":34,"w":16,"h":16},"platR":{"x":153,"y":34,"w":16,"h":16},"shelf":{"x":170,"y":34,"w":16,"h":16}}};
+const EMBEDDED_META = {"bg":{"wall_foyer":{"x":0,"y":0,"w":32,"h":32},"wain_foyer":{"x":33,"y":0,"w":32,"h":24},"pillar_foyer":{"x":66,"y":0,"w":16,"h":32},"mold_foyer":{"x":83,"y":0,"w":32,"h":10},"wall_gallery":{"x":116,"y":0,"w":32,"h":32},"wain_gallery":{"x":149,"y":0,"w":32,"h":24},"pillar_gallery":{"x":182,"y":0,"w":16,"h":32},"mold_gallery":{"x":199,"y":0,"w":32,"h":10},"wall_library":{"x":232,"y":0,"w":32,"h":32},"wain_library":{"x":265,"y":0,"w":32,"h":24},"pillar_library":{"x":298,"y":0,"w":16,"h":32},"mold_library":{"x":315,"y":0,"w":32,"h":10},"wall_dining":{"x":348,"y":0,"w":32,"h":32},"wain_dining":{"x":381,"y":0,"w":32,"h":24},"pillar_dining":{"x":414,"y":0,"w":16,"h":32},"mold_dining":{"x":431,"y":0,"w":32,"h":10},"wall_cellar":{"x":464,"y":0,"w":32,"h":32},"wain_cellar":{"x":0,"y":33,"w":32,"h":24},"pillar_cellar":{"x":33,"y":33,"w":16,"h":32},"mold_cellar":{"x":50,"y":33,"w":32,"h":10},"wall_vault":{"x":83,"y":33,"w":32,"h":32},"wain_vault":{"x":116,"y":33,"w":32,"h":24},"pillar_vault":{"x":149,"y":33,"w":16,"h":32},"mold_vault":{"x":166,"y":33,"w":32,"h":10},"wall_ballroom":{"x":199,"y":33,"w":32,"h":32},"wain_ballroom":{"x":232,"y":33,"w":32,"h":24},"pillar_ballroom":{"x":265,"y":33,"w":16,"h":32},"mold_ballroom":{"x":282,"y":33,"w":32,"h":10},"wall_laundry":{"x":315,"y":33,"w":32,"h":32},"wain_laundry":{"x":348,"y":33,"w":32,"h":24},"pillar_laundry":{"x":381,"y":33,"w":16,"h":32},"mold_laundry":{"x":398,"y":33,"w":32,"h":10},"wall_kitchen":{"x":431,"y":33,"w":32,"h":32},"wain_kitchen":{"x":464,"y":33,"w":32,"h":24},"pillar_kitchen":{"x":0,"y":66,"w":16,"h":32},"mold_kitchen":{"x":17,"y":66,"w":32,"h":10},"wall_boiler":{"x":50,"y":66,"w":32,"h":32},"wain_boiler":{"x":83,"y":66,"w":32,"h":24},"pillar_boiler":{"x":116,"y":66,"w":16,"h":32},"mold_boiler":{"x":133,"y":66,"w":32,"h":10},"wall_garden":{"x":166,"y":66,"w":32,"h":32},"wain_garden":{"x":199,"y":66,"w":32,"h":24},"pillar_garden":{"x":232,"y":66,"w":16,"h":32},"mold_garden":{"x":249,"y":66,"w":32,"h":10},"wall_courtyard":{"x":282,"y":66,"w":32,"h":32},"wain_courtyard":{"x":315,"y":66,"w":32,"h":24},"pillar_courtyard":{"x":348,"y":66,"w":16,"h":32},"mold_courtyard":{"x":365,"y":66,"w":32,"h":10},"wall_thorn":{"x":398,"y":66,"w":32,"h":32},"wain_thorn":{"x":431,"y":66,"w":32,"h":24},"pillar_thorn":{"x":464,"y":66,"w":16,"h":32},"mold_thorn":{"x":0,"y":99,"w":32,"h":10},"wall_shed":{"x":33,"y":99,"w":32,"h":32},"wain_shed":{"x":66,"y":99,"w":32,"h":24},"pillar_shed":{"x":99,"y":99,"w":16,"h":32},"mold_shed":{"x":116,"y":99,"w":32,"h":10},"wall_attic":{"x":149,"y":99,"w":32,"h":32},"wain_attic":{"x":182,"y":99,"w":32,"h":24},"pillar_attic":{"x":215,"y":99,"w":16,"h":32},"mold_attic":{"x":232,"y":99,"w":32,"h":10},"wall_gears":{"x":265,"y":99,"w":32,"h":32},"wain_gears":{"x":298,"y":99,"w":32,"h":24},"pillar_gears":{"x":331,"y":99,"w":16,"h":32},"mold_gears":{"x":348,"y":99,"w":32,"h":10},"wall_tower":{"x":381,"y":99,"w":32,"h":32},"wain_tower":{"x":414,"y":99,"w":32,"h":24},"pillar_tower":{"x":447,"y":99,"w":16,"h":32},"mold_tower":{"x":464,"y":99,"w":32,"h":10},"wall_chapel":{"x":0,"y":132,"w":32,"h":32},"wain_chapel":{"x":33,"y":132,"w":32,"h":24},"pillar_chapel":{"x":66,"y":132,"w":16,"h":32},"mold_chapel":{"x":83,"y":132,"w":32,"h":10},"wall_crypt":{"x":116,"y":132,"w":32,"h":32},"wain_crypt":{"x":149,"y":132,"w":32,"h":24},"pillar_crypt":{"x":182,"y":132,"w":16,"h":32},"mold_crypt":{"x":199,"y":132,"w":32,"h":10},"wall_bath":{"x":232,"y":132,"w":32,"h":32},"wain_bath":{"x":265,"y":132,"w":32,"h":24},"pillar_bath":{"x":298,"y":132,"w":16,"h":32},"mold_bath":{"x":315,"y":132,"w":32,"h":10},"wall_cistern":{"x":348,"y":132,"w":32,"h":32},"wain_cistern":{"x":381,"y":132,"w":32,"h":24},"pillar_cistern":{"x":414,"y":132,"w":16,"h":32},"mold_cistern":{"x":431,"y":132,"w":32,"h":10},"wall_heart":{"x":464,"y":132,"w":32,"h":32},"wain_heart":{"x":0,"y":165,"w":32,"h":24},"pillar_heart":{"x":33,"y":165,"w":16,"h":32},"mold_heart":{"x":50,"y":165,"w":32,"h":10}},"boss":{"chandelier":{"x":0,"y":0,"w":128,"h":84,"ax":64,"ay":0},"chandelier_cracked":{"x":129,"y":0,"w":128,"h":84,"ax":64,"ay":0},"core_normal":{"x":258,"y":0,"w":30,"h":30},"core_angry":{"x":289,"y":0,"w":30,"h":30},"core_tug":{"x":320,"y":0,"w":30,"h":30},"core_dizzy":{"x":351,"y":0,"w":30,"h":30},"chain":{"x":382,"y":0,"w":6,"h":10},"gcore_tug":{"x":389,"y":0,"w":30,"h":30},"gcore_dizzy":{"x":420,"y":0,"w":30,"h":30},"rcore_tug":{"x":451,"y":0,"w":30,"h":30},"rcore_dizzy":{"x":482,"y":0,"w":30,"h":30},"ccore_tug":{"x":0,"y":85,"w":30,"h":30},"ccore_dizzy":{"x":31,"y":85,"w":30,"h":30},"golem_idle0":{"x":62,"y":85,"w":72,"h":84},"golem_idle1":{"x":135,"y":85,"w":72,"h":84},"golem_raise":{"x":208,"y":85,"w":72,"h":84},"golem_slam":{"x":281,"y":85,"w":72,"h":84},"golem_puff":{"x":354,"y":85,"w":72,"h":84},"golem_dizzy":{"x":427,"y":85,"w":72,"h":84},"golem_ball0":{"x":0,"y":170,"w":46,"h":46},"golem_ball1":{"x":47,"y":170,"w":46,"h":46},"golem_ball2":{"x":94,"y":170,"w":46,"h":46},"golem_ball3":{"x":141,"y":170,"w":46,"h":46},"rose_stem":{"x":188,"y":170,"w":60,"h":112},"rose_head":{"x":249,"y":170,"w":64,"h":58},"rose_rage":{"x":314,"y":170,"w":64,"h":58},"rose_bloom":{"x":379,"y":170,"w":64,"h":58},"rose_wilt":{"x":444,"y":170,"w":64,"h":58},"rose_mound":{"x":0,"y":283,"w":40,"h":12},"clock_body":{"x":41,"y":283,"w":76,"h":156},"clock_rage":{"x":118,"y":283,"w":76,"h":156},"clock_stop":{"x":195,"y":283,"w":76,"h":156},"pend_bob":{"x":272,"y":283,"w":32,"h":32},"ocore_tug":{"x":305,"y":283,"w":30,"h":30},"ocore_dizzy":{"x":336,"y":283,"w":30,"h":30},"dcore_tug":{"x":367,"y":283,"w":30,"h":30},"dcore_dizzy":{"x":398,"y":283,"w":30,"h":30},"organ_idle":{"x":0,"y":440,"w":132,"h":128},"organ_sing":{"x":133,"y":440,"w":132,"h":128},"organ_rage":{"x":266,"y":440,"w":132,"h":128},"organ_stop":{"x":0,"y":569,"w":132,"h":128},"note":{"x":133,"y":569,"w":12,"h":12},"serp_head":{"x":146,"y":569,"w":56,"h":48},"serp_spit":{"x":203,"y":569,"w":56,"h":48},"serp_rage":{"x":260,"y":569,"w":56,"h":48},"serp_dizzy":{"x":317,"y":569,"w":56,"h":48},"serp_seg":{"x":374,"y":569,"w":30,"h":30},"serp_seg_r":{"x":405,"y":569,"w":30,"h":30},"splashring":{"x":436,"y":569,"w":44,"h":12},"ecore_tug":{"x":481,"y":569,"w":30,"h":30},"ecore_dizzy":{"x":0,"y":698,"w":30,"h":30}},"chars":{"chr_idle0":{"x":0,"y":0,"w":44,"h":68},"chr_idle1":{"x":45,"y":0,"w":44,"h":68},"chr_cast":{"x":90,"y":0,"w":44,"h":68},"chr_hurt":{"x":135,"y":0,"w":44,"h":68},"chr_sleep":{"x":180,"y":0,"w":44,"h":68},"vel_idle":{"x":225,"y":0,"w":40,"h":72},"vel_bow":{"x":266,"y":0,"w":40,"h":72},"portrait_chronoa":{"x":307,"y":0,"w":48,"h":48},"portrait_vel":{"x":356,"y":0,"w":48,"h":48},"mimic_open":{"x":0,"y":73,"w":128,"h":128},"mimic_charge":{"x":129,"y":73,"w":128,"h":128},"mimic_shut":{"x":258,"y":73,"w":128,"h":128},"mimic_crack":{"x":0,"y":202,"w":128,"h":128},"pocketwatch":{"x":129,"y":202,"w":26,"h":26},"sandorb":{"x":156,"y":202,"w":14,"h":14}},"enemies":{"puff0":{"x":0,"y":0,"w":32,"h":32},"puff1":{"x":33,"y":0,"w":32,"h":32},"puff2":{"x":66,"y":0,"w":32,"h":32},"puff3":{"x":99,"y":0,"w":32,"h":32},"puff_tug":{"x":132,"y":0,"w":32,"h":32},"puff_angry":{"x":165,"y":0,"w":32,"h":32},"dish0":{"x":198,"y":0,"w":36,"h":36},"dish1":{"x":235,"y":0,"w":36,"h":36},"dish2":{"x":272,"y":0,"w":36,"h":36},"dish_throw":{"x":309,"y":0,"w":36,"h":36},"dish_tug":{"x":346,"y":0,"w":36,"h":36},"armor0":{"x":383,"y":0,"w":28,"h":52},"armor1":{"x":412,"y":0,"w":28,"h":52},"armor_shell":{"x":441,"y":0,"w":28,"h":52},"helmet":{"x":470,"y":0,"w":12,"h":12},"firewisp0":{"x":483,"y":0,"w":16,"h":18},"firewisp1":{"x":0,"y":53,"w":16,"h":18},"firewisp2":{"x":17,"y":53,"w":16,"h":18},"bat0":{"x":34,"y":53,"w":20,"h":12},"bat1":{"x":55,"y":53,"w":20,"h":12},"bat_hang":{"x":76,"y":53,"w":12,"h":14},"rat0":{"x":89,"y":53,"w":22,"h":12},"rat1":{"x":112,"y":53,"w":22,"h":12},"garg_stone":{"x":135,"y":53,"w":30,"h":28},"garg_fly0":{"x":166,"y":53,"w":30,"h":28},"garg_fly1":{"x":197,"y":53,"w":30,"h":28},"garg_dive":{"x":228,"y":53,"w":30,"h":28},"puppet0":{"x":259,"y":53,"w":20,"h":34},"puppet1":{"x":280,"y":53,"w":20,"h":34},"puppet_throw":{"x":301,"y":53,"w":20,"h":34},"skel0":{"x":322,"y":53,"w":24,"h":42},"skel1":{"x":347,"y":53,"w":24,"h":42},"skel_throw":{"x":372,"y":53,"w":24,"h":42},"cbook0":{"x":397,"y":53,"w":22,"h":18},"cbook1":{"x":420,"y":53,"w":22,"h":18},"cbook_bite":{"x":443,"y":53,"w":22,"h":18},"sheet0":{"x":466,"y":53,"w":34,"h":34},"sheet1":{"x":0,"y":96,"w":34,"h":34},"sheet_angry":{"x":35,"y":96,"w":34,"h":34},"sheet_tug":{"x":70,"y":96,"w":34,"h":34},"skullwisp0":{"x":105,"y":96,"w":20,"h":22},"skullwisp1":{"x":126,"y":96,"w":20,"h":22},"crab0":{"x":147,"y":96,"w":24,"h":16},"crab1":{"x":172,"y":96,"w":24,"h":16},"crab_snap":{"x":197,"y":96,"w":24,"h":16}},"items":{"coin0":{"x":0,"y":0,"w":10,"h":10},"coin1":{"x":11,"y":0,"w":10,"h":10},"coin2":{"x":22,"y":0,"w":10,"h":10},"coin3":{"x":33,"y":0,"w":10,"h":10},"heart":{"x":44,"y":0,"w":11,"h":10},"heartbig":{"x":56,"y":0,"w":18,"h":16},"plate":{"x":75,"y":0,"w":14,"h":6},"book":{"x":90,"y":0,"w":12,"h":10},"candle":{"x":103,"y":0,"w":6,"h":12},"dustball":{"x":110,"y":0,"w":10,"h":8},"crystal":{"x":121,"y":0,"w":12,"h":12},"spark":{"x":134,"y":0,"w":10,"h":10},"key":{"x":145,"y":0,"w":14,"h":10},"fireball":{"x":160,"y":0,"w":12,"h":12},"bottle":{"x":173,"y":0,"w":8,"h":14},"chair":{"x":182,"y":0,"w":14,"h":16},"pan":{"x":197,"y":0,"w":16,"h":8},"gear":{"x":214,"y":0,"w":12,"h":12},"flowerpot":{"x":227,"y":0,"w":12,"h":12},"soap":{"x":240,"y":0,"w":12,"h":12},"seed":{"x":0,"y":17,"w":10,"h":10},"pot":{"x":11,"y":17,"w":16,"h":14},"barrel":{"x":28,"y":17,"w":16,"h":18},"shard":{"x":45,"y":17,"w":6,"h":6},"bubble":{"x":52,"y":17,"w":16,"h":16},"petal":{"x":69,"y":17,"w":12,"h":8},"orb_float":{"x":82,"y":17,"w":16,"h":16},"orb_turbo":{"x":99,"y":17,"w":16,"h":16},"orb_djump":{"x":116,"y":17,"w":16,"h":16},"orb_phase":{"x":133,"y":17,"w":16,"h":16},"orb_tank":{"x":150,"y":17,"w":16,"h":16},"bone":{"x":167,"y":17,"w":16,"h":8},"duck":{"x":184,"y":17,"w":14,"h":13},"note":{"x":199,"y":17,"w":12,"h":12}},"kanata":{"frameWidth":106,"frameHeight":70,"anchorX":46,"anchorY":69,"targetHeight":68,"frames":[{"i":0,"sheet":"a","pose":"idle"},{"i":1,"sheet":"a","pose":"blink"},{"i":2,"sheet":"a","pose":"move1"},{"i":3,"sheet":"a","pose":"move2"},{"i":4,"sheet":"a","pose":"suck"},{"i":5,"sheet":"a","pose":"spit"},{"i":6,"sheet":"a","pose":"hurt"},{"i":7,"sheet":"a","pose":"down"},{"i":8,"sheet":"b","pose":"idle"},{"i":9,"sheet":"b","pose":"blink"},{"i":10,"sheet":"b","pose":"move1"},{"i":11,"sheet":"b","pose":"move2"},{"i":12,"sheet":"b","pose":"suck"},{"i":13,"sheet":"b","pose":"spit"},{"i":14,"sheet":"b","pose":"hurt"},{"i":15,"sheet":"b","pose":"down"}],"poses":{"idle":[0,8],"blink":[1,9],"move1":[2,10],"move2":[3,11],"suck":[4,12],"spit":[5,13],"hurt":[6,14],"down":[7,15]}},"props":{"window":{"x":0,"y":0,"w":40,"h":76},"window_wide":{"x":41,"y":0,"w":56,"h":84},"portrait_lord":{"x":98,"y":0,"w":28,"h":36},"portrait_lady":{"x":127,"y":0,"w":28,"h":36},"portrait_land":{"x":156,"y":0,"w":44,"h":32},"portrait_big":{"x":201,"y":0,"w":44,"h":56},"sconce":{"x":246,"y":0,"w":12,"h":22},"flame0":{"x":259,"y":0,"w":6,"h":8},"flame1":{"x":266,"y":0,"w":6,"h":8},"flame2":{"x":273,"y":0,"w":6,"h":8},"flame3":{"x":280,"y":0,"w":6,"h":8},"bflame0":{"x":287,"y":0,"w":8,"h":10},"bflame1":{"x":296,"y":0,"w":8,"h":10},"bflame2":{"x":305,"y":0,"w":8,"h":10},"bflame3":{"x":314,"y":0,"w":8,"h":10},"curtain":{"x":323,"y":0,"w":32,"h":72},"curtain_rod":{"x":356,"y":0,"w":32,"h":4},"dust0":{"x":389,"y":0,"w":20,"h":10},"dust1":{"x":410,"y":0,"w":20,"h":10},"dust2":{"x":431,"y":0,"w":20,"h":10},"cobweb":{"x":452,"y":0,"w":20,"h":20},"vase":{"x":473,"y":0,"w":14,"h":22},"table":{"x":0,"y":85,"w":80,"h":30},"chair":{"x":81,"y":85,"w":16,"h":30},"candelabra":{"x":98,"y":85,"w":24,"h":18},"bookshelf":{"x":123,"y":85,"w":40,"h":72},"clock":{"x":164,"y":85,"w":22,"h":64},"save":{"x":187,"y":85,"w":28,"h":40},"doorframe":{"x":216,"y":85,"w":20,"h":64},"door":{"x":237,"y":85,"w":10,"h":48},"chandelier_deco":{"x":248,"y":85,"w":48,"h":30},"rail":{"x":297,"y":85,"w":16,"h":24},"rug":{"x":314,"y":85,"w":96,"h":4},"winerack":{"x":411,"y":85,"w":40,"h":40},"pedestal":{"x":452,"y":85,"w":28,"h":34},"linenshelf":{"x":0,"y":158,"w":36,"h":52},"pipes":{"x":37,"y":158,"w":20,"h":80},"lamp_wall":{"x":58,"y":158,"w":12,"h":18},"sheetline":{"x":71,"y":158,"w":90,"h":40},"basket":{"x":162,"y":158,"w":24,"h":16},"washtub":{"x":187,"y":158,"w":32,"h":22},"boiler":{"x":220,"y":158,"w":40,"h":64},"stove":{"x":261,"y":158,"w":44,"h":34},"potshelf":{"x":306,"y":158,"w":40,"h":40},"hangpans":{"x":347,"y":158,"w":56,"h":30},"sack":{"x":404,"y":158,"w":22,"h":24},"barrel":{"x":427,"y":158,"w":26,"h":30},"crate":{"x":454,"y":158,"w":24,"h":22},"trunk":{"x":0,"y":239,"w":34,"h":22},"dollshelf":{"x":35,"y":239,"w":40,"h":48},"gear_big":{"x":76,"y":239,"w":50,"h":50},"gear_med":{"x":127,"y":239,"w":32,"h":32},"clockface":{"x":160,"y":239,"w":46,"h":46},"bell":{"x":207,"y":239,"w":40,"h":46},"round_window":{"x":248,"y":239,"w":36,"h":36},"glasspane":{"x":285,"y":239,"w":44,"h":72},"fern":{"x":330,"y":239,"w":30,"h":26},"rosebush":{"x":361,"y":239,"w":36,"h":26},"hedge":{"x":398,"y":239,"w":40,"h":36},"fountain":{"x":439,"y":239,"w":72,"h":52},"statue":{"x":0,"y":312,"w":24,"h":56},"vine_hang":{"x":25,"y":312,"w":20,"h":60},"gardenlamp":{"x":46,"y":312,"w":14,"h":60},"wardrobe":{"x":61,"y":312,"w":32,"h":66},"lever_up":{"x":94,"y":312,"w":18,"h":26},"lever_mid":{"x":113,"y":312,"w":18,"h":26},"lever_down":{"x":132,"y":312,"w":18,"h":26},"abil_pedestal":{"x":151,"y":312,"w":30,"h":30},"sheet":{"x":182,"y":312,"w":32,"h":72},"ivy":{"x":215,"y":312,"w":32,"h":72},"vine0":{"x":248,"y":312,"w":16,"h":16},"vine1":{"x":265,"y":312,"w":16,"h":16},"floatpad":{"x":282,"y":312,"w":26,"h":8},"thornspike":{"x":309,"y":312,"w":16,"h":44},"stainedglass":{"x":326,"y":312,"w":36,"h":70},"pew":{"x":363,"y":312,"w":44,"h":20},"altar":{"x":408,"y":312,"w":48,"h":30},"organpipes":{"x":0,"y":385,"w":64,"h":90},"coffin":{"x":65,"y":385,"w":40,"h":16},"skullpile":{"x":106,"y":385,"w":30,"h":22},"urn":{"x":137,"y":385,"w":14,"h":20},"liontap":{"x":152,"y":385,"w":28,"h":26},"bathstool":{"x":181,"y":385,"w":16,"h":12},"buckets":{"x":198,"y":385,"w":26,"h":18},"duckprop":{"x":225,"y":385,"w":16,"h":14},"warp_pad":{"x":242,"y":385,"w":48,"h":10},"spiritlamp":{"x":291,"y":385,"w":14,"h":30}},"tiles":{"brick0":{"x":0,"y":0,"w":16,"h":16},"brick1":{"x":17,"y":0,"w":16,"h":16},"top0":{"x":34,"y":0,"w":16,"h":16},"top1":{"x":51,"y":0,"w":16,"h":16},"secret":{"x":68,"y":0,"w":16,"h":16},"csecret":{"x":85,"y":0,"w":16,"h":16},"tbrick0":{"x":102,"y":0,"w":16,"h":16},"tbrick1":{"x":119,"y":0,"w":16,"h":16},"ttop0":{"x":136,"y":0,"w":16,"h":16},"ttop1":{"x":153,"y":0,"w":16,"h":16},"tsecret":{"x":170,"y":0,"w":16,"h":16},"gbrick0":{"x":187,"y":0,"w":16,"h":16},"gbrick1":{"x":204,"y":0,"w":16,"h":16},"gtop0":{"x":221,"y":0,"w":16,"h":16},"gtop1":{"x":238,"y":0,"w":16,"h":16},"gsecret":{"x":0,"y":17,"w":16,"h":16},"wbrick0":{"x":17,"y":17,"w":16,"h":16},"wbrick1":{"x":34,"y":17,"w":16,"h":16},"wtop0":{"x":51,"y":17,"w":16,"h":16},"wtop1":{"x":68,"y":17,"w":16,"h":16},"wsecret":{"x":85,"y":17,"w":16,"h":16},"kbrick0":{"x":102,"y":17,"w":16,"h":16},"kbrick1":{"x":119,"y":17,"w":16,"h":16},"ktop0":{"x":136,"y":17,"w":16,"h":16},"ktop1":{"x":153,"y":17,"w":16,"h":16},"ksecret":{"x":170,"y":17,"w":16,"h":16},"bbrick0":{"x":187,"y":17,"w":16,"h":16},"bbrick1":{"x":204,"y":17,"w":16,"h":16},"btop0":{"x":221,"y":17,"w":16,"h":16},"btop1":{"x":238,"y":17,"w":16,"h":16},"bsecret":{"x":0,"y":34,"w":16,"h":16},"bars":{"x":17,"y":34,"w":16,"h":16},"grate":{"x":34,"y":34,"w":16,"h":16},"cbrick0":{"x":51,"y":34,"w":16,"h":16},"cbrick1":{"x":68,"y":34,"w":16,"h":16},"ctop0":{"x":85,"y":34,"w":16,"h":16},"ctop1":{"x":102,"y":34,"w":16,"h":16},"platL":{"x":119,"y":34,"w":16,"h":16},"platM":{"x":136,"y":34,"w":16,"h":16},"platR":{"x":153,"y":34,"w":16,"h":16},"shelf":{"x":170,"y":34,"w":16,"h":16}}};
 
 // =====================================================================
 //  Core: canvas, pixel font, hi-res Japanese text, assets, sound effects, input, layout
@@ -330,7 +334,7 @@ function rectLine(x, y, w, h, col) { g.fillStyle = col; g.fillRect(x, y, w, 1); 
 //  Assets: PNG atlases in assets/ (+ rect maps inlined at build time as EMBEDDED_META)
 //  Every sprite is looked up by name, so an artist can redraw an atlas freely as long as the names stay.
 // ---------------------------------------------------------------------
-const ASSET_FILES = ['kanata', 'wisp', 'tiles', 'bg', 'props', 'items', 'enemies', 'boss', 'title_bg'];
+const ASSET_FILES = ['kanata', 'wisp', 'tiles', 'bg', 'props', 'items', 'enemies', 'boss', 'chars', 'title_bg'];
 const IMG = {}; let assetsLoaded = 0, assetsFailed = [];
 const META = (typeof EMBEDDED_META !== 'undefined') ? EMBEDDED_META : {};
 for (const n of ASSET_FILES) {
@@ -861,9 +865,24 @@ ROOM_DEFS.push(
     decor: [['bell', 12, 2, { top: 1 }], ['round_window', 6, 7], ['round_window', 19, 7], ['sconce', 12, 10, { light: 1 }], ['gear_med', 20, 15]] },
 
   { id: 'clockroom', jp: '大時計の間', en: 'GREAT CLOCK CHAMBER', area: 'clock', theme: 'tower', tiles: 'w', cx: 7, cy: -4, cw: 1, ch: 1, dark: 0.36, boss: 'clock',
-    build(R) { R.box(); R.open('L', 0, 11, 14); R.plat(2, 5, 11); R.plat(18, 21, 11); },
+    // v0.4: the sealed door behind the clock leads up to the clock heart (Chronoa)
+    bossGate: { gate: 'heart', need: ['clock'] },
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.gate(23, 11, 23, 14, 'heart'); R.plat(2, 5, 11); R.plat(18, 21, 11); },
     ents: [['boss', 12, 15]],
     decor: [['round_window', 4, 6], ['round_window', 20, 6], ['sconce', 3, 9, { light: 1 }], ['sconce', 21, 9, { light: 1 }], ['gear_med', 12, 4]] },
+
+  // ---- v0.4: the top of the tower (true final boss) ----
+  { id: 'towertop', jp: '時計塔の最上階', en: 'TOP OF THE TOWER', area: 'clock', theme: 'tower', tiles: 'w', cx: 8, cy: -4, cw: 1, ch: 1, dark: 0.5,
+    vel: 'chronoa', velAt: [17, 15],
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.plat(4, 9, 11); R.plat(14, 19, 8); },
+    ents: [['save', 6, 15], ['heartbig', 16.5, 6], ['gear', 8, 11], ['book', 5, 11], ['chair', 12, 15],
+      ['hint', 3, 15, { text: '……チクタク、チクタク。奥から、ねむそうな寝息が聞こえる' }]],
+    decor: [['clockface', 12, 7], ['round_window', 4, 6], ['round_window', 20, 6], ['sconce', 9, 9, { light: 1 }], ['sconce', 21, 10, { light: 1 }], ['gear_med', 2, 4], ['bell', 18, 2, { top: 1 }]] },
+
+  { id: 'clockheart', jp: '時計塔の心臓', en: 'HEART OF THE CLOCK TOWER', area: 'clock', theme: 'heart', tiles: 'w', cx: 9, cy: -4, cw: 1, ch: 1, dark: 0.42, boss: 'chronoa',
+    build(R) { R.box(); R.open('L', 0, 11, 14); },
+    ents: [['boss', 12, 15]],
+    decor: [['gear_big', 3, 13], ['gear_big', 21, 13], ['gear_med', 5, 6], ['gear_med', 19, 6], ['sconce', 2, 9, { light: 1 }], ['sconce', 22, 9, { light: 1 }]] },
 );
 
 // =====================================================================
@@ -1200,11 +1219,16 @@ function loadRoom(id, entry) {
   spawnRoomEntities();
   for (let y = 0; y < def.ch; y++) for (let x = 0; x < def.cw; x++) progress.visited.add((def.cx + x) + ',' + (def.cy + y));
   fadeT = 14; roomBanner(def);
+  checkBossGates(); storyRoomEnter(def);
   stats.rooms++;
 }
 function revealSecret() {
   for (let i = 0; i < room.grid.length; i++) if (room.grid[i] === T_SECRET) room.grid[i] = T_EMPTY;
   progress.perm.add(room.id + ':secret'); renderRoomStatic(); sfx('secret'); tip('secret', '隠し通路を見つけた！');
+}
+// v0.4: seal doors - def.bossGate = { gate, need: [boss kinds] } opens for good once every listed boss is beaten
+function checkBossGates() {
+  for (const d of ROOM_DEFS) if (d.bossGate && d.bossGate.need.every(k => progress.bosses.has(k))) openGate(d.id, d.bossGate.gate, room && room.id !== d.id);
 }
 // open a gate for good (lever / wardrobe / vines / boss). Works for the current room or a remote one.
 function openGate(roomId, gid, quiet) {
@@ -1405,7 +1429,7 @@ function updatePlayer() {
   if (P.knock > 0) { P.knock--; }
   else if (P.tug) { updateTug(); }
   else {
-    const sp = vacHeld ? C.vacWalkSpeed : C.walkSpeed, acc = P.onGround ? C.accel : C.airAccel;
+    const sp = (vacHeld ? C.vacWalkSpeed : C.walkSpeed) * timeSlowAt(pcx(), P.y + P.h), acc = P.onGround ? C.accel : C.airAccel;
     if (dir) { P.face = dir; P.vx += clamp(dir * sp - P.vx, -acc, acc); }
     else { P.vx += clamp(-P.vx, -C.decel, C.decel); }
     if (P.jumpBuf > 0 && (P.onGround || P.coyote > 0)) { P.vy = -C.jumpVel; P.jumpBuf = 0; P.coyote = 0; P.onGround = false; sfx('jump'); }
@@ -1855,7 +1879,7 @@ function checkLockedDoor() {
 // ---------------------------------------------------------------------
 //  enemy bullets (plates, candles, crystal shards, fire patches, floor waves)
 // ---------------------------------------------------------------------
-const PERSIST_BULLETS = new Set(['firepatch', 'wave', 'suds', 'thorn', 'hand', 'root', 'blast', 'geyser', 'puddle']);
+const PERSIST_BULLETS = new Set(['firepatch', 'wave', 'suds', 'thorn', 'hand', 'root', 'blast', 'geyser', 'puddle', 'sandorb', 'sandfall']);
 function updateEBullets() {
   for (const b of ebullets) {
     if (b.dead) continue;
@@ -2296,8 +2320,9 @@ function coreWindowOver(b) { // returns true when the stun window ended (core es
 }
 // bar every side door of the boss room during the fight
 function setGate(on) {
+  const named = new Set(); for (const gid in room.gates) for (const i of room.gates[gid]) named.add(i);   // v0.4: never touch a room's own named gates (e.g. the clock's seal door)
   for (const o of room.openings) { if (o.side !== 'L' && o.side !== 'R') continue; const c = o.side === 'L' ? 0 : room.cols - 1;
-    for (let r = o.a; r <= o.b; r++) { const i = r * room.cols + c; if (room.grid[i] === T_EMPTY || room.grid[i] === T_GATE) room.grid[i] = on ? T_GATE : T_EMPTY; } }
+    for (let r = o.a; r <= o.b; r++) { const i = r * room.cols + c; if (!named.has(i) && (room.grid[i] === T_EMPTY || room.grid[i] === T_GATE)) room.grid[i] = on ? T_GATE : T_EMPTY; } }
   renderRoomStatic();
 }
 function updateBoss() {
@@ -2389,6 +2414,7 @@ BOSS_DEFS.chandelier = { jp: '呪いのシャンデリア', en: 'GRAND LUMIERE',
     for (const e of ents) if (e.type === 'ability') e.hidden = false;
     bossReward(b, b.x); say('……床、抜けちゃった。……下にも、まだお部屋があるみたい', 240);
     tip('floorGone', 'シャンデリアの重みで床が抜けた！ 台座の上で何かが光っている', true);
+    velAppear('first', b.x > 192 ? 60 : 324, FLOOR_Y);   // v0.4: the secretary watches from the corner
   },
   draw(b, lights) {
     const x = Math.round(b.x - cam.x), y = Math.round(b.y - cam.y), blue = b.rage;
@@ -2732,7 +2758,10 @@ BOSS_DEFS.clock = { jp: '大時計の番人 チクタク', en: 'GRANDFATHER TICK
     }
     if (b.state !== 'stopped' && overlapBox(b.x - 22, FLOOR_Y - 116, b.x + 22, FLOOR_Y)) hurtPlayer(C.contactDamage, b.x, 'clock');
   },
-  onDefeat(b) { startClear(); },
+  onDefeat(b) { bossReward(b, b.x); say('……止まった。……でも、まだ上から、チクタクって聞こえる', 220); checkBossGates();   // v0.4: no longer the last boss
+    if (progress.perm.has('clockroom:gate:heart')) tip('clockDown', 'チクタクをやっつけた！ 奥の扉が開いた… 時計塔の最上階へ', true);
+    else tip('clockDown', 'チクタクをやっつけた！ 奥の扉には、まだ封印が残っている…', true);
+    velAppear('clock', b.x + 70, FLOOR_Y); },
   draw(b, lights) {
     const D = this, x = Math.round(b.x - cam.x), y = Math.round(FLOOR_Y - cam.y);
     if (b.state === 'midnight') { g.fillStyle = 'rgba(10,0,30,' + Math.min(0.45, b.t / 40) + ')'; g.fillRect(0, 0, VW, VH); }
@@ -2947,6 +2976,242 @@ BOSS_DEFS.serpent = { jp: '大浴場の主 ユブネ', en: 'BATHWATER SERPENT', 
 };
 
 // =====================================================================
+//  TRUE FINAL BOSS (v0.4): 時計塔管理人 クロノア CHRONOA (時計塔の心臓 / clock heart)
+//    One of the 13 mimic girls. Languid, hates being hurried. Her mimic is the huge clock face with a giant
+//    eye behind her (チクタク downstairs was only its servant = the midboss). Every attack is telegraphed
+//    and checked by tools/avoid.js (a safe spot exists and is reachable after a 300 ms reaction).
+//    hands    : ticking gold marks -> clock hands stab down (2 waves; the 2nd fills the 1st's gaps)
+//    pendulum : her pocket watch swings on its chain across the room (dotted arc first): jump it,
+//               or wait by a wall where it passes high
+//    rewind   : dotted lines fan out -> sand orbs fly down them, stop, then REWIND back up the same lines
+//    slow     : 時の淀み - purple slow-time zones (you move slowly inside, but the sand never falls there)
+//               + three volleys of sand columns everywhere else
+//    beam     : (every 3rd) the eye charges and tracks Kanata (red line), LOCKS (flashing) -> fires.
+//               Exhausted, the eye shuts: its EYE CORE drops out = weak point (tug-of-war)
+//    rage     : (50%) the clock face cracks, shorter warnings, more orbs / swings
+// =====================================================================
+const CHR_PIVOT = { x: 192, y: 40 }, CHR_PLEN = 170;
+BOSS_DEFS.chronoa = { jp: '時計塔管理人 クロノア', en: 'CHRONOA, KEEPER OF THE CLOCK TOWER', cfg: 'chronoa', cols: ['#56d0c0', '#f3d98a', '#ffffff', '#b07a52'],
+  rageText: '時計の目にひびが入った！ クロノアが少しだけ本気になった',
+  sayIntro: '……女の子。……うしろの時計、目がある……', sayCore: '……目の中に、ゴースト……',
+  make(b) { b.mx = 192; b.my = 100; b.cx = 286; b.cy = 128; b.tx = 286; b.eye = 'open'; b.zones = []; b.orbs = []; b.pose = 'idle'; b.hand = 0; b.markR = 20; },
+  intro(b) { if (b.t === 20) storySay('chronoa', '……まだ、終わってないよ。急いでる人、嫌い……', 230); b.hand -= 0.02; },
+  hitBox(b) { return { x0: b.mx - 34, x1: b.mx + 34, y0: b.my - 22, y1: b.my + 22 }; },
+  aim(b) { return b.state === 'shut' ? null : { x: b.mx, y: b.my }; },
+  update(b) {
+    const C = CONFIG.chronoa;
+    b.hand += b.state === 'rewind' ? -0.08 : 0.012;
+    b.cx += (b.tx - b.cx) * 0.06;
+    if (b.rage && !b.cracked) { b.cracked = true; b.eye = 'crack'; storySay('chronoa', '……もう。……ちょっとだけ、本気……', 200); }
+    if (b.state !== 'slow') b.zones = b.zones.filter(z => (z.life -= 3) > 0);
+    switch (b.state) {
+      case 'idle': b.pose = 'idle'; b.markR = 20;
+        if (b.t === 1) b.tx = pcx() < 192 ? 290 : 94;   // drifts to the side away from Kanata
+        if (b.t >= bossP('idle')) chooseAttack(b, ['hands', 'pendulum', 'rewind', 'slow'], 'beam'); break;
+      case 'hands': {
+        const warn = bossP('handWarn'), T2 = warn + 28;
+        if (b.t === 1 || b.t === T2) { const px = clamp(pcx(), 16, room.W - 16); b.pose = 'cast';
+          b.marks = (b.t === 1 ? [px, px - 96, px + 96] : [px - 48, px + 48]).map(x => clamp(x, 16, room.W - 16)); b.mT = b.t; sfx('tick');
+          tip('chands', '金色の印に、時計の針が落ちてくる！ 印から離れて'); }
+        if (b.t < b.mT + warn && (b.t - b.mT) % 10 === 0) sfx('tick');
+        if (b.t === b.mT + warn) { for (const mx of b.marks) ebullets.push({ kind: 'hand', x: mx - 5, y: 2 * TS, w: 10, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: C.handDamage, life: 22, static: 1 });
+          b.marks = []; sfx('thud'); cam.shake = 3; }
+        if (b.t >= T2 + warn + 30) { b.state = 'idle'; b.t = 0; } break; }
+      case 'pendulum': {
+        const warn = C.pendWarn, n = bossP('swings'), half = 64, A0 = 1.05;
+        if (b.t === 1) { b.pd = pcx() < CHR_PIVOT.x ? 1 : -1; b.pose = 'cast'; sfx('warn'); tip('cwatch', '懐中時計が振れる！ ジャンプでかわすか、壁ぎわで待とう（端では高く通る）'); }
+        let th = b.pd * A0;
+        if (b.t >= warn) th = b.pd * A0 * Math.cos((b.t - warn) / half * Math.PI);
+        b.bob = { x: CHR_PIVOT.x + Math.sin(th) * CHR_PLEN, y: CHR_PIVOT.y + Math.cos(th) * CHR_PLEN };
+        if (b.t >= warn && b.t < warn + n * half) { if ((b.t - warn) % half === Math.round(half / 2)) sfx('whoosh');
+          if (overlapBox(b.bob.x - 12, b.bob.y - 12, b.bob.x + 12, b.bob.y + 12)) hurtPlayer(C.pendDamage, b.bob.x, 'watch'); }
+        if (b.t >= warn + n * half + 24) { b.bob = null; b.state = 'idle'; b.t = 0; } break; }
+      case 'rewind': {
+        const warn = bossP('orbWarn'), n = bossP('orbs'), sp = C.orbSpeed;
+        if (b.t === 1) { const px = pcx(), o = { x: b.cx, y: b.cy - 44 }; b.orbO = o; b.pose = 'cast'; b.orbs = [];
+          for (let i = 0; i < n; i++) { const tx = clamp(px + (i - (n - 1) / 2) * 64, 18, room.W - 18); b.orbs.push({ tx, ty: FLOOR_Y - 7, k: 0, dir: 0, q: null }); }
+          sfx('tick'); tip('crewind', '砂の玉は、点線を通って落ちて… 同じ線を巻き戻って帰る！ 線と線のあいだへ'); }
+        if (b.t === warn) { for (const o of b.orbs) { o.dir = 1; o.q = { kind: 'sandorb', x: b.orbO.x - 6, y: b.orbO.y - 6, w: 12, h: 12, vx: 0, vy: 0, g: 0, dmg: C.orbDamage, life: 9999, static: 1 }; ebullets.push(o.q); } sfx('whoosh'); }
+        if (b.t > warn) { let alive = 0;
+          for (const o of b.orbs) { if (!o.q) continue; const L = Math.hypot(o.tx - b.orbO.x, o.ty - b.orbO.y) || 1;
+            if (o.dir === 1) { o.k = Math.min(1, o.k + sp / L); if (o.k >= 1) { o.dir = 0; o.hold = 18; } }
+            else if (o.dir === 0) { if (--o.hold <= 0) { o.dir = -1; sfx('tick'); } }
+            else { o.k = Math.max(0, o.k - sp / L); if (o.k <= 0) { o.q.dead = true; o.q = null; continue; } }
+            o.q.x = b.orbO.x + (o.tx - b.orbO.x) * o.k - 6; o.q.y = b.orbO.y + (o.ty - b.orbO.y) * o.k - 6; alive++; }
+          if (!alive) { b.orbs = []; b.state = 'idle'; b.t = 0; } }
+        break; }
+      case 'slow': {
+        const warn = C.zoneWarn, sw = bossP('sandWarn');
+        if (b.t === 1) { const px = pcx(); const z1 = clamp(px + (Math.random() < 0.5 ? -1 : 1) * rnd(30, 70), 56, room.W - 56), z2 = clamp(z1 > 192 ? z1 - 170 : z1 + 170, 56, room.W - 56);
+          b.zones = [{ x: z1, r: 44, life: 999, on: 0 }, { x: z2, r: 44, life: 999, on: 0 }]; b.pose = 'cast'; sfx('warn');
+          tip('cslow', '紫の「時の淀み」の中は動きがおそくなる。でも砂はそこには落ちてこない'); }
+        if (b.t === warn) for (const z of b.zones) z.on = 1;
+        for (let k = 0; k < 3; k++) { const t0 = warn + k * (sw + 22);
+          if (b.t === t0) { b.marks = []; for (let x = 22 + (k % 2) * 22; x < room.W - 14; x += 44) if (!b.zones.some(z => Math.abs(z.x - x) < z.r + 14)) b.marks.push(x); b.mT = b.t; sfx('tick'); }
+          if (b.t === t0 + sw) { for (const mx of b.marks) ebullets.push({ kind: 'sandfall', x: mx - 11, y: 2 * TS, w: 22, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: C.sandDamage, life: 26, static: 1 });
+            b.marks = []; sfx('whoosh'); cam.shake = 3; } }
+        if (b.t >= warn + 3 * (sw + 22) + 10) { for (const z of b.zones) z.life = 60; b.state = 'idle'; b.t = 0; } break; }
+      case 'beam': {
+        const tr = C.beamTrack, lk = bossP('beamLock');
+        if (b.t === 1) { b.beamX = pcx(); b.eye = 'charge'; b.pose = 'cast'; b.markR = 34; sfx('warn'); tip('cbeam', '目が赤く光った！ 赤い線が点滅したら、もう動かない… その場所から離れて！'); }
+        if (b.t < tr) b.beamX += clamp(pcx() - b.beamX, -1.6, 1.6);
+        if (b.t < tr + lk) { b.marks = [b.beamX]; if (b.t % 8 === 0) sfx('warn'); }
+        if (b.t === tr + lk) { b.marks = []; sfx('boom'); cam.shake = 8; hitStop = 2; }
+        if (b.t >= tr + lk && b.t < tr + lk + 24) { const x0 = b.mx, y0 = b.my + 22, x1 = b.beamX, y1 = FLOOR_Y;
+          for (let y = y0; y <= y1; y += 10) { const x = x0 + (x1 - x0) * (y - y0) / (y1 - y0); if (overlapBox(x - 10, y - 6, x + 10, y + 6)) { hurtPlayer(C.beamDamage, x, 'beam'); break; } }
+          if (b.t % 3 === 0) parts.push({ x: b.beamX + rnd(-8, 8), y: FLOOR_Y - 2, vx: rnd(-1.5, 1.5), vy: rnd(-2.5, -0.5), life: 20, col: '#ff8a8a', size: 2, glow: 1, grav: 1 }); }
+        if (b.t === tr + lk + 24) { b.state = 'shut'; b.t = 0; b.eye = 'shut'; b.pose = 'hurt'; b.winLen = bossP('stun'); b.markR = 20; sfx('crash'); cam.shake = 6;
+          b.coreSide = Math.sign(pcx() - b.mx) || 1; b.core = makeCore(b, b.mx + b.coreSide * 44, FLOOR_Y - 30, () => ({ x: boss.mx, y: boss.my + 40 }), 'ecore');
+          tip('ccore', '目が閉じた！ こぼれ落ちた「目のコア」を VAC で吸い込め！', true); }
+        break; }
+      case 'shut': coreBob(b, b.mx + b.coreSide * 44, FLOOR_Y - 30); if (coreWindowOver(b)) { b.state = 'wake'; b.t = 0; } break;
+      case 'wake': if (b.t === 30) b.eye = b.rage ? 'crack' : 'open'; if (b.t > 50) { b.state = 'idle'; b.t = 0; } break;
+    }
+  },
+  dying(b) { b.eye = 'shut'; b.pose = 'hurt'; b.marks = []; b.zones = []; b.bob = null; b.tx = 200; b.cy += (FLOOR_Y - 4 - b.cy) * 0.03; },
+  onDefeat(b) { startEnding(b); },
+  draw(b, lights) {
+    const C = CONFIG.chronoa, mx = Math.round(b.mx - cam.x), my = Math.round(b.my - cam.y);
+    // slow-time zones (domes of purple light with a ticking ring)
+    for (const z of b.zones) { const zx = z.x - cam.x, zy = FLOOR_Y - cam.y, a = Math.min(1, z.life / 60) * (z.on ? 1 : (frame & 4) ? 0.5 : 0.25);
+      g.fillStyle = 'rgba(150,90,230,' + 0.22 * a + ')'; g.beginPath(); g.ellipse(zx, zy, z.r, z.r * 0.9, 0, Math.PI, 0); g.fill();
+      g.strokeStyle = 'rgba(210,170,255,' + 0.7 * a + ')'; g.lineWidth = 1; g.beginPath(); g.ellipse(zx, zy, z.r, z.r * 0.9, 0, Math.PI, 0); g.stroke();
+      for (let k = 0; k < 12; k++) { const an = Math.PI + k / 11 * Math.PI - (z.on ? frame * 0.01 : 0); g.fillStyle = 'rgba(230,210,255,' + 0.8 * a + ')'; g.fillRect(Math.round(zx + Math.cos(an) * z.r), Math.round(zy + Math.sin(an) * z.r * 0.9), 1, 2); }
+      lights.push({ x: z.x, y: FLOOR_Y - 20, r: 50, cool: 1 }); }
+    // the mimic: clock face + giant eye, hands turning (backwards while rewinding)
+    const key = 'mimic_' + (b.state === 'dying' || b.state === 'shut' ? 'shut' : b.eye);
+    let ox = 0; if (b.state === 'beam' && b.t > C.beamTrack) ox = (frame & 2) ? 1 : -1;
+    spr('chars', key, mx - 64 + ox, my - 64);
+    if (b.flash > 0 && (frame & 2)) { g.globalAlpha = 0.6; sprWhite('chars', key, mx - 64, my - 64); g.globalAlpha = 1; }
+    g.lineCap = 'round';
+    for (const [len, w, sp] of [[46, 3, 1], [32, 4, 1 / 12]]) { const an = b.hand * (sp === 1 ? 12 : 1); g.strokeStyle = '#2a1a10'; g.lineWidth = w + 2; g.beginPath(); g.moveTo(mx, my); g.lineTo(mx + Math.sin(an) * len, my - Math.cos(an) * len); g.stroke();
+      g.strokeStyle = '#c9a24a'; g.lineWidth = w; g.beginPath(); g.moveTo(mx, my); g.lineTo(mx + Math.sin(an) * len, my - Math.cos(an) * len); g.stroke(); }
+    g.lineCap = 'butt'; g.lineWidth = 1;
+    lights.push({ x: b.mx, y: b.my, r: 90, cool: b.eye !== 'charge' }); if (b.eye === 'charge') lights.push({ x: b.mx, y: b.my, r: 60, warm: 1 });
+    // telegraphs
+    if (b.state === 'hands') for (const m of b.marks) drawFloorMark(m, Math.min(1, (b.t - b.mT) / bossP('handWarn')), 'rgba(255,210,90,0.9)');
+    if (b.state === 'slow') for (const m of b.marks) drawFloorMark(m, Math.min(1, (b.t - b.mT) / bossP('sandWarn')), 'rgba(240,190,110,0.9)');
+    if (b.state === 'rewind' && b.orbO) for (const o of b.orbs) { if (b.t > bossP('orbWarn') && !o.q) continue; g.fillStyle = b.t < bossP('orbWarn') && (frame & 4) ? 'rgba(255,240,180,0.9)' : 'rgba(240,200,120,0.55)';
+      const L = Math.hypot(o.tx - b.orbO.x, o.ty - b.orbO.y); for (let d = 0; d < L; d += 6) { const k = d / L; g.fillRect(Math.round(b.orbO.x + (o.tx - b.orbO.x) * k - cam.x), Math.round(b.orbO.y + (o.ty - b.orbO.y) * k - cam.y), 2, 2); }
+      drawFloorMark(o.tx, 0.6, 'rgba(240,190,110,0.8)'); }
+    if (b.state === 'pendulum') { const warn = C.pendWarn;
+      if (b.t < warn) { g.fillStyle = (frame & 4) ? 'rgba(255,230,160,0.8)' : 'rgba(255,200,120,0.4)'; for (let a = -1.05; a <= 1.05; a += 0.05) g.fillRect(Math.round(CHR_PIVOT.x + Math.sin(a) * CHR_PLEN - cam.x), Math.round(CHR_PIVOT.y + Math.cos(a) * CHR_PLEN - cam.y), 2, 2); }
+      if (b.bob) { const bx = b.bob.x - cam.x, by = b.bob.y - cam.y; g.strokeStyle = '#b8b8c8'; g.setLineDash([2, 2]); g.beginPath(); g.moveTo(CHR_PIVOT.x - cam.x, CHR_PIVOT.y - cam.y); g.lineTo(bx, by); g.stroke(); g.setLineDash([]);
+        spr('chars', 'pocketwatch', Math.round(bx - 13), Math.round(by - 13)); lights.push({ x: b.bob.x, y: b.bob.y, r: 40, warm: 1 }); } }
+    if (b.state === 'beam') { const tr = C.beamTrack, lk = bossP('beamLock'), x0 = mx, y0 = my + 22, x1 = b.beamX - cam.x, y1 = FLOOR_Y - cam.y;
+      if (b.t < tr + lk) { const lock = b.t >= tr; g.strokeStyle = lock ? ((frame & 2) ? 'rgba(255,60,60,0.95)' : 'rgba(255,220,220,0.9)') : 'rgba(255,80,80,0.45)'; g.lineWidth = lock ? 2 : 1;
+        g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); g.lineWidth = 1; drawFloorMark(b.beamX, lock ? 1 : 0.5, 'rgba(255,60,60,0.9)'); }
+      else if (b.t < tr + lk + 24) { const k = 1 - (b.t - tr - lk) / 24; g.strokeStyle = 'rgba(255,90,90,' + (0.5 + 0.4 * k) + ')'; g.lineWidth = 20 * (0.6 + 0.4 * k); g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke();
+        g.strokeStyle = 'rgba(255,255,255,0.9)'; g.lineWidth = 6 * k + 2; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); g.lineWidth = 1; lights.push({ x: b.beamX, y: FLOOR_Y - 20, r: 70, warm: 1 }); } }
+    // Chronoa herself, floating beside her clock (bobbing, languid)
+    const pose = b.pose === 'cast' ? 'chr_cast' : b.pose === 'hurt' ? 'chr_hurt' : 'chr_idle' + ((frame >> 5) & 1);
+    const r = rectOf('chars', pose), cx = Math.round(b.cx - cam.x), cy = Math.round(b.cy - cam.y + Math.sin(frame * 0.05) * 3);
+    if (b.state !== 'dying' || b.t < 190) { g.fillStyle = 'rgba(0,0,0,0.25)'; g.beginPath(); g.ellipse(cx, FLOOR_Y - cam.y - 1, 12, 2, 0, 0, 7); g.fill(); spr('chars', pose, cx - (r.w >> 1), cy - r.h, b.cx > b.mx); }
+    lights.push({ x: b.cx, y: b.cy - 30, r: 50, cool: 1 });
+    drawCore(b, lights, 'ecore');
+  },
+};
+// slow-time zones: Kanata walks at 55% inside an active zone
+function timeSlowAt(x, feetY) {
+  if (!boss || boss.kind !== 'chronoa' || !boss.zones) return 1;
+  for (const z of boss.zones) if (z.on && z.life > 0 && Math.abs(x - z.x) < z.r && feetY > FLOOR_Y - z.r) return CONFIG.chronoa.slowMul;
+  return 1;
+}
+
+// =====================================================================
+//  v0.4 STORY: portrait dialogue box, ヴェル VEL's one-line appearances, the true ending.
+//    ヴェル (主人付き秘書) is never fought. She appears in human form at key moments (new areas, after certain
+//    bosses, before Chronoa), says ONE short polite cryptic line, and fades away.
+//    Ending: Chronoa falls asleep, Vel comes for her; something invisible lifts Chronoa (no visible tentacles,
+//    only a faint warping shadow) and they leave together.
+// =====================================================================
+const STORY = { box: null, queue: [], vel: null, scene: null };
+const SPEAKERS = { vel: { name: 'ヴェル', col: '#d8c8e8', portrait: 'portrait_vel' }, chronoa: { name: 'クロノア', col: '#7ae0d0', portrait: 'portrait_chronoa' } };
+const VEL_LINES = {
+  first:   '見えているものが、すべてではありません。',
+  theater: '……拍手は、幕が下りてからでも遅くはありません。',
+  stars:   '星は、見られていることに気づいています。',
+  clock:   '時計の針は、まだ止まっていませんよ。',
+  chronoa: '……私の後ろには、立たないことをお勧めします。',
+};
+function storySay(who, text, frames) { const it = { who, text, t: frames || 260, T: frames || 260 }; if (STORY.box) STORY.queue.push(it); else STORY.box = it; }
+// Vel appears once per save for each key, near (x, feet y), says her line, and fades out
+function velAppear(key, x, y) {
+  if (progress.perm.has('vel:' + key)) return false; progress.perm.add('vel:' + key);
+  STORY.vel = { key, x: clamp(x, 30, room.W - 30), y, t: 0, life: 330 }; storySay('vel', VEL_LINES[key], 300); sfx('chime'); stats.velSeen = (stats.velSeen || 0) + 1;
+  return true;
+}
+function storyRoomEnter(def) {
+  STORY.vel = null;
+  if (def.vel) setTimeout0(() => velAppear(def.vel, def.velAt ? def.velAt[0] * TS : P.x + P.face * 90, def.velAt ? def.velAt[1] * TS : FLOOR_Y));
+}
+function setTimeout0(fn) { STORY.pending = fn; }   // run on the next update (after the room finished loading)
+function updateStory() {
+  if (STORY.pending) { const f = STORY.pending; STORY.pending = null; f(); }
+  if (STORY.box && --STORY.box.t <= 0) STORY.box = STORY.queue.shift() || null;
+  if (STORY.vel && ++STORY.vel.t > STORY.vel.life) STORY.vel = null;
+  if (STORY.scene) updateEnding();
+}
+// ---- the true ending ---------------------------------------------------
+function startEnding(b) {
+  STORY.scene = { t: 0, cx: b.cx, cy: FLOOR_Y - 4, vx: 300, lift: 0, alpha: 1 }; STORY.queue.length = 0; STORY.box = null;
+  progress.trueEnd = true; stats.ending = 1;
+}
+function updateEnding() {
+  const S = STORY.scene; S.t++;
+  if (S.t === 30) storySay('chronoa', '……負けちゃった。……ふぁ……ねむい……', 200);
+  if (S.t === 240) { S.vel = 1; sfx('chime'); }
+  if (S.t === 270) storySay('vel', 'お迎えにあがりました、クロノア様。', 190);
+  if (S.t === 300) say('……だれ？', 120);
+  if (S.t === 470) { storySay('chronoa', '……ん。……はこんで……', 170); sfx('whoosh'); }
+  if (S.t >= 480 && S.t < 900) { S.lift = Math.min(1, S.lift + 0.006); S.cx += (S.vx - 34 - S.cx) * 0.006; }   // carried by something unseen
+  if (S.t === 660) storySay('vel', '主が、お待ちです。……残りの十二人とも、いずれお会いになるでしょう。', 260);
+  if (S.t >= 900) S.alpha = Math.max(0, S.alpha - 0.012);
+  if (S.t === 1000) { STORY.scene = null; startClear(); }
+}
+function storyCutscene() { return !!STORY.scene; }
+// ---- drawing -------------------------------------------------------------
+function drawVelSprite(x, y, a, key) {   // x = centre, y = feet (world px)
+  const r = rectOf('chars', key || 'vel_idle'), sx = Math.round(x - cam.x - r.w / 2), sy = Math.round(y - cam.y - r.h);
+  g.save(); g.globalAlpha = a * 0.35; g.fillStyle = '#000000'; g.beginPath(); g.ellipse(x - cam.x, y - cam.y - 1, 16, 3, 0, 0, 7); g.fill();
+  // her shadow is a little too big, and it moves on its own
+  g.globalAlpha = a * 0.28; for (let i = 0; i < 5; i++) { const an = frame * 0.03 + i * 1.3; g.beginPath(); g.ellipse(x - cam.x + Math.cos(an) * 14, y - cam.y - 2, 9 + Math.sin(an * 1.7) * 3, 2, 0, 0, 7); g.fill(); }
+  g.globalAlpha = a; spr('chars', key || 'vel_idle', sx, sy, x > pcx()); g.restore();
+}
+function drawStoryWorld(lights) {
+  const V = STORY.vel;
+  if (V) { const a = Math.min(1, V.t / 40, (V.life - V.t) / 40); drawVelSprite(V.x, V.y, a, V.t > 60 && V.t < 120 ? 'vel_bow' : 'vel_idle'); lights.push({ x: V.x, y: V.y - 40, r: 46, cool: 1 }); }
+  const S = STORY.scene; if (!S) return;
+  // Chronoa, asleep, lifted by something nobody can see: a faint warping shadow around her, nothing else
+  const cx = S.cx, cy = S.cy - S.lift * 46 + Math.sin(S.t * 0.04) * 2 * S.lift, key = S.t < 470 ? 'chr_hurt' : 'chr_sleep', r = rectOf('chars', key);
+  g.save(); g.globalAlpha = S.alpha;
+  if (S.lift > 0) { for (let i = 0; i < 9; i++) { const an = S.t * 0.05 + i * 0.7, rr = 18 + Math.sin(S.t * 0.07 + i) * 5;
+      g.fillStyle = 'rgba(8,4,16,' + (0.10 + 0.06 * Math.sin(S.t * 0.1 + i)) * S.lift + ')'; g.beginPath(); g.ellipse(cx - cam.x + Math.cos(an) * rr, cy - cam.y - 30 + Math.sin(an * 1.3) * rr * 0.9, 10, 7, an, 0, 7); g.fill(); }
+    g.fillStyle = 'rgba(0,0,0,' + 0.3 * S.lift + ')'; g.beginPath(); g.ellipse(cx - cam.x, FLOOR_Y - cam.y - 1, 14 + 6 * S.lift, 2, 0, 0, 7); g.fill(); }
+  g.translate(Math.round(cx - cam.x), Math.round(cy - cam.y - r.h / 2)); g.rotate(S.lift * -0.35 + (S.lift > 0 ? Math.sin(S.t * 0.05) * 0.04 : 0));
+  // the space around her ripples (distortion): draw her twice, slightly offset, with a dark tint
+  if (S.lift > 0) { g.globalAlpha = S.alpha * 0.25 * S.lift; sprWhite('chars', key, -(r.w >> 1) + Math.round(Math.sin(S.t * 0.2) * 2), -(r.h >> 1), false, '#1a0a2a'); g.globalAlpha = S.alpha; }
+  spr('chars', key, -(r.w >> 1), -(r.h >> 1)); g.restore();
+  if (S.vel) { const a = Math.min(1, (S.t - 240) / 50) * S.alpha; drawVelSprite(S.vx, FLOOR_Y, a, S.t > 270 && S.t < 330 ? 'vel_bow' : 'vel_idle'); lights.push({ x: S.vx, y: FLOOR_Y - 40, r: 50, cool: 1 }); }
+  lights.push({ x: cx, y: cy - 30, r: 50, cool: 1 });
+}
+// portrait dialogue box at the top of the game screen (game pixels for the frame + portrait, hi-res text)
+function drawStoryBox() {
+  const B = STORY.box; if (!B) return;
+  const Sp = SPEAKERS[B.who], a = Math.min(1, B.t / 14, (B.T - B.t) / 10);
+  g.save(); g.globalAlpha = a; g.fillStyle = 'rgba(10,8,22,0.88)'; g.fillRect(6, 22, VW - 12, 58); g.strokeStyle = Sp.col; g.lineWidth = 1; g.strokeRect(6.5, 22.5, VW - 13, 57);
+  g.fillStyle = '#000000'; g.fillRect(10, 27, 50, 50); spr('chars', Sp.portrait, 11, 28); g.strokeStyle = '#5a4a7a'; g.strokeRect(10.5, 27.5, 49, 49); g.restore();
+}
+function drawStoryText() {
+  const B = STORY.box; if (!B) return;
+  const Sp = SPEAKERS[B.who], a = Math.min(1, B.t / 14, (B.T - B.t) / 10), shown = Math.min(B.text.length, Math.floor((B.T - B.t) / 2) + 1);
+  drawHiText(Sp.name, 68, 27, 8, Sp.col, '#0a0816', 'left', a);
+  const s = hiS(), fs = fontPx(8.5); sctx.save(); sctx.globalAlpha = a; sctx.font = '700 ' + fs + 'px ' + JP_FONT;
+  const lines = wrapText(B.text.slice(0, shown), (VW - 82) * s); sctx.fillStyle = '#f4f0ff'; sctx.textAlign = 'left'; sctx.textBaseline = 'top';
+  lines.slice(0, 3).forEach((l, i) => sctx.fillText(l, 68 * s, (41 + i * 12) * s)); sctx.restore();
+}
+
+// =====================================================================
 //  MUSIC: NES-style chiptune BGM synthesized live with Web Audio (engine reused from ROCKSIDE 04h_music.js:
 //  4 channels pulse 1 lead / pulse 2 / triangle bass / noise drums, chord charts + melody bars).
 //  All melodies below are original compositions for ROCKSIDE外伝.
@@ -3116,6 +3381,28 @@ const MUSIC_SONGS = {
       A2: { base: 'A', p2: 'echo' } },
     order: ['A', 'B', 'A2'] },
 
+  // ---- v0.4 ----
+  chronoa: { name: 'NOT DONE YET', jp: 'ボス：時計塔管理人クロノア', mood: 'true final boss, C# minor; drowsy music-box intro feel over a relentless clockwork gallop, rewinding runs', bpm: 164,
+    lead: { duty: 0.25, vol: 0.07, gate: 0.82 }, p2v: { duty: 0.125, vol: 0.034 },
+    sections: {
+      A: { chords: ['C#m', 'A', 'F#m', 'G#', 'C#m', 'A', 'D#m7b5,G#', 'C#m'], p2: 'arp16', bass: 'gallop',
+        drums: ['k.hks.hkk.hks.hk'], fill: 'k.hks.hks.s.ssss',
+        mel: ['G#5:2 C#6 E6 G#6 F#6:4 E6', 'E6:2 D#6 C#6 B5 C#6:8', 'A5:2 C#6 F#6 A6 G#6:4 F#6', 'B#5:6 D#6:2 G#5:8',
+              'C#6:2 E6 G#6 C#7 B6:4 G#6', 'A6:4 G#6:2 F#6 E6:8', 'F#6:2 A6 C#7 A6 G#6 B#6 D#7 B#6', 'C#7:12 r:4'] },
+      B: { chords: ['A', 'B', 'G#m', 'C#m', 'F#m', 'G#', 'A,B', 'G#7'], p2: 'harm3', bass: 'oct8',
+        drums: ['k.k.s.k.k.k.s.kk'], fill: 'k.s.s.s.ssssxcx.',
+        mel: ['C#7:4 B6:2 A6 E6:4 A6', 'D#7:4 C#7:2 B6 F#6:4 B6', 'B6:2 A6 G#6 D#6 G#6:8', 'E6:2 G#6 C#7 E7 D#7:4 C#7',
+              'C#7:4 A6:2 F#6 C#6:4 F#6', 'B#6:4 G#6:2 D#6 B#5:4 D#6', 'C#7:2 B6 A6 B6 C#7 D#7 E7 F#7', 'G#7:8 F#7:4 D#7'] },
+      A2: { base: 'A', p2: 'echo' } },
+    order: ['A', 'B', 'A2'] },
+
+  velnight: { name: 'THE SECRETARY', jp: 'エンディング：主人付き秘書', mood: 'slow, polite and unsettling D minor; sparse harpsichord over a low drone, something breathing behind it', bpm: 76,
+    lead: { duty: 0.125, vol: 0.05, gate: 0.9 }, p2v: { duty: 0.5, vol: 0.026 },
+    sections: { A: { chords: ['Dm', 'Bb', 'Gm', 'A', 'Dm', 'Bb', 'Em7b5,A', 'Dm'], p2: 'arp8', bass: 'drone', drums: ['k...............'], fill: null,
+      mel: ['A5:6 F5:2 D5:8', 'D6:6 C6:2 Bb5:8', 'G5:4 Bb5 D6 C#6', 'E6:12 r:4',
+            'F6:6 E6:2 D6:4 A5', 'Bb5:4 D6 F6 E6', 'G5:4 Bb5 E6 C#6', 'D6:12 r:4'] } },
+    order: ['A'] },
+
   jingle_warning: { once: true, name: 'JINGLE: WARNING!', jp: 'ジングル：ボス出現', mood: 'tritone alarm before the boss', bpm: 150,
     lead: { duty: 0.125, vol: 0.06, gate: 0.9 }, p2v: { duty: 0.5, vol: 0.03 },
     sections: { A: { chords: ['E5', 'E5'], p2: 'echo', bass: 'drone', drums: ['t...t...t...t...'], fill: 'x.x.x.x.ssssc...',
@@ -3139,7 +3426,7 @@ const MUSIC_SONGS = {
 };
 const MUSIC_LIST = ['title', 'mansion', 'laundry', 'garden', 'clock', 'chapel', 'bath', 'boss', 'boss2', 'boss3', 'boss4', 'vault', 'afterglow', 'jingle_warning', 'jingle_save', 'jingle_clear', 'jingle_gameover'];
 const BOSS_THEMES = new Set(['boss', 'boss2', 'boss3']);
-const BOSS_MUSIC = { chandelier: 'boss', golem: 'boss2', rose: 'boss2', clock: 'boss3', organ: 'boss4', serpent: 'boss4' };
+const BOSS_MUSIC = { chronoa: 'chronoa', chandelier: 'boss', golem: 'boss2', rose: 'boss2', clock: 'boss3', organ: 'boss4', serpent: 'boss4' };
 
 // ---------------------------------------------------------------------
 //  compiler: song -> events per 16th step  { ch: 'p1'|'p2'|'tri'|'noi', m: midi, len (steps), vol, duty, kind }
@@ -3314,6 +3601,7 @@ function musicWanted() {
   if (state === 'clear') return clearT < 200 ? 'jingle_clear' : 'afterglow';
   if (state !== 'play' && state !== 'map') return null;
   if (P.dead) return 'jingle_gameover';
+  if (typeof STORY !== 'undefined' && STORY.scene) return STORY.scene.t < 220 ? null : 'velnight';
   if (boss && boss.state !== 'sleep' && boss.state !== 'done') return boss.state === 'dying' ? null : BOSS_MUSIC[boss.kind] || 'boss';
   if (room && room.def.secret) return 'vault';
   return room && AREAS[room.def.area] ? AREAS[room.def.area].music : 'mansion';
@@ -3390,7 +3678,7 @@ function updatePlay() {
   if (hitStop > 0) { hitStop--; return; }
   progress.time++;
   if (fadeT > 0) fadeT--;
-  const cut = boss && (boss.state === 'intro' || boss.state === 'dying');
+  const cut = (boss && (boss.state === 'intro' || boss.state === 'dying')) || storyCutscene();
   if (cut) { const sv = Object.assign({}, keys), st = Object.assign({}, touch); for (const k in keys) keys[k] = touch[k] = false; inp.jumpPressed = inp.spitPressed = false; updatePlayer(); Object.assign(keys, sv); Object.assign(touch, st); }
   else updatePlayer();
   if (state !== 'play') return;
@@ -3398,7 +3686,7 @@ function updatePlay() {
   updateEnts(); updateItems(); updateFloats(); updateShots(); updateEBullets(); updateBoss(); updateSpirit();
   if (abilityGet.t > 0) abilityGet.t--;
   if (boss && boss.core && boss.core.state === 'swallow') { const c = boss.core, n = nozzle(); c.t++; c.x += (n.x - c.x) * 0.2; c.y += (n.y - c.y) * 0.2; if (c.t > 18) boss.core = null; }
-  updateParts(); checkLockedDoor(); updateTips(); updateCamera();
+  updateParts(); checkLockedDoor(); updateTips(); updateCamera(); updateStory();
   if (talk.t > 0) talk.t--;
   if (boss && boss.state === 'intro' && boss.t === 130) say(boss.D.sayIntro, 160);
   if (boss && boss.core && boss.core.t === 0 && boss.t === 1 && !progress.tips.has('tip:coresay_' + boss.kind)) { progress.tips.add('tip:coresay_' + boss.kind); say(boss.D.sayCore, 120); }
@@ -3652,6 +3940,8 @@ function drawEBullet(b) {
   else if (b.kind === 'petal') spr('items', 'petal', x, y + Math.sin((frame + b.life) * 0.3) * 2, b.vx > 0);
   else if (b.kind === 'root') { for (let i = 0; i < 4; i++) { const hh = 8 + ((i * 5 + (frame >> 1)) % 9); g.fillStyle = i & 1 ? '#3a6a2a' : '#6a4a2a'; g.beginPath(); g.moveTo(Math.round(x + i * 4), Math.round(y + b.h)); g.lineTo(Math.round(x + i * 4 + 2), Math.round(y + b.h - hh)); g.lineTo(Math.round(x + i * 4 + 4), Math.round(y + b.h)); g.fill(); } g.fillStyle = '#ff5d8a'; g.fillRect(Math.round(x + 6), Math.round(y + 2), 3, 3); }
   else if (b.kind === 'thorn') { const k = Math.min(1, (34 - b.life) / 5), h = Math.round(b.h * k); const r = rectOf('props', 'thornspike'); g.drawImage(IMG.props, r.x, r.y, r.w, h, Math.round(x), Math.round(y + b.h - h), r.w, h); }
+  else if (b.kind === 'sandorb') { spr('chars', 'sandorb', Math.round(x - 1), Math.round(y - 1)); if (frame % 3 === 0) parts.push({ x: b.x + 6, y: b.y + 6, vx: rnd(-0.3, 0.3), vy: rnd(-0.3, 0.3), life: 14, col: '#f0d080', size: 1 }); }
+  else if (b.kind === 'sandfall') { const k = Math.min(1, (26 - b.life) / 4), h = Math.round(b.h * k); g.fillStyle = 'rgba(240,200,120,0.75)'; g.fillRect(Math.round(x + 3), Math.round(y), b.w - 6, h); g.fillStyle = 'rgba(255,240,200,0.9)'; for (let yy = (frame * 5) % 12; yy < h; yy += 12) g.fillRect(Math.round(x + 5 + (yy % 7)), Math.round(y + yy), 2, 4); }
   else if (b.kind === 'hand') { const k = Math.min(1, (22 - b.life) / 4), h = Math.round(b.h * k); g.fillStyle = '#2a1a10'; g.fillRect(Math.round(x + 3), Math.round(y), 4, h); g.fillStyle = '#c9a24a'; g.fillRect(Math.round(x + 4), Math.round(y), 2, h);
     g.fillStyle = '#e0b040'; g.beginPath(); g.moveTo(x + 5, y + h + 6); g.lineTo(x, y + h - 6); g.lineTo(x + 10, y + h - 6); g.closePath(); g.fill(); }
   else if (b.kind === 'wave' || b.kind === 'suds') { for (let i = 0; i < 5; i++) { g.fillStyle = b.kind === 'suds' ? (i % 2 ? '#bfe8ff' : '#ffffff') : i % 2 ? '#c9a24a' : '#e8f8ff'; const hgt = 4 + ((frame + i * 3) % 8); g.fillRect(Math.round(x + i * 3), Math.round(y + b.h - hgt), 2, hgt); } }
@@ -3773,7 +4063,7 @@ function renderPlay() {
   for (const f of floats) lights.push({ x: f.x + f.w / 2, y: f.y, r: 30, blue: 1 });
   for (const e of ents) if (e.type === 'ability' && !e.hidden && !e.has) lights.push({ x: e.x, y: e.y - 44, r: 60, blue: 1 });
   for (const e of ents) if (e.foe && e.burnT > 0) lights.push({ x: e.x, y: e.y - e.h / 2, r: 30, warm: 1 });
-  const bossLights = []; if (boss) { const tmp = g.globalAlpha; drawBoss(bossLights); g.globalAlpha = tmp; }
+  const bossLights = []; if (boss) { const tmp = g.globalAlpha; drawBoss(bossLights); g.globalAlpha = tmp; } drawStoryWorld(bossLights);
   drawLighting(lights.concat(bossLights));
   if (boss) { /* boss drawn under the darkness but its flames add light; redraw glowing flames on top for punch */ }
   for (const e of ents) if (e.type === 'armor' && !e.dead) drawEnt(e);
@@ -3786,13 +4076,14 @@ function renderPlay() {
   if (P.spitHold > 4 && hasAbil('float') && P.tank.length) { const n = nozzle(), k = Math.min(1, P.spitHold / CONFIG.float.holdFrames); g.fillStyle = canFloat() ? '#8fe8ff' : '#6a6a8a';
     for (let i = 0; i < 16 * k; i++) { const an = -Math.PI / 2 + i / 16 * Math.PI * 2; g.fillRect(Math.round(n.x - cam.x + Math.cos(an) * 9), Math.round(n.y - cam.y - 12 + Math.sin(an) * 9), 1, 1); } }
   cam.x = savedCam.x; cam.y = savedCam.y;
-  drawHUD();
+  drawHUD(); drawStoryBox();
   if (fadeT > 0) { g.fillStyle = 'rgba(0,0,0,' + (fadeT / 14) + ')'; g.fillRect(0, 0, VW, VH); }
   if (P.dead) { const k = Math.min(1, P.deadT / 60); g.fillStyle = 'rgba(10,4,20,' + k * 0.6 + ')'; g.fillRect(0, 0, VW, VH); }
   blit();
   // hi-res overlays
   if (banner.t > 0) { const a = Math.min(1, banner.t / 20, (170 - banner.t) / 15); drawHiText(banner.text, VW / 2, 52, 15, '#fff4e0', '#1a0e28', 'center', a); drawHiText(banner.en, VW / 2, 72, 7, '#c8b8ff', '#1a0e28', 'center', a); }
   if (tipBox.t > 0 && !layout.portrait) { const a = Math.min(1, tipBox.t / 15, (240 - tipBox.t) / 10 + 0.2); drawDialogue('', '#8fe8ff', tipBox.text, a); }
+  drawStoryText();
   if (talk.t > 0 && talk.text) drawBubble(pcx() - cam.x, P.y - cam.y - 6, talk.text, Math.min(1, talk.t / 15));
   if (boss && boss.state === 'intro' && boss.t > 60) { const a = Math.min(1, (boss.t - 60) / 20); drawHiText(boss.D.jp, VW / 2, 150, 18, '#ffe6b0', '#2a0e10', 'center', a); drawHiText(boss.D.en, VW / 2, 174, 9, '#ffb060', '#2a0e10', 'center', a); }
   if (boss && boss.state !== 'sleep' && boss.state !== 'done' && boss.state !== 'intro') drawHiText(boss.D.jp, VW / 2, VH - 27, 7, '#ffe6b0', '#140a20', 'center');
@@ -3916,7 +4207,7 @@ requestAnimationFrame(loop);
 window.GAIDEN = { CONFIG, P, cam, layout, stats, progress, ents, items, ebullets, playerShots, parts, ROOM_DEFS, CELL_ROOM,
   get state() { return state; }, get stateT() { return stateT; }, get room() { return room; }, get boss() { return boss; }, get frame() { return frame; }, get tipBox() { return tipBox; },
   get music() { return Music; }, nozzle, inCone, loadRoom, placePlayer, startNewGame, continueGame, enterGame, eraseSave, saveGame, loadSave, mapPercent, setState, snapCamera, buildRoomGrid, roomOpenings,
-  spawnItem, makeGhost, startTug, floats, foes: () => ents.filter(e => FOE_SIZE[e.type]), hasAbil, openGate, gainAbility, AREAS, ROOM_BY_ID, TOTAL_CELLS, makeFoe, BOSS_DEFS, entrySafety, openWarpMenu, warpTo,
+  spawnItem, makeGhost, startTug, STORY, velAppear, startEnding, storySay, checkBossGates, floats, foes: () => ents.filter(e => FOE_SIZE[e.type]), hasAbil, openGate, gainAbility, AREAS, ROOM_BY_ID, TOTAL_CELLS, makeFoe, BOSS_DEFS, entrySafety, openWarpMenu, warpTo,
   get debugBossAtk() { return QS.get('bossatk'); }, _test: { keys, inp, touch } };
 </script>
 </body>

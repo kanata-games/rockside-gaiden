@@ -7,7 +7,7 @@ const CC = 24, CR = 18;
 (async () => {
   const srv = await SERVE.start(ROOT); const browser = await chromium.launch(); const page = await browser.newPage();
   await page.goto(srv.url + 'index.html'); await page.waitForTimeout(400);
-  const defs = await page.evaluate(() => GAIDEN.ROOM_DEFS.map(d => { const G = GAIDEN.buildRoomGrid(d); return { id: d.id, area: d.area, cx: d.cx, cy: d.cy, cw: d.cw, ch: d.ch, boss: d.boss || null, secret: !!d.secret, cols: G.cols, rows: G.rows, grid: Array.from(G.grid), gates: G.gates, ents: (d.ents || []).map(e => [e[0], e[1], e[2], e[3] || {}]) }; }));
+  const defs = await page.evaluate(() => GAIDEN.ROOM_DEFS.map(d => { const G = GAIDEN.buildRoomGrid(d); return { id: d.id, area: d.area, cx: d.cx, cy: d.cy, cw: d.cw, ch: d.ch, boss: d.boss || null, bossGate: d.bossGate || null, secret: !!d.secret, cols: G.cols, rows: G.rows, grid: Array.from(G.grid), gates: G.gates, ents: (d.ents || []).map(e => [e[0], e[1], e[2], e[3] || {}]) }; }));
   await browser.close(); srv.close();
   let X0 = 1e9, Y0 = 1e9, X1 = -1e9, Y1 = -1e9;
   for (const d of defs) { X0 = Math.min(X0, d.cx); Y0 = Math.min(Y0, d.cy); X1 = Math.max(X1, d.cx + d.cw); Y1 = Math.max(Y1, d.cy + d.ch); }
@@ -70,6 +70,7 @@ const CC = 24, CR = 18;
       let ok = false; for (let r = 0; r < d.rows && !ok; r++) for (let c = 0; c < d.cols; c++) if (best[gy(d, r) * W + gx(d, c)] >= 0) { ok = true; break; }
       if (ok) { S.beat.add(d.boss); if (d.boss === 'chandelier') S.open.add('ballroom:floor'); did('BOSS ' + d.boss + ' (' + d.id + ')'); }
     }
+    for (const d of defs) if (d.bossGate && d.bossGate.need.every(k => S.beat.has(k)) && !S.open.has(d.id + ':' + d.bossGate.gate)) { S.open.add(d.id + ':' + d.bossGate.gate); did('seal -> ' + d.id + ':' + d.bossGate.gate + ' (' + d.bossGate.need.join('+') + ')'); }
     if (!changed) break;
   }
   console.log('unlock order:\n  ' + log.join('\n  '));

@@ -128,4 +128,8 @@ const CONFIG = {
   clock: { hp: 240, spitMul: 1.0, idle: 36, idleRage: 26, idleOver: 20, handWarn: 34, handWarnRage: 30, handWarnOver: 26, hands: 5, handsRage: 6, handDamage: 1,
     gears: 7, gearsRage: 9, gearSpeed: 3.4, gearDamage: 1, pendWarn: 34, pendWarnRage: 28, pendDamage: 2, chime: 130, chimeRage: 115, chimeOver: 100,
     midWarn: 30, midStabs: 6, midStabsOver: 9, midGap: 16, contactDamage: 2, coreCap: 26, specialEvery: 3, phase3: 0.25 },
+  // ---- v0.4 TRUE FINAL BOSS: 時計塔管理人 クロノア CHRONOA (clock heart) - a bit above the clock, every attack audited
+  chronoa: { hp: 260, idle: 46, idleRage: 34, handWarn: 40, handWarnRage: 34, handDamage: 1, pendWarn: 52, swings: 3, swingsRage: 4, pendDamage: 2,
+    orbs: 5, orbsRage: 6, orbWarn: 40, orbWarnRage: 34, orbSpeed: 2.6, orbDamage: 1, zoneWarn: 34, sandWarn: 44, sandWarnRage: 38, sandDamage: 1, slowMul: 0.55,
+    beamTrack: 50, beamLock: 32, beamLockRage: 30, beamDamage: 2, stun: 150, stunRage: 130, contactDamage: 1, coreCap: 30, specialEvery: 3 },
 };

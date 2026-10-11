@@ -56,7 +56,7 @@ function updatePlay() {
   if (hitStop > 0) { hitStop--; return; }
   progress.time++;
   if (fadeT > 0) fadeT--;
-  const cut = boss && (boss.state === 'intro' || boss.state === 'dying');
+  const cut = (boss && (boss.state === 'intro' || boss.state === 'dying')) || storyCutscene();
   if (cut) { const sv = Object.assign({}, keys), st = Object.assign({}, touch); for (const k in keys) keys[k] = touch[k] = false; inp.jumpPressed = inp.spitPressed = false; updatePlayer(); Object.assign(keys, sv); Object.assign(touch, st); }
   else updatePlayer();
   if (state !== 'play') return;
@@ -64,7 +64,7 @@ function updatePlay() {
   updateEnts(); updateItems(); updateFloats(); updateShots(); updateEBullets(); updateBoss(); updateSpirit();
   if (abilityGet.t > 0) abilityGet.t--;
   if (boss && boss.core && boss.core.state === 'swallow') { const c = boss.core, n = nozzle(); c.t++; c.x += (n.x - c.x) * 0.2; c.y += (n.y - c.y) * 0.2; if (c.t > 18) boss.core = null; }
-  updateParts(); checkLockedDoor(); updateTips(); updateCamera();
+  updateParts(); checkLockedDoor(); updateTips(); updateCamera(); updateStory();
   if (talk.t > 0) talk.t--;
   if (boss && boss.state === 'intro' && boss.t === 130) say(boss.D.sayIntro, 160);
   if (boss && boss.core && boss.core.t === 0 && boss.t === 1 && !progress.tips.has('tip:coresay_' + boss.kind)) { progress.tips.add('tip:coresay_' + boss.kind); say(boss.D.sayCore, 120); }
@@ -318,6 +318,8 @@ function drawEBullet(b) {
   else if (b.kind === 'petal') spr('items', 'petal', x, y + Math.sin((frame + b.life) * 0.3) * 2, b.vx > 0);
   else if (b.kind === 'root') { for (let i = 0; i < 4; i++) { const hh = 8 + ((i * 5 + (frame >> 1)) % 9); g.fillStyle = i & 1 ? '#3a6a2a' : '#6a4a2a'; g.beginPath(); g.moveTo(Math.round(x + i * 4), Math.round(y + b.h)); g.lineTo(Math.round(x + i * 4 + 2), Math.round(y + b.h - hh)); g.lineTo(Math.round(x + i * 4 + 4), Math.round(y + b.h)); g.fill(); } g.fillStyle = '#ff5d8a'; g.fillRect(Math.round(x + 6), Math.round(y + 2), 3, 3); }
   else if (b.kind === 'thorn') { const k = Math.min(1, (34 - b.life) / 5), h = Math.round(b.h * k); const r = rectOf('props', 'thornspike'); g.drawImage(IMG.props, r.x, r.y, r.w, h, Math.round(x), Math.round(y + b.h - h), r.w, h); }
+  else if (b.kind === 'sandorb') { spr('chars', 'sandorb', Math.round(x - 1), Math.round(y - 1)); if (frame % 3 === 0) parts.push({ x: b.x + 6, y: b.y + 6, vx: rnd(-0.3, 0.3), vy: rnd(-0.3, 0.3), life: 14, col: '#f0d080', size: 1 }); }
+  else if (b.kind === 'sandfall') { const k = Math.min(1, (26 - b.life) / 4), h = Math.round(b.h * k); g.fillStyle = 'rgba(240,200,120,0.75)'; g.fillRect(Math.round(x + 3), Math.round(y), b.w - 6, h); g.fillStyle = 'rgba(255,240,200,0.9)'; for (let yy = (frame * 5) % 12; yy < h; yy += 12) g.fillRect(Math.round(x + 5 + (yy % 7)), Math.round(y + yy), 2, 4); }
   else if (b.kind === 'hand') { const k = Math.min(1, (22 - b.life) / 4), h = Math.round(b.h * k); g.fillStyle = '#2a1a10'; g.fillRect(Math.round(x + 3), Math.round(y), 4, h); g.fillStyle = '#c9a24a'; g.fillRect(Math.round(x + 4), Math.round(y), 2, h);
     g.fillStyle = '#e0b040'; g.beginPath(); g.moveTo(x + 5, y + h + 6); g.lineTo(x, y + h - 6); g.lineTo(x + 10, y + h - 6); g.closePath(); g.fill(); }
   else if (b.kind === 'wave' || b.kind === 'suds') { for (let i = 0; i < 5; i++) { g.fillStyle = b.kind === 'suds' ? (i % 2 ? '#bfe8ff' : '#ffffff') : i % 2 ? '#c9a24a' : '#e8f8ff'; const hgt = 4 + ((frame + i * 3) % 8); g.fillRect(Math.round(x + i * 3), Math.round(y + b.h - hgt), 2, hgt); } }
@@ -439,7 +441,7 @@ function renderPlay() {
   for (const f of floats) lights.push({ x: f.x + f.w / 2, y: f.y, r: 30, blue: 1 });
   for (const e of ents) if (e.type === 'ability' && !e.hidden && !e.has) lights.push({ x: e.x, y: e.y - 44, r: 60, blue: 1 });
   for (const e of ents) if (e.foe && e.burnT > 0) lights.push({ x: e.x, y: e.y - e.h / 2, r: 30, warm: 1 });
-  const bossLights = []; if (boss) { const tmp = g.globalAlpha; drawBoss(bossLights); g.globalAlpha = tmp; }
+  const bossLights = []; if (boss) { const tmp = g.globalAlpha; drawBoss(bossLights); g.globalAlpha = tmp; } drawStoryWorld(bossLights);
   drawLighting(lights.concat(bossLights));
   if (boss) { /* boss drawn under the darkness but its flames add light; redraw glowing flames on top for punch */ }
   for (const e of ents) if (e.type === 'armor' && !e.dead) drawEnt(e);
@@ -452,13 +454,14 @@ function renderPlay() {
   if (P.spitHold > 4 && hasAbil('float') && P.tank.length) { const n = nozzle(), k = Math.min(1, P.spitHold / CONFIG.float.holdFrames); g.fillStyle = canFloat() ? '#8fe8ff' : '#6a6a8a';
     for (let i = 0; i < 16 * k; i++) { const an = -Math.PI / 2 + i / 16 * Math.PI * 2; g.fillRect(Math.round(n.x - cam.x + Math.cos(an) * 9), Math.round(n.y - cam.y - 12 + Math.sin(an) * 9), 1, 1); } }
   cam.x = savedCam.x; cam.y = savedCam.y;
-  drawHUD();
+  drawHUD(); drawStoryBox();
   if (fadeT > 0) { g.fillStyle = 'rgba(0,0,0,' + (fadeT / 14) + ')'; g.fillRect(0, 0, VW, VH); }
   if (P.dead) { const k = Math.min(1, P.deadT / 60); g.fillStyle = 'rgba(10,4,20,' + k * 0.6 + ')'; g.fillRect(0, 0, VW, VH); }
   blit();
   // hi-res overlays
   if (banner.t > 0) { const a = Math.min(1, banner.t / 20, (170 - banner.t) / 15); drawHiText(banner.text, VW / 2, 52, 15, '#fff4e0', '#1a0e28', 'center', a); drawHiText(banner.en, VW / 2, 72, 7, '#c8b8ff', '#1a0e28', 'center', a); }
   if (tipBox.t > 0 && !layout.portrait) { const a = Math.min(1, tipBox.t / 15, (240 - tipBox.t) / 10 + 0.2); drawDialogue('', '#8fe8ff', tipBox.text, a); }
+  drawStoryText();
   if (talk.t > 0 && talk.text) drawBubble(pcx() - cam.x, P.y - cam.y - 6, talk.text, Math.min(1, talk.t / 15));
   if (boss && boss.state === 'intro' && boss.t > 60) { const a = Math.min(1, (boss.t - 60) / 20); drawHiText(boss.D.jp, VW / 2, 150, 18, '#ffe6b0', '#2a0e10', 'center', a); drawHiText(boss.D.en, VW / 2, 174, 9, '#ffb060', '#2a0e10', 'center', a); }
   if (boss && boss.state !== 'sleep' && boss.state !== 'done' && boss.state !== 'intro') drawHiText(boss.D.jp, VW / 2, VH - 27, 7, '#ffe6b0', '#140a20', 'center');
@@ -582,7 +585,7 @@ requestAnimationFrame(loop);
 window.GAIDEN = { CONFIG, P, cam, layout, stats, progress, ents, items, ebullets, playerShots, parts, ROOM_DEFS, CELL_ROOM,
   get state() { return state; }, get stateT() { return stateT; }, get room() { return room; }, get boss() { return boss; }, get frame() { return frame; }, get tipBox() { return tipBox; },
   get music() { return Music; }, nozzle, inCone, loadRoom, placePlayer, startNewGame, continueGame, enterGame, eraseSave, saveGame, loadSave, mapPercent, setState, snapCamera, buildRoomGrid, roomOpenings,
-  spawnItem, makeGhost, startTug, floats, foes: () => ents.filter(e => FOE_SIZE[e.type]), hasAbil, openGate, gainAbility, AREAS, ROOM_BY_ID, TOTAL_CELLS, makeFoe, BOSS_DEFS, entrySafety, openWarpMenu, warpTo,
+  spawnItem, makeGhost, startTug, STORY, velAppear, startEnding, storySay, checkBossGates, floats, foes: () => ents.filter(e => FOE_SIZE[e.type]), hasAbil, openGate, gainAbility, AREAS, ROOM_BY_ID, TOTAL_CELLS, makeFoe, BOSS_DEFS, entrySafety, openWarpMenu, warpTo,
   get debugBossAtk() { return QS.get('bossatk'); }, _test: { keys, inp, touch } };
 </script>
 </body>

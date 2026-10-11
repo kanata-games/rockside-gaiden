@@ -70,7 +70,10 @@ BOSS_DEFS.clock = { jp: '大時計の番人 チクタク', en: 'GRANDFATHER TICK
     }
     if (b.state !== 'stopped' && overlapBox(b.x - 22, FLOOR_Y - 116, b.x + 22, FLOOR_Y)) hurtPlayer(C.contactDamage, b.x, 'clock');
   },
-  onDefeat(b) { startClear(); },
+  onDefeat(b) { bossReward(b, b.x); say('……止まった。……でも、まだ上から、チクタクって聞こえる', 220); checkBossGates();   // v0.4: no longer the last boss
+    if (progress.perm.has('clockroom:gate:heart')) tip('clockDown', 'チクタクをやっつけた！ 奥の扉が開いた… 時計塔の最上階へ', true);
+    else tip('clockDown', 'チクタクをやっつけた！ 奥の扉には、まだ封印が残っている…', true);
+    velAppear('clock', b.x + 70, FLOOR_Y); },
   draw(b, lights) {
     const D = this, x = Math.round(b.x - cam.x), y = Math.round(FLOOR_Y - cam.y);
     if (b.state === 'midnight') { g.fillStyle = 'rgba(10,0,30,' + Math.min(0.45, b.t / 40) + ')'; g.fillRect(0, 0, VW, VH); }

@@ -30,6 +30,7 @@ window.__bot = function () {
   if (kind === 'chandelier' && b.state === 'crash') danger.push([b.t < (b.rage ? CONFIG.boss.crashTrackRage : CONFIG.boss.crashTrack) ? b.shadowX : b.px, 76]);
   if (kind === 'golem') { if (b.state === 'slam') danger.push([b.x, 96]); if (b.state === 'idle' || b.state === 'bubbles') danger.push([b.x, 46]); }
   if (kind === 'clock' && b.state !== 'stopped') danger.push([b.x, 46]);
+  if (kind === 'chronoa' && b.state === 'rewind' && b.orbs) for (const o of b.orbs) if (o.q || b.t < 60) danger.push([o.tx + (b.orbO ? (b.orbO.x - o.tx) * 0.2 : 0), 26]);
   if (kind === 'rose' && !b.burrow) danger.push([b.x, 34]);
   
   if (kind === 'organ' && b.state !== 'stunned') danger.push([b.x - 52, b.state === 'fortissimo' ? 80 : 44]);
@@ -41,7 +42,7 @@ window.__bot = function () {
     if ((q.kind === 'wave' || q.kind === 'suds' || q.kind === 'rgear' || q.kind === 'root') && toward && dx < 40 && dx > 8 && P.onGround) { jump = true; holdJump = true; S.waveDir = Math.sign(q.vx) || 1; S.waveT = 40; }
     if (q.kind === 'bubble' && P.tank.length >= 3 && dx < 50 && Math.abs(q.y - P.y - 20) < 40) danger.push([qx, 50]);
     if (q.kind === 'firepatch' || q.kind === 'puddle') danger.push([qx, q.kind === 'puddle' ? 30 : 24]);
-    if (q.kind === 'blast' || q.kind === 'geyser' || q.kind === 'hand' || q.kind === 'thorn') danger.push([qx, q.w / 2 + 10]);
+    if (q.kind === 'blast' || q.kind === 'geyser' || q.kind === 'hand' || q.kind === 'thorn' || q.kind === 'sandfall') danger.push([qx, q.w / 2 + 10]);
     if (q.kind === 'hotwater' && q.tx !== undefined) danger.push([q.tx + 6, 28]);
     if (q.kind === 'seedpod' && q.tx !== undefined) danger.push([q.tx, 22]);
     if ((q.kind === 'shard' || q.kind === 'candle' || q.kind === 'dropbottle' || q.kind === 'sock' || q.kind === 'drop') && q.vy > 0 && q.y < P.y + P.h) danger.push([qx, 18]);
@@ -56,7 +57,7 @@ window.__bot = function () {
   // ---- decide -------------------------------------------------------
   const near = danger.find(([x, r]) => Math.abs(x - pcx) < r);
   if (P.tug) { vac = true; move = P.tug.x > pcx ? -1 : 1; if (P.tug.boss) S.coreTugs++; }
-  else if (kind === 'clock' && b.state === 'pendulum') { go(pcx < 192 ? L : R, 4); }      // wait at a wall for the swing
+  else if ((kind === 'clock' || kind === 'chronoa') && b.state === 'pendulum') { go(pcx < 192 ? L : R, 4); }      // wait at a wall for the swing
   else if (b.core && b.core.state === 'out') {
     const c = b.core; S.cw = 1; let side = pcx < c.x ? -1 : 1, tx = c.x + side * 62; if (tx < L || tx > R) tx = c.x - side * 62;
     if (near && Math.abs(near[0] - tx) < near[1]) tx = c.x - side * 62;

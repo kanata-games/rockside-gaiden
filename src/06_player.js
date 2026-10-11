@@ -114,7 +114,7 @@ function updatePlayer() {
   if (P.knock > 0) { P.knock--; }
   else if (P.tug) { updateTug(); }
   else {
-    const sp = vacHeld ? C.vacWalkSpeed : C.walkSpeed, acc = P.onGround ? C.accel : C.airAccel;
+    const sp = (vacHeld ? C.vacWalkSpeed : C.walkSpeed) * timeSlowAt(pcx(), P.y + P.h), acc = P.onGround ? C.accel : C.airAccel;
     if (dir) { P.face = dir; P.vx += clamp(dir * sp - P.vx, -acc, acc); }
     else { P.vx += clamp(-P.vx, -C.decel, C.decel); }
     if (P.jumpBuf > 0 && (P.onGround || P.coyote > 0)) { P.vy = -C.jumpVel; P.jumpBuf = 0; P.coyote = 0; P.onGround = false; sfx('jump'); }

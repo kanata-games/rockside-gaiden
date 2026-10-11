@@ -196,6 +196,7 @@ THEMES = {
     'crypt':   dict(w1='#141614', w2='#20241e', w3='#3a3e34', pat='niche'),
     'bath':    dict(w1='#1e4a52', w2='#2a6470', w3='#4a9aa4', pat='mosaic'),
     'cistern': dict(w1='#10202a', w2='#18303c', w3='#2a4a5a', pat='wetstone'),
+    'heart':   dict(w1='#120e22', w2='#1c1632', w3='#3a2e5e', pat='gothic'),   # v0.4 clock heart (Chronoa)
 }
 for name, th in THEMES.items():
     s = Spr(32, 32); w1, w2, w3 = th['w1'], th['w2'], th['w3']
@@ -1485,6 +1486,8 @@ for x in range(44):
     hh = int(5 + 4 * math.sin((x + .5) / 44 * math.pi))
     for y in range(12 - hh, 12): s.px(x, y, '#8ad8f0' if y > 12 - hh + 1 else '#ffffff')
 s.outline('#1a4a5a'); BO.add('splashring', s)
+# v0.4: Chronoa's eye core (teal) for the tug-of-war
+for m in ('tug', 'dizzy'): BO.add('ecore_' + m, tinted_core(m, '#f0fffc', '#9ae8dc', '#2a9a90', '#0e3a38'))
 BO.save()
 
 # =====================================================================
@@ -1541,3 +1544,6 @@ def tree(x0, y0, h, d):
 tree(26, 232, 80, 1); tree(352, 236, 90, -1)
 t.img().save(os.path.join(A, 'title_bg.png'))
 print('title_bg', (W, H))
+
+# v0.4 characters (Chronoa, Vel, portraits, the clock-eye mimic)
+exec(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'art_chars.py'), encoding='utf-8').read())

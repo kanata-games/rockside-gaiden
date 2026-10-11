@@ -47,7 +47,22 @@ ROOM_DEFS.push(
     decor: [['bell', 12, 2, { top: 1 }], ['round_window', 6, 7], ['round_window', 19, 7], ['sconce', 12, 10, { light: 1 }], ['gear_med', 20, 15]] },
 
   { id: 'clockroom', jp: '大時計の間', en: 'GREAT CLOCK CHAMBER', area: 'clock', theme: 'tower', tiles: 'w', cx: 7, cy: -4, cw: 1, ch: 1, dark: 0.36, boss: 'clock',
-    build(R) { R.box(); R.open('L', 0, 11, 14); R.plat(2, 5, 11); R.plat(18, 21, 11); },
+    // v0.4: the sealed door behind the clock leads up to the clock heart (Chronoa)
+    bossGate: { gate: 'heart', need: ['clock'] },
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.gate(23, 11, 23, 14, 'heart'); R.plat(2, 5, 11); R.plat(18, 21, 11); },
     ents: [['boss', 12, 15]],
     decor: [['round_window', 4, 6], ['round_window', 20, 6], ['sconce', 3, 9, { light: 1 }], ['sconce', 21, 9, { light: 1 }], ['gear_med', 12, 4]] },
+
+  // ---- v0.4: the top of the tower (true final boss) ----
+  { id: 'towertop', jp: '時計塔の最上階', en: 'TOP OF THE TOWER', area: 'clock', theme: 'tower', tiles: 'w', cx: 8, cy: -4, cw: 1, ch: 1, dark: 0.5,
+    vel: 'chronoa', velAt: [17, 15],
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.plat(4, 9, 11); R.plat(14, 19, 8); },
+    ents: [['save', 6, 15], ['heartbig', 16.5, 6], ['gear', 8, 11], ['book', 5, 11], ['chair', 12, 15],
+      ['hint', 3, 15, { text: '……チクタク、チクタク。奥から、ねむそうな寝息が聞こえる' }]],
+    decor: [['clockface', 12, 7], ['round_window', 4, 6], ['round_window', 20, 6], ['sconce', 9, 9, { light: 1 }], ['sconce', 21, 10, { light: 1 }], ['gear_med', 2, 4], ['bell', 18, 2, { top: 1 }]] },
+
+  { id: 'clockheart', jp: '時計塔の心臓', en: 'HEART OF THE CLOCK TOWER', area: 'clock', theme: 'heart', tiles: 'w', cx: 9, cy: -4, cw: 1, ch: 1, dark: 0.42, boss: 'chronoa',
+    build(R) { R.box(); R.open('L', 0, 11, 14); },
+    ents: [['boss', 12, 15]],
+    decor: [['gear_big', 3, 13], ['gear_big', 21, 13], ['gear_med', 5, 6], ['gear_med', 19, 6], ['sconce', 2, 9, { light: 1 }], ['sconce', 22, 9, { light: 1 }]] },
 );

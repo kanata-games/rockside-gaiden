@@ -130,7 +130,7 @@ function rectLine(x, y, w, h, col) { g.fillStyle = col; g.fillRect(x, y, w, 1); 
 //  Assets: PNG atlases in assets/ (+ rect maps inlined at build time as EMBEDDED_META)
 //  Every sprite is looked up by name, so an artist can redraw an atlas freely as long as the names stay.
 // ---------------------------------------------------------------------
-const ASSET_FILES = ['kanata', 'wisp', 'tiles', 'bg', 'props', 'items', 'enemies', 'boss', 'title_bg'];
+const ASSET_FILES = ['kanata', 'wisp', 'tiles', 'bg', 'props', 'items', 'enemies', 'boss', 'chars', 'title_bg'];
 const IMG = {}; let assetsLoaded = 0, assetsFailed = [];
 const META = (typeof EMBEDDED_META !== 'undefined') ? EMBEDDED_META : {};
 for (const n of ASSET_FILES) {

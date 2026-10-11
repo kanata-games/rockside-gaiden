@@ -54,8 +54,9 @@ function coreWindowOver(b) { // returns true when the stun window ended (core es
 }
 // bar every side door of the boss room during the fight
 function setGate(on) {
+  const named = new Set(); for (const gid in room.gates) for (const i of room.gates[gid]) named.add(i);   // v0.4: never touch a room's own named gates (e.g. the clock's seal door)
   for (const o of room.openings) { if (o.side !== 'L' && o.side !== 'R') continue; const c = o.side === 'L' ? 0 : room.cols - 1;
-    for (let r = o.a; r <= o.b; r++) { const i = r * room.cols + c; if (room.grid[i] === T_EMPTY || room.grid[i] === T_GATE) room.grid[i] = on ? T_GATE : T_EMPTY; } }
+    for (let r = o.a; r <= o.b; r++) { const i = r * room.cols + c; if (!named.has(i) && (room.grid[i] === T_EMPTY || room.grid[i] === T_GATE)) room.grid[i] = on ? T_GATE : T_EMPTY; } }
   renderRoomStatic();
 }
 function updateBoss() {
@@ -147,6 +148,7 @@ BOSS_DEFS.chandelier = { jp: '呪いのシャンデリア', en: 'GRAND LUMIERE',
     for (const e of ents) if (e.type === 'ability') e.hidden = false;
     bossReward(b, b.x); say('……床、抜けちゃった。……下にも、まだお部屋があるみたい', 240);
     tip('floorGone', 'シャンデリアの重みで床が抜けた！ 台座の上で何かが光っている', true);
+    velAppear('first', b.x > 192 ? 60 : 324, FLOOR_Y);   // v0.4: the secretary watches from the corner
   },
   draw(b, lights) {
     const x = Math.round(b.x - cam.x), y = Math.round(b.y - cam.y), blue = b.rage;
