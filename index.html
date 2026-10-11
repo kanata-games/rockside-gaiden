@@ -848,7 +848,9 @@ function rectInCone(x, y, w, h) { // any of 5 sample points
   return inCone(x + w / 2, y + h / 2) || inCone(x + 2, y + 2) || inCone(x + w - 2, y + 2) || inCone(x + 2, y + h - 2) || inCone(x + w - 2, y + h - 2);
 }
 function placePlayer(x, feetY, face) {
-  P.x = x - P.w / 2; P.y = feetY - P.h; P.vx = 0; P.vy = 0; P.face = face || 1; P.onGround = false; P.knock = 0; P.tug = null; P.spawnX = P.x; P.spawnY = P.y;
+  P.x = x - P.w / 2; P.y = feetY - P.h; P.vx = 0; P.vy = 0; P.face = face || 1; P.onGround = false; P.knock = 0; P.tug = null;
+  if (room) { let n = 0; while (boxHitsSolid(P.x, P.y, P.w, P.h) && n++ < 64) P.y -= 1; } // never start embedded in the floor
+  P.spawnX = P.x; P.spawnY = P.y;
 }
 function hurtPlayer(dmg, fromX, why) {
   if (P.inv > 0 || P.dead || state !== 'play') return false;
@@ -973,7 +975,7 @@ function updateVacuum() {
   // loose items
   for (const it of items) {
     if (it.dead || it.fixed) continue;
-    if (!inCone(it.x + it.w / 2, it.y + it.h / 2, 4)) continue;
+    if (!inCone(it.x + it.w / 2, it.y + it.h / 2, 10)) continue; // generous: floor items right under the nozzle count
     const dx = n.x - (it.x + it.w / 2), dy = n.y - (it.y + it.h / 2), d = Math.hypot(dx, dy) || 1;
     if (isAmmo(it.kind) && P.tank.length >= V.tankMax) { if (frame % 20 === 0) tip('full', 'タンクがいっぱい。SPIT で吐き出そう'); continue; }
     const a = V.itemPull * (1.4 - d / V.range);
