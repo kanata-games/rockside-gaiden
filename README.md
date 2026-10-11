@@ -65,7 +65,7 @@ Each area has its own tiles, background and music.
 
 Every boss telegraphs its attacks: floor marks, red flashes, HIGH/LOW guide lines, a dotted pendulum arc. Every 3rd attack (every 4th for the later bosses) is a long special move that leaves the boss stunned. Its ghost core pops out, and that core is the weak point: vacuum it and win the tug-of-war. The core breaks free after a capped amount of damage per opening. Spitting objects also deals damage. Below 50% HP the boss gets angry and gains phase-2 moves and combos: the golem's leap, the rose's garden of thorns, the organ's requiem, the clock's MIDNIGHT barrage. At 25% the clock goes into OVERDRIVE.
 
-Difficulty rises chandelier < golem < rose ≈ organ < serpent < clock (see the bot table in the release notes).
+Difficulty rises chandelier < golem < rose < organ ≈ serpent < clock (see the bot table in the release notes).
 
 Other features:
 - Save altars.

@@ -115,7 +115,7 @@ const CONFIG = {
     seeds: 4, seedsRage: 6, seedDamage: 1, petalWarn: 36, petalWarnRage: 30, petalSpeed: 3.4, petalDamage: 1, bloom: 110, bloomRage: 90, burnBonus: 2,
     rootWarn: 30, rootSpeed: 3.0, rootDamage: 2, gardenWarn: 36, contactDamage: 2, coreCap: 20, specialEvery: 4 },
   // ---- v0.3 boss: 呪いのパイプオルガン CURSED PIPE ORGAN (chapel) ----
-  organ: { hp: 300, idle: 34, idleRage: 24, noteWarn: 26, notes: 6, notesRage: 8, noteSpeed: 1.8, noteDamage: 1, pipeWarn: 38, pipeWarnRage: 32, pipes: 4, pipesRage: 5, pipeDamage: 2,
+  organ: { hp: 270, idle: 34, idleRage: 24, noteWarn: 26, notes: 6, notesRage: 8, noteSpeed: 1.8, noteDamage: 1, pipeWarn: 38, pipeWarnRage: 32, pipes: 4, pipesRage: 5, pipeDamage: 2,
     chordWarn: 40, chordWarnRage: 34, chordSpeed: 3.2, chordDamage: 1, books: 0, booksRage: 1, stun: 100, stunRage: 84, contactDamage: 1, coreCap: 20, specialEvery: 4 },
   // ---- v0.3 boss: 大浴場の主 ユブネ BATHWATER SERPENT (grand bath) ----
   serpent: { hp: 200, idle: 54, idleRage: 42, arcWarn: 42, arcs: 3, arcsRage: 4, arcDamage: 1, puddle: 80, puddleDamage: 1, sweepWarn: 44, sweepWarnRage: 36, sweepSpeed: 3.0, sweepDamage: 1,

@@ -34,11 +34,11 @@ BOSS_DEFS.organ = { jp: '呪いのパイプオルガン', en: 'CURSED PIPE ORGAN
         if (b.t >= warn + 34) { if (b.wave < (b.rage ? 2 : 1)) { b.wave++; b.t = b.retgt = 4; } else { b.state = b.rage ? 'chord' : 'idle'; b.t = 0; b.retgt = -1; } } break; }
       case 'requiem': { // v0.3b phase 2: blasts over the whole floor except one "rest" gap - run to it (twice)
         const warn = 42, T2 = warn + 36;
-        if (b.t === 1 || (b.rage && b.t === T2)) { const slots = []; for (let x = 20; x < b.x - 70; x += 36) slots.push(x);
+        if (b.t === 1 || b.t === T2 || (b.rage && b.t === 2 * T2)) { const slots = []; for (let x = 20; x < b.x - 70; x += 36) slots.push(x);
           let gi = Math.floor(Math.random() * (slots.length - 1)); if (b.t > 1 && Math.abs(slots[gi] - pcx()) < 60) gi = (gi + 3) % (slots.length - 1);
           b.gap = (slots[gi] + slots[gi + 1]) / 2; b.marks = slots.filter((x, i) => i !== gi && i !== gi + 1); b.rT = b.t; sfx('bell'); tip('requiem', 'レクイエム！ 印のない「休符」に逃げこめ'); }
         if (b.t === b.rT + warn) { for (const mx of b.marks) ebullets.push({ kind: 'blast', x: mx - 11, y: 2 * TS, w: 22, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: C.pipeDamage, life: 30, static: 1 }); b.marks = []; sfx('whoosh'); cam.shake = 7; }
-        if (b.t >= (b.rage ? T2 : 0) + warn + 36) { b.state = 'idle'; b.t = 0; }
+        if (b.t >= (b.rage ? 2 * T2 : T2) + warn + 36) { b.state = 'idle'; b.t = 0; }
         break; }
       case 'chord': {
         const warn = bossP('chordWarn');
