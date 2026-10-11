@@ -281,6 +281,7 @@ function drawEBullet(b) {
   else if (b.kind === 'bubble') { spr('items', 'bubble', x, y + Math.sin((frame + b.life) * 0.15)); }
   else if (b.kind === 'dropbottle') spr('items', 'bottle', x, y);
   else if (b.kind === 'seedpod') spr('items', 'seed', x, y);
+  else if (b.kind === 'sock') { g.fillStyle = '#d8ecff'; g.fillRect(x + 2, y, 5, 8); g.fillRect(x + 2, y + 7, 8, 4); g.fillStyle = '#5a9ad8'; g.fillRect(x + 2, y, 5, 2); g.fillRect(x + 2, y + 4, 5, 1); g.fillStyle = '#9ad0ff'; g.fillRect(x + 3, y + 12, 1, 2); g.fillRect(x + 7, y + 12, 1, 2); }
   else if (b.kind === 'rgear') { const r = rectOf('items', 'gear'); g.save(); g.translate(Math.round(x + 7), Math.round(y + 7)); g.rotate(frame * 0.2 * Math.sign(b.vx)); g.drawImage(IMG.items, r.x, r.y, r.w, r.h, -r.w / 2, -r.h / 2, r.w, r.h); g.restore(); }
   else if (b.kind === 'petal') spr('items', 'petal', x, y + Math.sin((frame + b.life) * 0.3) * 2, b.vx > 0);
   else if (b.kind === 'thorn') { const k = Math.min(1, (34 - b.life) / 5), h = Math.round(b.h * k); const r = rectOf('props', 'thornspike'); g.drawImage(IMG.props, r.x, r.y, r.w, h, Math.round(x), Math.round(y + b.h - h), r.w, h); }

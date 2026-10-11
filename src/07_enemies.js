@@ -190,7 +190,7 @@ function updateEBullets() {
     b.life--; if (b.life <= 0) { b.dead = true; if (b.onExpire) b.onExpire(b); continue; }
     if (!b.captured) {
       b.vy += b.g || 0;
-      if (b.home) { const dx = pcx() - (b.x + b.w / 2), dy = P.y + 20 - (b.y + b.h / 2), d = Math.hypot(dx, dy) || 1; b.vx += dx / d * 0.018; b.vy += dy / d * 0.018; const v = Math.hypot(b.vx, b.vy); if (v > 0.9) { b.vx *= 0.9 / v; b.vy *= 0.9 / v; } }
+      if (b.home) { const dx = pcx() - (b.x + b.w / 2), dy = P.y + 20 - (b.y + b.h / 2), d = Math.hypot(dx, dy) || 1; b.vx += dx / d * 0.018; b.vy += dy / d * 0.018; const v = Math.hypot(b.vx, b.vy); const hm = b.homeMax || 0.9; if (v > hm) { b.vx *= hm / v; b.vy *= hm / v; } }
     }
     b.captured = false;
     b.x += b.vx; b.y += b.vy; b.spin = (b.spin || 0) + 1;

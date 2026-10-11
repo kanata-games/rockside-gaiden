@@ -3,6 +3,8 @@
 //  BOSS 2: リネン・ゴーレム LINEN GOLEM (great washroom) - a heap of haunted laundry that walks
 //    slam    : arms rise + red flash -> slams the floor: shockwaves both ways (jump). A bottle falls off the shelf (ammo)
 //    bubbles : cheeks puff -> soap bubbles drift after Kanata (vacuum them = SOAP ammo, splash damage)
+//    socks   : (v0.3) blue marks on the floor -> wet socks rain down on them
+//    rage    : double slam; the roll bounces off the first wall and comes back before it gets dizzy
 //    roll    : (every 3rd) spins up into a laundry ball (dust + red flash) -> rolls across the room (jump over it)
 //              -> smacks the wall, unravels DIZZY: the sock-ghost core pops out = weak point (tug-of-war)
 // =====================================================================
@@ -15,30 +17,38 @@ BOSS_DEFS.golem = { jp: 'リネン・ゴーレム', en: 'LINEN GOLEM', cfg: 'gol
     const C = CONFIG.golem, dx = pcx() - b.x;
     const walk = sp => { b.face = Math.sign(dx) || b.face; if (Math.abs(dx) > 70) b.x += b.face * sp; b.x = clamp(b.x, 44, room.W - 44); };
     switch (b.state) {
-      case 'idle': walk(bossP('walk')); if (b.t >= bossP('idle')) chooseAttack(b, ['slam', 'bubbles'], 'roll'); break;
+      case 'idle': walk(bossP('walk')); if (b.t >= bossP('idle')) chooseAttack(b, ['slam', 'bubbles', 'socks'], 'roll'); break;
       case 'slam': {
         const warn = bossP('slamWarn'); if (b.t === 1) { b.face = Math.sign(dx) || b.face; sfx('warn'); }
         if (b.t < warn && b.t % 10 === 0) sfx('warn');
-        if (b.t === warn) { sfx('boom'); cam.shake = 9; hitStop = 3;
+        if (b.t === warn || (b.rage && b.t === warn + 30)) { sfx('boom'); cam.shake = 9; hitStop = 3;
           for (const d of [-1, 1]) ebullets.push({ kind: 'suds', x: b.x + d * 30 - 8, y: FLOOR_Y - 14, w: 16, h: 14, vx: d * C.waveSpeed * (b.rage ? 1.15 : 1), vy: 0, dmg: C.slamDamage, life: 220 });
           if (overlapBox(b.x - 44, FLOOR_Y - 40, b.x + 44, FLOOR_Y)) hurtPlayer(C.slamDamage, b.x, 'slam');
           for (let i = 0; i < 18; i++) parts.push({ x: b.x + rnd(-40, 40), y: FLOOR_Y - 4, vx: rnd(-2, 2), vy: rnd(-3, -0.5), life: 30, col: i & 1 ? '#e8f4ff' : '#8ac0e8', size: 2, grav: 1 });
-          const fx = clamp(pcx() + rnd(-60, 60), 30, room.W - 30); ebullets.push({ kind: 'dropbottle', x: fx - 4, y: 40, w: 8, h: 14, vx: 0, vy: 0.5, g: 0.2, dmg: 1, life: 200, suckable: true, ammo: 'bottle', onLand: q => spawnItem('bottle', q.x + 4, FLOOR_Y) }); }
-        if (b.t >= warn + 40) { b.state = 'idle'; b.t = 0; } break; }
+          if (b.t === warn) { const fx = clamp(pcx() + rnd(-60, 60), 30, room.W - 30); ebullets.push({ kind: 'dropbottle', x: fx - 4, y: 40, w: 8, h: 14, vx: 0, vy: 0.5, g: 0.2, dmg: 1, life: 200, suckable: true, ammo: 'bottle', onLand: q => spawnItem('bottle', q.x + 4, FLOOR_Y) }); } }
+        if (b.t >= warn + (b.rage ? 64 : 40)) { b.state = 'idle'; b.t = 0; } break; }
       case 'bubbles': {
         if (b.t === 1) sfx('warn');
         const n = bossP('bubbles'), t0 = 34;
         if (b.t >= t0 && (b.t - t0) % 14 === 0 && (b.t - t0) / 14 < n) { sfx('bubble');
           const bx = b.x + b.face * 26, by = FLOOR_Y - 58;
-          ebullets.push({ kind: 'bubble', x: bx - 8, y: by - 8, w: 16, h: 16, vx: b.face * 0.9, vy: rnd(-0.6, 0.2), g: 0, dmg: C.bubbleDamage, life: 330, suckable: true, ammo: 'soap', home: 1, static: 1,
+          ebullets.push({ kind: 'bubble', x: bx - 8, y: by - 8, w: 16, h: 16, vx: b.face * 0.9, vy: rnd(-0.6, 0.2), g: 0, dmg: C.bubbleDamage, life: 330, suckable: true, ammo: 'soap', home: 1, homeMax: C.bubbleSpeed || 0.9, static: 1,
             onExpire: q => { if (Math.random() < 0.5) spawnItem('soap', q.x + 8, q.y + 16); for (let k = 0; k < 6; k++) parts.push({ x: q.x + 8, y: q.y + 8, vx: rnd(-1, 1), vy: rnd(-1, 1), life: 14, col: '#e8fbff', size: 1 }); } }); }
         if (b.t >= t0 + n * 14 + 30) { b.state = 'idle'; b.t = 0; } break; }
+      case 'socks': {
+        const warn = bossP('sockWarn');
+        if (b.t === 1) { const n = bossP('socks'), px = pcx(); b.marks = []; const xs = [px]; for (let k = 1; xs.length < n; k++) { xs.push(px + k * 56); if (xs.length < n) xs.push(px - k * 56); }
+          for (const x of xs) b.marks.push(clamp(x, 24, room.W - 24)); sfx('warn'); }
+        if (b.t < warn && b.t % 12 === 0) sfx('warn');
+        if (b.t === warn) { for (const mx of b.marks) ebullets.push({ kind: 'sock', x: mx - 5, y: 26, w: 10, h: 12, vx: 0, vy: 1.4, g: 0.24, dmg: C.sockDamage, life: 200, onLand: q => { for (let k = 0; k < 5; k++) parts.push({ x: q.x + 5, y: FLOOR_Y - 2, vx: rnd(-1.2, 1.2), vy: rnd(-1.6, -0.4), life: 16, col: '#9ad0ff', size: 1, grav: 1 }); } }); b.marks = []; sfx('splash'); }
+        if (b.t >= warn + 46) { b.state = 'idle'; b.t = 0; } break; }
       case 'roll': {
         const warn = bossP('spinWarn');
-        if (b.t === 1) { b.face = Math.sign(dx) || b.face; sfx('warn'); }
+        if (b.t === 1) { b.face = Math.sign(dx) || b.face; b.bounced = !b.rage; sfx('warn'); }
         if (b.t < warn) { if (b.t % 8 === 0) sfx('warn'); if (b.t > warn * 0.4) b.ball = true; if (frame % 2 === 0) parts.push({ x: b.x + rnd(-24, 24), y: FLOOR_Y - rnd(0, 8), vx: rnd(-1.5, 1.5), vy: -rnd(0.2, 1), life: 18, col: '#a8a0b0', size: 2 }); break; }
         b.ball = true; b.x += b.face * bossP('spinSpeed');
         if (overlapBox(b.x - 20, FLOOR_Y - 40, b.x + 20, FLOOR_Y)) hurtPlayer(C.spinDamage, b.x, 'roll');
+        if ((b.x < 36 || b.x > room.W - 36) && !b.bounced) { b.x = clamp(b.x, 36, room.W - 36); b.bounced = true; b.face = -b.face; sfx('crash'); cam.shake = 7; break; }
         if (b.x < 36 || b.x > room.W - 36) { b.x = clamp(b.x, 36, room.W - 36); b.state = 'dizzy'; b.t = 0; b.ball = false; b.winLen = bossP('dizzy'); sfx('crash'); cam.shake = 10; hitStop = 4;
           b.core = makeCore(b, b.x - b.face * 34, FLOOR_Y - 30, () => ({ x: boss.x, y: FLOOR_Y - 40 }), 'gcore');
           tip('gcore', 'ゴーレムが目を回した！ 中のくつ下ゴーストを VAC で吸い込め！', true); }
@@ -52,6 +62,7 @@ BOSS_DEFS.golem = { jp: 'リネン・ゴーレム', en: 'LINEN GOLEM', cfg: 'gol
   onDefeat(b) { bossReward(b, b.x); say('……洗濯物、ぜんぶ畳んだ。……ふぅ', 200); tip('golemDown', 'リネン・ゴーレムをやっつけた！ 屋敷のどこかで、まだ気配がする…', true); },
   draw(b, lights) {
     const x = Math.round(b.x - cam.x), y = Math.round(FLOOR_Y - cam.y), fl = b.face > 0;
+    if (b.state === 'socks' && b.marks.length) { const k = b.t / bossP('sockWarn'); for (const mx of b.marks) drawFloorMark(mx, k, 'rgba(90,170,255,0.8)'); }
     if (b.state === 'slam' && b.t < bossP('slamWarn')) { const k = b.t / bossP('slamWarn'); g.fillStyle = (frame & 4) ? 'rgba(255,80,80,0.45)' : 'rgba(255,200,120,0.3)'; g.beginPath(); g.ellipse(x, y - 1, 30 + k * 20, 3 + k * 2, 0, 0, 7); g.fill(); }
     if (b.state === 'roll' && b.t < bossP('spinWarn')) { g.fillStyle = 'rgba(255,80,80,0.35)'; const dir = b.face; for (let i = 0; i < 8; i++) if (((frame >> 2) + i) % 3 === 0) g.fillRect(x + dir * (30 + i * 16), y - 3, 8, 2); }
     let key;

@@ -7,10 +7,12 @@ window.__botStats = { frames: 0, hits: 0, lastHp: -1, causes: [], spits: 0, core
 window.__bot = function () {
   const G = GAIDEN, K = G._test.keys, I = G._test.inp, P = G.P, b = G.boss, S = window.__botStats;
   const wasV = K.vac; K.left = K.right = K.jump = K.vac = K.spit = false; K._v = wasV;
+  if (b && (b.state === 'dying' || b.state === 'done') && !P.dead) S.won = true;
+  if (b && (b.state === 'dying' || b.state === 'done' || P.dead)) { if (S.lastHp >= 0 && P.hp < S.lastHp) S.causes.push('AFTER.' + b.state + ':' + G.state + ':' + G.stats.lastHurt + '[' + S.lastHp + '>' + P.hp + ']'); S.lastHp = P.hp; }
   if (G.state !== 'play' || !b || P.dead) return;
   if (b.state === 'sleep') { K.right = true; return; }
   if (b.state === 'intro' || b.state === 'dying' || b.state === 'done') return;
-  S.frames++; if (S.lastHp >= 0 && P.hp < S.lastHp) { S.hits++; S.causes.push(b.kind + '.' + b.state + ':' + G.stats.lastHurt + '[t' + P.tank.length + (K._v ? 'v' : '') + (P.tug ? 'T' : '') + (P.onGround ? 'g' : 'a') + ']'); } S.lastHp = P.hp;
+  S.frames++; if (S.lastHp >= 0 && P.hp < S.lastHp) { S.hits++; S.dmg = (S.dmg || 0) + S.lastHp - P.hp; S.causes.push(b.kind + '.' + b.state + ':' + G.stats.lastHurt + '[' + S.lastHp + '>' + P.hp + ' t' + P.tank.length + (K._v ? 'v' : '') + (P.tug ? 'T' : '') + (P.onGround ? 'g' : 'a') + ']'); } S.lastHp = P.hp;
   const pcx = P.x + P.w / 2, W = G.room.W, L = 36, R = W - 36, FY = 15 * 16, kind = b.kind;
   let move = 0, vac = false, jump = false, face = 0, holdJump = false;
   const go = (tx, tol) => { if (pcx < tx - (tol || 4)) move = 1; else if (pcx > tx + (tol || 4)) move = -1; };
@@ -19,8 +21,10 @@ window.__bot = function () {
   const aim = b.aimAt ? b.aimAt() : null;
   // ---- danger model --------------------------------------------------
   const danger = []; // x positions to keep away from: [x, radius]
-  if (b.marks && b.marks.length) for (const m of b.marks) danger.push([m, 30]);
-  if (kind === 'chandelier' && b.state === 'crash') danger.push([b.t < 80 ? b.shadowX : b.px, 76]);
+  // human-ish reaction time: new floor marks are only noticed REACT frames after they appear
+  const mk = (b.marks || []).join(','); if (mk !== S.mk) { S.mk = mk; S.mkT = 0; } else S.mkT = (S.mkT || 0) + 1;
+  if (b.marks && b.marks.length && S.mkT >= (window.__react ?? 16)) for (const m of b.marks) danger.push([m, 30]);
+  if (kind === 'chandelier' && b.state === 'crash') danger.push([b.t < (b.rage ? CONFIG.boss.crashTrackRage : CONFIG.boss.crashTrack) ? b.shadowX : b.px, 76]);
   if (kind === 'golem') { if (b.state === 'slam') danger.push([b.x, 96]); if (b.state === 'idle' || b.state === 'bubbles') danger.push([b.x, 46]); }
   if (kind === 'clock' && b.state !== 'stopped') danger.push([b.x, 46]);
   if (kind === 'rose' && !b.burrow) danger.push([b.x, 34]);
@@ -30,7 +34,7 @@ window.__bot = function () {
     if (q.kind === 'bubble' && P.tank.length >= 3 && dx < 50 && Math.abs(q.y - P.y - 20) < 40) danger.push([qx, 50]);
     if (q.kind === 'firepatch') danger.push([qx, 24]);
     if (q.kind === 'seedpod' && q.tx !== undefined) danger.push([q.tx, 22]);
-    if ((q.kind === 'shard' || q.kind === 'candle' || q.kind === 'dropbottle') && q.vy > 0 && q.y < P.y + P.h) danger.push([qx, 18]);
+    if ((q.kind === 'shard' || q.kind === 'candle' || q.kind === 'dropbottle' || q.kind === 'sock') && q.vy > 0 && q.y < P.y + P.h) danger.push([qx, 18]);
     if (q.kind === 'petal' && toward && dx < 60) { if (q.y > FY - 40) { if (P.onGround && dx < 34) { jump = true; holdJump = true; } } }
   }
   if (kind === 'rose' && b.state === 'petals' && b.petalHigh) jump = false;   // HIGH stream: stay on the floor

@@ -20,15 +20,16 @@ BOSS_DEFS.rose = { jp: '夜咲きの女王 マダム・ローズ', en: 'MADAME R
       case 'idle': if (b.t >= bossP('idle')) chooseAttack(b, ['thorns', 'seeds', 'petals'], 'bloom'); break;
       case 'thorns': {
         const warn = bossP('thornWarn');
-        if (b.t === 1) { const n = bossP('thorns'), px = pcx(); b.marks = [clamp(px, 20, room.W - 20)]; for (let k = 1; b.marks.length < n; k++) { b.marks.push(clamp(px + k * 52, 20, room.W - 20)); if (b.marks.length < n) b.marks.push(clamp(px - k * 52, 20, room.W - 20)); } sfx('warn'); }
+        if (b.t === 1) b.wave = 0;
+        if (b.t === 1 || b.t === b.retgt) { const n = bossP('thorns'), px = pcx(); b.marks = [clamp(px, 20, room.W - 20)]; for (let k = 1; b.marks.length < n; k++) { b.marks.push(clamp(px + k * C.thornGap, 20, room.W - 20)); if (b.marks.length < n) b.marks.push(clamp(px - k * C.thornGap, 20, room.W - 20)); } sfx('warn'); }
         if (b.t < warn && b.t % 12 === 0) sfx('warn');
         if (b.t === warn) { for (const mx of b.marks) ebullets.push({ kind: 'thorn', x: mx - 8, y: FLOOR_Y - 44, w: 16, h: 44, vx: 0, vy: 0, g: 0, dmg: C.thornDamage, life: 34, static: 1 }); b.marks = []; sfx('thorn'); cam.shake = 4; }
-        if (b.t >= warn + 40) { b.state = 'idle'; b.t = 0; } break; }
+        if (b.t >= warn + 40) { if (b.wave < (b.rage ? 2 : 1)) { b.wave++; b.t = b.retgt = 4; } else { b.state = 'idle'; b.t = 0; b.retgt = -1; } } break; }
       case 'seeds': {
         if (b.t === 1) sfx('warn');
         const n = bossP('seeds');
         if (b.t === 36) { const h = D.head(b); sfx('spit');
-          for (let i = 0; i < n; i++) { const tx = clamp(pcx() + (i - (n - 1) / 2) * 44, 20, room.W - 20), tf = 56, gg = 0.12, vx = (tx - h.x) / tf, vy = (FLOOR_Y - 8 - h.y - 0.5 * gg * tf * tf) / tf;
+          for (let i = 0; i < n; i++) { const tx = clamp(pcx() + (i - (n - 1) / 2) * 36, 20, room.W - 20), tf = 56, gg = 0.12, vx = (tx - h.x) / tf, vy = (FLOOR_Y - 8 - h.y - 0.5 * gg * tf * tf) / tf;
             ebullets.push({ kind: 'seedpod', x: h.x - 5, y: h.y - 5, w: 10, h: 10, vx, vy, g: gg, dmg: C.seedDamage, life: 200, suckable: true, ammo: 'seed', tx, onLand: q => { spawnItem('seed', q.x + 5, FLOOR_Y); sfx('hit'); } }); } }
         if (b.t >= 80) { b.state = 'idle'; b.t = 0; } break; }
       case 'petals': {
@@ -37,7 +38,10 @@ BOSS_DEFS.rose = { jp: '夜咲きの女王 マダム・ローズ', en: 'MADAME R
         if (b.t < warn && b.t % 12 === 0) sfx('warn');
         if (b.t >= warn && b.t < warn + 48 && (b.t - warn) % 8 === 0) { const h = D.head(b), y = b.petalHigh ? FLOOR_Y - 76 : FLOOR_Y - 14;
           ebullets.push({ kind: 'petal', x: h.x - 6, y: y + rnd(-3, 3), w: 12, h: 8, vx: -b.side * bossP('petalSpeed') * (b.rage ? 1.2 : 1), vy: 0, g: 0, dmg: C.petalDamage, life: 260, static: 1, wall: 1 }); sfx('flap'); }
-        if (b.t >= warn + 80) { b.state = 'idle'; b.t = 0; } break; }
+        if (b.rage && b.t === warn + 50) { b.petalHigh = !b.petalHigh; sfx('warn'); }  // v0.3 rage: a second stream at the other height
+        if (b.rage && b.t >= warn + 84 && b.t < warn + 84 + 40 && (b.t - warn - 84) % 8 === 0) { const h = D.head(b), y = b.petalHigh ? FLOOR_Y - 76 : FLOOR_Y - 14;
+          ebullets.push({ kind: 'petal', x: h.x - 6, y: y + rnd(-3, 3), w: 12, h: 8, vx: -b.side * bossP('petalSpeed') * (b.rage ? 1.2 : 1), vy: 0, g: 0, dmg: C.petalDamage, life: 260, static: 1, wall: 1 }); sfx('flap'); }
+        if (b.t >= warn + (b.rage ? 150 : 80)) { b.state = 'idle'; b.t = 0; } break; }
       case 'bloom': {
         if (b.t === 1) { sfx('warn'); }
         if (b.t < 50) { if (b.t % 10 === 0) sfx('warn'); break; }

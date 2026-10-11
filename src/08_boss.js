@@ -107,7 +107,7 @@ BOSS_DEFS.chandelier = { jp: '呪いのシャンデリア', en: 'GRAND LUMIERE',
       case 'idle': trackTo(pcx(), bossP('trackSpeed')); if (b.t >= bossP('idle')) { const w = ents.filter(e => e.type === 'firewisp' && !e.dead).length; chooseAttack(b, w ? ['candles', 'shards'] : ['candles', 'shards', 'wisps'], 'crash'); b.shadowX = b.x; b.vy = 0; } break;
       case 'candles': {
         trackTo(pcx(), 0.3); const warn = bossP('candleWarn');
-        if (b.t === 1) { const n = bossP('candles'), px = pcx(); b.marks = []; const xs = [px]; for (let k = 1; xs.length < n; k++) { xs.push(px + k * 58); if (xs.length < n) xs.push(px - k * 58); }
+        if (b.t === 1) { const n = bossP('candles'), px = pcx(); b.marks = []; const xs = [px]; const gap = CONFIG.boss.candleGap || 58; for (let k = 1; xs.length < n; k++) { xs.push(px + k * gap); if (xs.length < n) xs.push(px - k * gap); }
           for (const x of xs) b.marks.push(clamp(x, 28, room.W - 28)); sfx('warn'); }
         if (b.t === warn) { for (const mx of b.marks) dropCandle(mx); b.marks = []; }
         if (b.t >= warn + 30) { b.state = 'idle'; b.t = 0; } break; }
@@ -157,8 +157,11 @@ BOSS_DEFS.chandelier = { jp: '呪いのシャンデリア', en: 'GRAND LUMIERE',
       g.fillStyle = (frame & 4) ? 'rgba(200,236,255,0.7)' : 'rgba(200,236,255,0.35)';
       for (const v of b.shardV) { let px = b.x, py = b.y + 74, vx = v.vx, vy = v.vy; for (let s = 0; s < 90; s++) { px += vx; py += vy; vy += 0.06; if (py > FLOOR_Y) break; if (s % 5 === 0) g.fillRect(Math.round(px - cam.x), Math.round(py - cam.y), 1, 1); } }
     }
-    if (b.state === 'crash') { const lock = b.t >= bossP('crashTrack'), sx = (lock ? b.px : b.shadowX) - cam.x;
-      g.fillStyle = lock ? ((frame & 2) ? 'rgba(255,60,60,0.55)' : 'rgba(0,0,0,0.5)') : 'rgba(0,0,0,0.42)'; g.beginPath(); g.ellipse(sx, FLOOR_Y - cam.y - 1, 54, 5, 0, 0, 7); g.fill(); }
+    if (b.state === 'crash') { const lock = b.t >= bossP('crashTrack'), sx = (lock ? b.px : b.shadowX) - cam.x, fy = FLOOR_Y - cam.y - 1;
+      g.fillStyle = lock ? ((frame & 2) ? 'rgba(255,60,60,0.7)' : 'rgba(0,0,0,0.65)') : 'rgba(0,0,0,0.6)'; g.beginPath(); g.ellipse(sx, fy, 54, 6, 0, 0, 7); g.fill();
+      g.strokeStyle = lock ? '#ff5050' : 'rgba(255,220,160,0.8)'; g.lineWidth = 1; g.beginPath(); g.ellipse(sx, fy, 55, 6.5, 0, 0, 7); g.stroke();
+      g.fillStyle = lock ? 'rgba(255,80,80,0.5)' : 'rgba(255,220,160,0.3)'; for (const ox of [-54, 54]) for (let yy = Math.round(b.y - cam.y + 84); yy < fy; yy += 6) g.fillRect(Math.round(sx + ox), yy, 1, 3);
+      if (lock && (frame & 4)) drawTextShadow('!', Math.round(sx), Math.round(fy - 20), 'r', 2, 'c'); }
     for (let yy = 2 * TS; yy < b.y; yy += 10) spr('boss', 'chain', Math.round(b.px - cam.x - 3), yy - cam.y);
     const key = b.rage ? 'chandelier_cracked' : 'chandelier', r = rectOf('boss', key);
     let jx = 0; if (b.state === 'crash' && b.t >= bossP('crashTrack')) jx = (frame & 2) ? 2 : -2;

@@ -150,24 +150,27 @@ const CONFIG = {
 
   // ---- boss: 呪いのシャンデリア GRAND LUMIERE ----
   boss: {
-    hp: 100, idle: 64, idleRage: 42, trackSpeed: 0.7, trackSpeedRage: 1.0,
-    candleWarn: 46, candleWarnRage: 36, candles: 3, candlesRage: 4, candleFire: 110, candleDamage: 1, fireDamage: 1,
-    wispCount: 2, wispCountRage: 3, wispLife: 420, wispSpeed: 0.55, wispHp: 34, wispDamage: 1,
-    shardWarn: 38, shardWarnRage: 30, shards: 5, shardsRage: 7, shardDamage: 1,
-    crashTrack: 64, crashTrackRage: 52, crashLock: 30, crashDamage: 2, crashFollow: 1.2, waveDamage: 1, waveSpeed: 2.4,
-    stuck: 170, stuckRage: 140, coreHp: 70,
+    // v0.3: the first boss is gentler (fewer/slower drops, wider gaps, longer warnings, lower HP)
+    hp: 80, idle: 80, idleRage: 58, trackSpeed: 0.6, trackSpeedRage: 0.85,
+    candleWarn: 64, candleWarnRage: 50, candles: 2, candlesRage: 3, candleGap: 84, candleFire: 90, candleDamage: 1, fireDamage: 1,
+    wispCount: 2, wispCountRage: 2, wispLife: 380, wispSpeed: 0.45, wispHp: 30, wispDamage: 1,
+    shardWarn: 54, shardWarnRage: 44, shards: 4, shardsRage: 5, shardDamage: 1,
+    crashTrack: 80, crashTrackRage: 66, crashLock: 44, crashDamage: 2, crashFollow: 1.0, waveDamage: 1, waveSpeed: 2.0,
+    stuck: 200, stuckRage: 170, coreHp: 70,
     coreCap: 25, coreBaseDrain: 0.06, corePullDrain: 0.18,  // boss HP per frame while the core is in a tug-of-war
-    contactDamage: 2,
+    contactDamage: 1,
   },
   // ---- boss 2: リネン・ゴーレム LINEN GOLEM (laundry) ----
-  golem: { hp: 140, idle: 70, idleRage: 48, walk: 0.55, walkRage: 0.8, slamWarn: 44, slamWarnRage: 34, waveSpeed: 2.3, slamDamage: 2,
-    bubbles: 3, bubblesRage: 5, bubbleDamage: 1, spinWarn: 50, spinWarnRage: 40, spinSpeed: 3.2, spinDamage: 2, dizzy: 170, dizzyRage: 140, contactDamage: 1 },
+  // v0.3: noticeably stronger (faster, double slam + wall-bounce roll when angry, sock rain)
+  golem: { hp: 175, idle: 52, idleRage: 36, walk: 0.8, walkRage: 1.1, slamWarn: 40, slamWarnRage: 32, waveSpeed: 2.8, slamDamage: 2,
+    bubbles: 3, bubblesRage: 4, bubbleDamage: 1, bubbleSpeed: 1.0, spinWarn: 40, spinWarnRage: 34, spinSpeed: 4.2, spinDamage: 2, dizzy: 130, dizzyRage: 110,
+    socks: 4, socksRage: 5, sockWarn: 44, sockWarnRage: 36, sockDamage: 1, contactDamage: 1 },
   // ---- boss 3: 夜咲きの女王 マダム・ローズ MADAME ROSE (greenhouse) ----
-  rose: { hp: 170, idle: 64, idleRage: 44, thornWarn: 46, thornWarnRage: 36, thorns: 3, thornsRage: 4, thornDamage: 2,
-    seeds: 3, seedsRage: 4, seedDamage: 1, petalWarn: 50, petalWarnRage: 40, petalSpeed: 2.2, petalDamage: 1, bloom: 170, bloomRage: 140, burnBonus: 3, contactDamage: 1 },
+  rose: { hp: 200, idle: 52, idleRage: 38, thornWarn: 42, thornWarnRage: 34, thorns: 4, thornsRage: 5, thornGap: 44, thornDamage: 2,
+    seeds: 4, seedsRage: 6, seedDamage: 1, petalWarn: 44, petalWarnRage: 36, petalSpeed: 2.6, petalDamage: 1, bloom: 170, bloomRage: 140, burnBonus: 3, contactDamage: 1 },
   // ---- boss 4: 大時計の番人 グランドファーザー・チクタク GRANDFATHER TICKTOCK (clock tower) ----
-  clock: { hp: 180, spitMul: 1.2, idle: 56, idleRage: 40, handWarn: 40, handWarnRage: 32, hands: 3, handsRage: 4, handDamage: 2,
-    gears: 3, gearsRage: 4, gearSpeed: 2.0, gearDamage: 1, pendWarn: 50, pendWarnRage: 40, pendDamage: 2, chime: 170, chimeRage: 140, contactDamage: 1 },
+  clock: { hp: 220, spitMul: 1.2, idle: 46, idleRage: 34, handWarn: 34, handWarnRage: 28, hands: 4, handsRage: 6, handDamage: 2,
+    gears: 5, gearsRage: 7, gearSpeed: 2.8, gearDamage: 1, pendWarn: 42, pendWarnRage: 34, pendDamage: 2, chime: 160, chimeRage: 130, contactDamage: 2 },
 };
 
 // ---- sprite metadata embedded at build time (tools/build.py) ----
@@ -1711,7 +1714,7 @@ function updateEBullets() {
     b.life--; if (b.life <= 0) { b.dead = true; if (b.onExpire) b.onExpire(b); continue; }
     if (!b.captured) {
       b.vy += b.g || 0;
-      if (b.home) { const dx = pcx() - (b.x + b.w / 2), dy = P.y + 20 - (b.y + b.h / 2), d = Math.hypot(dx, dy) || 1; b.vx += dx / d * 0.018; b.vy += dy / d * 0.018; const v = Math.hypot(b.vx, b.vy); if (v > 0.9) { b.vx *= 0.9 / v; b.vy *= 0.9 / v; } }
+      if (b.home) { const dx = pcx() - (b.x + b.w / 2), dy = P.y + 20 - (b.y + b.h / 2), d = Math.hypot(dx, dy) || 1; b.vx += dx / d * 0.018; b.vy += dy / d * 0.018; const v = Math.hypot(b.vx, b.vy); const hm = b.homeMax || 0.9; if (v > hm) { b.vx *= hm / v; b.vy *= hm / v; } }
     }
     b.captured = false;
     b.x += b.vx; b.y += b.vy; b.spin = (b.spin || 0) + 1;
@@ -2054,7 +2057,7 @@ BOSS_DEFS.chandelier = { jp: '呪いのシャンデリア', en: 'GRAND LUMIERE',
       case 'idle': trackTo(pcx(), bossP('trackSpeed')); if (b.t >= bossP('idle')) { const w = ents.filter(e => e.type === 'firewisp' && !e.dead).length; chooseAttack(b, w ? ['candles', 'shards'] : ['candles', 'shards', 'wisps'], 'crash'); b.shadowX = b.x; b.vy = 0; } break;
       case 'candles': {
         trackTo(pcx(), 0.3); const warn = bossP('candleWarn');
-        if (b.t === 1) { const n = bossP('candles'), px = pcx(); b.marks = []; const xs = [px]; for (let k = 1; xs.length < n; k++) { xs.push(px + k * 58); if (xs.length < n) xs.push(px - k * 58); }
+        if (b.t === 1) { const n = bossP('candles'), px = pcx(); b.marks = []; const xs = [px]; const gap = CONFIG.boss.candleGap || 58; for (let k = 1; xs.length < n; k++) { xs.push(px + k * gap); if (xs.length < n) xs.push(px - k * gap); }
           for (const x of xs) b.marks.push(clamp(x, 28, room.W - 28)); sfx('warn'); }
         if (b.t === warn) { for (const mx of b.marks) dropCandle(mx); b.marks = []; }
         if (b.t >= warn + 30) { b.state = 'idle'; b.t = 0; } break; }
@@ -2104,8 +2107,11 @@ BOSS_DEFS.chandelier = { jp: '呪いのシャンデリア', en: 'GRAND LUMIERE',
       g.fillStyle = (frame & 4) ? 'rgba(200,236,255,0.7)' : 'rgba(200,236,255,0.35)';
       for (const v of b.shardV) { let px = b.x, py = b.y + 74, vx = v.vx, vy = v.vy; for (let s = 0; s < 90; s++) { px += vx; py += vy; vy += 0.06; if (py > FLOOR_Y) break; if (s % 5 === 0) g.fillRect(Math.round(px - cam.x), Math.round(py - cam.y), 1, 1); } }
     }
-    if (b.state === 'crash') { const lock = b.t >= bossP('crashTrack'), sx = (lock ? b.px : b.shadowX) - cam.x;
-      g.fillStyle = lock ? ((frame & 2) ? 'rgba(255,60,60,0.55)' : 'rgba(0,0,0,0.5)') : 'rgba(0,0,0,0.42)'; g.beginPath(); g.ellipse(sx, FLOOR_Y - cam.y - 1, 54, 5, 0, 0, 7); g.fill(); }
+    if (b.state === 'crash') { const lock = b.t >= bossP('crashTrack'), sx = (lock ? b.px : b.shadowX) - cam.x, fy = FLOOR_Y - cam.y - 1;
+      g.fillStyle = lock ? ((frame & 2) ? 'rgba(255,60,60,0.7)' : 'rgba(0,0,0,0.65)') : 'rgba(0,0,0,0.6)'; g.beginPath(); g.ellipse(sx, fy, 54, 6, 0, 0, 7); g.fill();
+      g.strokeStyle = lock ? '#ff5050' : 'rgba(255,220,160,0.8)'; g.lineWidth = 1; g.beginPath(); g.ellipse(sx, fy, 55, 6.5, 0, 0, 7); g.stroke();
+      g.fillStyle = lock ? 'rgba(255,80,80,0.5)' : 'rgba(255,220,160,0.3)'; for (const ox of [-54, 54]) for (let yy = Math.round(b.y - cam.y + 84); yy < fy; yy += 6) g.fillRect(Math.round(sx + ox), yy, 1, 3);
+      if (lock && (frame & 4)) drawTextShadow('!', Math.round(sx), Math.round(fy - 20), 'r', 2, 'c'); }
     for (let yy = 2 * TS; yy < b.y; yy += 10) spr('boss', 'chain', Math.round(b.px - cam.x - 3), yy - cam.y);
     const key = b.rage ? 'chandelier_cracked' : 'chandelier', r = rectOf('boss', key);
     let jx = 0; if (b.state === 'crash' && b.t >= bossP('crashTrack')) jx = (frame & 2) ? 2 : -2;
@@ -2164,6 +2170,8 @@ function drawFloorMark(x, k, col) { const xx = x - cam.x, yy = FLOOR_Y - cam.y; 
 //  BOSS 2: リネン・ゴーレム LINEN GOLEM (great washroom) - a heap of haunted laundry that walks
 //    slam    : arms rise + red flash -> slams the floor: shockwaves both ways (jump). A bottle falls off the shelf (ammo)
 //    bubbles : cheeks puff -> soap bubbles drift after Kanata (vacuum them = SOAP ammo, splash damage)
+//    socks   : (v0.3) blue marks on the floor -> wet socks rain down on them
+//    rage    : double slam; the roll bounces off the first wall and comes back before it gets dizzy
 //    roll    : (every 3rd) spins up into a laundry ball (dust + red flash) -> rolls across the room (jump over it)
 //              -> smacks the wall, unravels DIZZY: the sock-ghost core pops out = weak point (tug-of-war)
 // =====================================================================
@@ -2176,30 +2184,38 @@ BOSS_DEFS.golem = { jp: 'リネン・ゴーレム', en: 'LINEN GOLEM', cfg: 'gol
     const C = CONFIG.golem, dx = pcx() - b.x;
     const walk = sp => { b.face = Math.sign(dx) || b.face; if (Math.abs(dx) > 70) b.x += b.face * sp; b.x = clamp(b.x, 44, room.W - 44); };
     switch (b.state) {
-      case 'idle': walk(bossP('walk')); if (b.t >= bossP('idle')) chooseAttack(b, ['slam', 'bubbles'], 'roll'); break;
+      case 'idle': walk(bossP('walk')); if (b.t >= bossP('idle')) chooseAttack(b, ['slam', 'bubbles', 'socks'], 'roll'); break;
       case 'slam': {
         const warn = bossP('slamWarn'); if (b.t === 1) { b.face = Math.sign(dx) || b.face; sfx('warn'); }
         if (b.t < warn && b.t % 10 === 0) sfx('warn');
-        if (b.t === warn) { sfx('boom'); cam.shake = 9; hitStop = 3;
+        if (b.t === warn || (b.rage && b.t === warn + 30)) { sfx('boom'); cam.shake = 9; hitStop = 3;
           for (const d of [-1, 1]) ebullets.push({ kind: 'suds', x: b.x + d * 30 - 8, y: FLOOR_Y - 14, w: 16, h: 14, vx: d * C.waveSpeed * (b.rage ? 1.15 : 1), vy: 0, dmg: C.slamDamage, life: 220 });
           if (overlapBox(b.x - 44, FLOOR_Y - 40, b.x + 44, FLOOR_Y)) hurtPlayer(C.slamDamage, b.x, 'slam');
           for (let i = 0; i < 18; i++) parts.push({ x: b.x + rnd(-40, 40), y: FLOOR_Y - 4, vx: rnd(-2, 2), vy: rnd(-3, -0.5), life: 30, col: i & 1 ? '#e8f4ff' : '#8ac0e8', size: 2, grav: 1 });
-          const fx = clamp(pcx() + rnd(-60, 60), 30, room.W - 30); ebullets.push({ kind: 'dropbottle', x: fx - 4, y: 40, w: 8, h: 14, vx: 0, vy: 0.5, g: 0.2, dmg: 1, life: 200, suckable: true, ammo: 'bottle', onLand: q => spawnItem('bottle', q.x + 4, FLOOR_Y) }); }
-        if (b.t >= warn + 40) { b.state = 'idle'; b.t = 0; } break; }
+          if (b.t === warn) { const fx = clamp(pcx() + rnd(-60, 60), 30, room.W - 30); ebullets.push({ kind: 'dropbottle', x: fx - 4, y: 40, w: 8, h: 14, vx: 0, vy: 0.5, g: 0.2, dmg: 1, life: 200, suckable: true, ammo: 'bottle', onLand: q => spawnItem('bottle', q.x + 4, FLOOR_Y) }); } }
+        if (b.t >= warn + (b.rage ? 64 : 40)) { b.state = 'idle'; b.t = 0; } break; }
       case 'bubbles': {
         if (b.t === 1) sfx('warn');
         const n = bossP('bubbles'), t0 = 34;
         if (b.t >= t0 && (b.t - t0) % 14 === 0 && (b.t - t0) / 14 < n) { sfx('bubble');
           const bx = b.x + b.face * 26, by = FLOOR_Y - 58;
-          ebullets.push({ kind: 'bubble', x: bx - 8, y: by - 8, w: 16, h: 16, vx: b.face * 0.9, vy: rnd(-0.6, 0.2), g: 0, dmg: C.bubbleDamage, life: 330, suckable: true, ammo: 'soap', home: 1, static: 1,
+          ebullets.push({ kind: 'bubble', x: bx - 8, y: by - 8, w: 16, h: 16, vx: b.face * 0.9, vy: rnd(-0.6, 0.2), g: 0, dmg: C.bubbleDamage, life: 330, suckable: true, ammo: 'soap', home: 1, homeMax: C.bubbleSpeed || 0.9, static: 1,
             onExpire: q => { if (Math.random() < 0.5) spawnItem('soap', q.x + 8, q.y + 16); for (let k = 0; k < 6; k++) parts.push({ x: q.x + 8, y: q.y + 8, vx: rnd(-1, 1), vy: rnd(-1, 1), life: 14, col: '#e8fbff', size: 1 }); } }); }
         if (b.t >= t0 + n * 14 + 30) { b.state = 'idle'; b.t = 0; } break; }
+      case 'socks': {
+        const warn = bossP('sockWarn');
+        if (b.t === 1) { const n = bossP('socks'), px = pcx(); b.marks = []; const xs = [px]; for (let k = 1; xs.length < n; k++) { xs.push(px + k * 56); if (xs.length < n) xs.push(px - k * 56); }
+          for (const x of xs) b.marks.push(clamp(x, 24, room.W - 24)); sfx('warn'); }
+        if (b.t < warn && b.t % 12 === 0) sfx('warn');
+        if (b.t === warn) { for (const mx of b.marks) ebullets.push({ kind: 'sock', x: mx - 5, y: 26, w: 10, h: 12, vx: 0, vy: 1.4, g: 0.24, dmg: C.sockDamage, life: 200, onLand: q => { for (let k = 0; k < 5; k++) parts.push({ x: q.x + 5, y: FLOOR_Y - 2, vx: rnd(-1.2, 1.2), vy: rnd(-1.6, -0.4), life: 16, col: '#9ad0ff', size: 1, grav: 1 }); } }); b.marks = []; sfx('splash'); }
+        if (b.t >= warn + 46) { b.state = 'idle'; b.t = 0; } break; }
       case 'roll': {
         const warn = bossP('spinWarn');
-        if (b.t === 1) { b.face = Math.sign(dx) || b.face; sfx('warn'); }
+        if (b.t === 1) { b.face = Math.sign(dx) || b.face; b.bounced = !b.rage; sfx('warn'); }
         if (b.t < warn) { if (b.t % 8 === 0) sfx('warn'); if (b.t > warn * 0.4) b.ball = true; if (frame % 2 === 0) parts.push({ x: b.x + rnd(-24, 24), y: FLOOR_Y - rnd(0, 8), vx: rnd(-1.5, 1.5), vy: -rnd(0.2, 1), life: 18, col: '#a8a0b0', size: 2 }); break; }
         b.ball = true; b.x += b.face * bossP('spinSpeed');
         if (overlapBox(b.x - 20, FLOOR_Y - 40, b.x + 20, FLOOR_Y)) hurtPlayer(C.spinDamage, b.x, 'roll');
+        if ((b.x < 36 || b.x > room.W - 36) && !b.bounced) { b.x = clamp(b.x, 36, room.W - 36); b.bounced = true; b.face = -b.face; sfx('crash'); cam.shake = 7; break; }
         if (b.x < 36 || b.x > room.W - 36) { b.x = clamp(b.x, 36, room.W - 36); b.state = 'dizzy'; b.t = 0; b.ball = false; b.winLen = bossP('dizzy'); sfx('crash'); cam.shake = 10; hitStop = 4;
           b.core = makeCore(b, b.x - b.face * 34, FLOOR_Y - 30, () => ({ x: boss.x, y: FLOOR_Y - 40 }), 'gcore');
           tip('gcore', 'ゴーレムが目を回した！ 中のくつ下ゴーストを VAC で吸い込め！', true); }
@@ -2213,6 +2229,7 @@ BOSS_DEFS.golem = { jp: 'リネン・ゴーレム', en: 'LINEN GOLEM', cfg: 'gol
   onDefeat(b) { bossReward(b, b.x); say('……洗濯物、ぜんぶ畳んだ。……ふぅ', 200); tip('golemDown', 'リネン・ゴーレムをやっつけた！ 屋敷のどこかで、まだ気配がする…', true); },
   draw(b, lights) {
     const x = Math.round(b.x - cam.x), y = Math.round(FLOOR_Y - cam.y), fl = b.face > 0;
+    if (b.state === 'socks' && b.marks.length) { const k = b.t / bossP('sockWarn'); for (const mx of b.marks) drawFloorMark(mx, k, 'rgba(90,170,255,0.8)'); }
     if (b.state === 'slam' && b.t < bossP('slamWarn')) { const k = b.t / bossP('slamWarn'); g.fillStyle = (frame & 4) ? 'rgba(255,80,80,0.45)' : 'rgba(255,200,120,0.3)'; g.beginPath(); g.ellipse(x, y - 1, 30 + k * 20, 3 + k * 2, 0, 0, 7); g.fill(); }
     if (b.state === 'roll' && b.t < bossP('spinWarn')) { g.fillStyle = 'rgba(255,80,80,0.35)'; const dir = b.face; for (let i = 0; i < 8; i++) if (((frame >> 2) + i) % 3 === 0) g.fillRect(x + dir * (30 + i * 16), y - 3, 8, 2); }
     let key;
@@ -2254,15 +2271,16 @@ BOSS_DEFS.rose = { jp: '夜咲きの女王 マダム・ローズ', en: 'MADAME R
       case 'idle': if (b.t >= bossP('idle')) chooseAttack(b, ['thorns', 'seeds', 'petals'], 'bloom'); break;
       case 'thorns': {
         const warn = bossP('thornWarn');
-        if (b.t === 1) { const n = bossP('thorns'), px = pcx(); b.marks = [clamp(px, 20, room.W - 20)]; for (let k = 1; b.marks.length < n; k++) { b.marks.push(clamp(px + k * 52, 20, room.W - 20)); if (b.marks.length < n) b.marks.push(clamp(px - k * 52, 20, room.W - 20)); } sfx('warn'); }
+        if (b.t === 1) b.wave = 0;
+        if (b.t === 1 || b.t === b.retgt) { const n = bossP('thorns'), px = pcx(); b.marks = [clamp(px, 20, room.W - 20)]; for (let k = 1; b.marks.length < n; k++) { b.marks.push(clamp(px + k * C.thornGap, 20, room.W - 20)); if (b.marks.length < n) b.marks.push(clamp(px - k * C.thornGap, 20, room.W - 20)); } sfx('warn'); }
         if (b.t < warn && b.t % 12 === 0) sfx('warn');
         if (b.t === warn) { for (const mx of b.marks) ebullets.push({ kind: 'thorn', x: mx - 8, y: FLOOR_Y - 44, w: 16, h: 44, vx: 0, vy: 0, g: 0, dmg: C.thornDamage, life: 34, static: 1 }); b.marks = []; sfx('thorn'); cam.shake = 4; }
-        if (b.t >= warn + 40) { b.state = 'idle'; b.t = 0; } break; }
+        if (b.t >= warn + 40) { if (b.wave < (b.rage ? 2 : 1)) { b.wave++; b.t = b.retgt = 4; } else { b.state = 'idle'; b.t = 0; b.retgt = -1; } } break; }
       case 'seeds': {
         if (b.t === 1) sfx('warn');
         const n = bossP('seeds');
         if (b.t === 36) { const h = D.head(b); sfx('spit');
-          for (let i = 0; i < n; i++) { const tx = clamp(pcx() + (i - (n - 1) / 2) * 44, 20, room.W - 20), tf = 56, gg = 0.12, vx = (tx - h.x) / tf, vy = (FLOOR_Y - 8 - h.y - 0.5 * gg * tf * tf) / tf;
+          for (let i = 0; i < n; i++) { const tx = clamp(pcx() + (i - (n - 1) / 2) * 36, 20, room.W - 20), tf = 56, gg = 0.12, vx = (tx - h.x) / tf, vy = (FLOOR_Y - 8 - h.y - 0.5 * gg * tf * tf) / tf;
             ebullets.push({ kind: 'seedpod', x: h.x - 5, y: h.y - 5, w: 10, h: 10, vx, vy, g: gg, dmg: C.seedDamage, life: 200, suckable: true, ammo: 'seed', tx, onLand: q => { spawnItem('seed', q.x + 5, FLOOR_Y); sfx('hit'); } }); } }
         if (b.t >= 80) { b.state = 'idle'; b.t = 0; } break; }
       case 'petals': {
@@ -2271,7 +2289,10 @@ BOSS_DEFS.rose = { jp: '夜咲きの女王 マダム・ローズ', en: 'MADAME R
         if (b.t < warn && b.t % 12 === 0) sfx('warn');
         if (b.t >= warn && b.t < warn + 48 && (b.t - warn) % 8 === 0) { const h = D.head(b), y = b.petalHigh ? FLOOR_Y - 76 : FLOOR_Y - 14;
           ebullets.push({ kind: 'petal', x: h.x - 6, y: y + rnd(-3, 3), w: 12, h: 8, vx: -b.side * bossP('petalSpeed') * (b.rage ? 1.2 : 1), vy: 0, g: 0, dmg: C.petalDamage, life: 260, static: 1, wall: 1 }); sfx('flap'); }
-        if (b.t >= warn + 80) { b.state = 'idle'; b.t = 0; } break; }
+        if (b.rage && b.t === warn + 50) { b.petalHigh = !b.petalHigh; sfx('warn'); }  // v0.3 rage: a second stream at the other height
+        if (b.rage && b.t >= warn + 84 && b.t < warn + 84 + 40 && (b.t - warn - 84) % 8 === 0) { const h = D.head(b), y = b.petalHigh ? FLOOR_Y - 76 : FLOOR_Y - 14;
+          ebullets.push({ kind: 'petal', x: h.x - 6, y: y + rnd(-3, 3), w: 12, h: 8, vx: -b.side * bossP('petalSpeed') * (b.rage ? 1.2 : 1), vy: 0, g: 0, dmg: C.petalDamage, life: 260, static: 1, wall: 1 }); sfx('flap'); }
+        if (b.t >= warn + (b.rage ? 150 : 80)) { b.state = 'idle'; b.t = 0; } break; }
       case 'bloom': {
         if (b.t === 1) { sfx('warn'); }
         if (b.t < 50) { if (b.t % 10 === 0) sfx('warn'); break; }
@@ -2336,13 +2357,16 @@ BOSS_DEFS.clock = { jp: '大時計の番人 チクタク', en: 'GRANDFATHER TICK
       case 'idle': if (b.t === 1) b.tx = clamp(pcx() < 192 ? 230 : 154, 120, 264); if (b.t >= bossP('idle')) chooseAttack(b, ['hands', 'gears', 'pendulum'], 'chime'); break;
       case 'hands': {
         const warn = bossP('handWarn');
-        if (b.t === 1) { const n = bossP('hands'), px = pcx(); b.marks = [clamp(px, 16, room.W - 16)]; for (let k = 1; b.marks.length < n; k++) { b.marks.push(clamp(px + (k & 1 ? 1 : -1) * Math.ceil(k / 2) * 60, 16, room.W - 16)); } sfx('warn'); }
+        if (b.t === 1) b.wave = 0;
+        if (b.t === 1 || b.t === b.retgt) { const n = bossP('hands'), px = pcx(); b.marks = [clamp(px, 16, room.W - 16)]; for (let k = 1; b.marks.length < n; k++) { b.marks.push(clamp(px + (k & 1 ? 1 : -1) * Math.ceil(k / 2) * 60, 16, room.W - 16)); } sfx('warn'); }
         if (b.t < warn && b.t % 10 === 0) sfx('tick');
         if (b.t === warn) { for (const mx of b.marks) ebullets.push({ kind: 'hand', x: mx - 5, y: 2 * TS, w: 10, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: C.handDamage, life: 22, static: 1 }); b.marks = []; sfx('thorn'); cam.shake = 5; }
-        if (b.t >= warn + 34) { b.state = 'idle'; b.t = 0; } break; }
+        if (b.t >= warn + 34) { if (b.wave < (b.rage ? 2 : 1)) { b.wave++; b.t = b.retgt = 4; } else { b.state = 'idle'; b.t = 0; b.retgt = -1; } } break; }
       case 'gears': {
-        if (b.t === 1) sfx('warn');
+        if (b.t === 1) { sfx('warn'); b.handT = 0; b.marks = []; }
         const n = bossP('gears');
+        if (b.t === 40 || (b.rage && b.t === 106)) b.marks = [clamp(pcx(), 16, room.W - 16)], b.handT = b.t + bossP('handWarn');  // a hand stabs during the gear roll (twice when enraged)
+        if (b.handT && b.t === b.handT) { for (const mx of b.marks) ebullets.push({ kind: 'hand', x: mx - 5, y: 2 * TS, w: 10, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: 1, life: 22, static: 1 }); b.marks = []; b.handT = 0; sfx('thud'); }
         if (b.t >= 34 && (b.t - 34) % 22 === 0 && (b.t - 34) / 22 < n) { const i = (b.t - 34) / 22, d = i % 2 === 0 ? Math.sign(pcx() - b.x) || 1 : -(Math.sign(pcx() - b.x) || 1);
           ebullets.push({ kind: 'rgear', x: b.x + d * 26 - 7, y: FLOOR_Y - 14, w: 14, h: 14, vx: d * C.gearSpeed * (b.rage ? 1.2 : 1), vy: 0, g: 0, dmg: C.gearDamage, life: 400, static: 1, suckable: true, ammo: 'gear', bounces: 1, roll: 1 }); sfx('tick'); }
         if (b.t >= 34 + n * 22 + 30) { b.state = 'idle'; b.t = 0; } break; }
@@ -2371,7 +2395,7 @@ BOSS_DEFS.clock = { jp: '大時計の番人 チクタク', en: 'GRANDFATHER TICK
   onDefeat(b) { startClear(); },
   draw(b, lights) {
     const D = this, x = Math.round(b.x - cam.x), y = Math.round(FLOOR_Y - cam.y);
-    if (b.state === 'hands' && b.marks.length) { const k = b.t / bossP('handWarn'); for (const mx of b.marks) { drawFloorMark(mx, k, 'rgba(255,60,60,0.75)'); g.fillStyle = (frame & 4) ? 'rgba(255,80,80,0.45)' : 'rgba(255,200,160,0.25)'; for (let yy = 2 * TS; yy < FLOOR_Y; yy += 6) g.fillRect(Math.round(mx - cam.x), Math.round(yy - cam.y), 1, 3); } }
+    if ((b.state === 'hands' || b.state === 'gears') && b.marks.length) { const k = b.state === 'gears' ? 0.6 : b.t / bossP('handWarn'); for (const mx of b.marks) { drawFloorMark(mx, k, 'rgba(255,60,60,0.75)'); g.fillStyle = (frame & 4) ? 'rgba(255,80,80,0.45)' : 'rgba(255,200,160,0.25)'; for (let yy = 2 * TS; yy < FLOOR_Y; yy += 6) g.fillRect(Math.round(mx - cam.x), Math.round(yy - cam.y), 1, 3); } }
     if (b.state === 'pendulum' && b.t < bossP('pendWarn')) { g.fillStyle = (frame & 4) ? 'rgba(255,220,120,0.7)' : 'rgba(255,220,120,0.3)'; for (let a = -1.25; a <= 1.25; a += 0.05) { const px = D.PIV.x + Math.sin(a) * D.PLEN, py = D.PIV.y + Math.cos(a) * D.PLEN; g.fillRect(Math.round(px - cam.x), Math.round(py - cam.y), 2, 2); } }
     if (b.state === 'dying' && b.t >= 90) return;
     // swinging pendulum (outside the body)
@@ -3026,6 +3050,7 @@ function drawEBullet(b) {
   else if (b.kind === 'bubble') { spr('items', 'bubble', x, y + Math.sin((frame + b.life) * 0.15)); }
   else if (b.kind === 'dropbottle') spr('items', 'bottle', x, y);
   else if (b.kind === 'seedpod') spr('items', 'seed', x, y);
+  else if (b.kind === 'sock') { g.fillStyle = '#d8ecff'; g.fillRect(x + 2, y, 5, 8); g.fillRect(x + 2, y + 7, 8, 4); g.fillStyle = '#5a9ad8'; g.fillRect(x + 2, y, 5, 2); g.fillRect(x + 2, y + 4, 5, 1); g.fillStyle = '#9ad0ff'; g.fillRect(x + 3, y + 12, 1, 2); g.fillRect(x + 7, y + 12, 1, 2); }
   else if (b.kind === 'rgear') { const r = rectOf('items', 'gear'); g.save(); g.translate(Math.round(x + 7), Math.round(y + 7)); g.rotate(frame * 0.2 * Math.sign(b.vx)); g.drawImage(IMG.items, r.x, r.y, r.w, r.h, -r.w / 2, -r.h / 2, r.w, r.h); g.restore(); }
   else if (b.kind === 'petal') spr('items', 'petal', x, y + Math.sin((frame + b.life) * 0.3) * 2, b.vx > 0);
   else if (b.kind === 'thorn') { const k = Math.min(1, (34 - b.life) / 5), h = Math.round(b.h * k); const r = rectOf('props', 'thornspike'); g.drawImage(IMG.props, r.x, r.y, r.w, h, Math.round(x), Math.round(y + b.h - h), r.w, h); }

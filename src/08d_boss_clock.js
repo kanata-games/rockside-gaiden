@@ -21,13 +21,16 @@ BOSS_DEFS.clock = { jp: '大時計の番人 チクタク', en: 'GRANDFATHER TICK
       case 'idle': if (b.t === 1) b.tx = clamp(pcx() < 192 ? 230 : 154, 120, 264); if (b.t >= bossP('idle')) chooseAttack(b, ['hands', 'gears', 'pendulum'], 'chime'); break;
       case 'hands': {
         const warn = bossP('handWarn');
-        if (b.t === 1) { const n = bossP('hands'), px = pcx(); b.marks = [clamp(px, 16, room.W - 16)]; for (let k = 1; b.marks.length < n; k++) { b.marks.push(clamp(px + (k & 1 ? 1 : -1) * Math.ceil(k / 2) * 60, 16, room.W - 16)); } sfx('warn'); }
+        if (b.t === 1) b.wave = 0;
+        if (b.t === 1 || b.t === b.retgt) { const n = bossP('hands'), px = pcx(); b.marks = [clamp(px, 16, room.W - 16)]; for (let k = 1; b.marks.length < n; k++) { b.marks.push(clamp(px + (k & 1 ? 1 : -1) * Math.ceil(k / 2) * 60, 16, room.W - 16)); } sfx('warn'); }
         if (b.t < warn && b.t % 10 === 0) sfx('tick');
         if (b.t === warn) { for (const mx of b.marks) ebullets.push({ kind: 'hand', x: mx - 5, y: 2 * TS, w: 10, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: C.handDamage, life: 22, static: 1 }); b.marks = []; sfx('thorn'); cam.shake = 5; }
-        if (b.t >= warn + 34) { b.state = 'idle'; b.t = 0; } break; }
+        if (b.t >= warn + 34) { if (b.wave < (b.rage ? 2 : 1)) { b.wave++; b.t = b.retgt = 4; } else { b.state = 'idle'; b.t = 0; b.retgt = -1; } } break; }
       case 'gears': {
-        if (b.t === 1) sfx('warn');
+        if (b.t === 1) { sfx('warn'); b.handT = 0; b.marks = []; }
         const n = bossP('gears');
+        if (b.t === 40 || (b.rage && b.t === 106)) b.marks = [clamp(pcx(), 16, room.W - 16)], b.handT = b.t + bossP('handWarn');  // a hand stabs during the gear roll (twice when enraged)
+        if (b.handT && b.t === b.handT) { for (const mx of b.marks) ebullets.push({ kind: 'hand', x: mx - 5, y: 2 * TS, w: 10, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: 1, life: 22, static: 1 }); b.marks = []; b.handT = 0; sfx('thud'); }
         if (b.t >= 34 && (b.t - 34) % 22 === 0 && (b.t - 34) / 22 < n) { const i = (b.t - 34) / 22, d = i % 2 === 0 ? Math.sign(pcx() - b.x) || 1 : -(Math.sign(pcx() - b.x) || 1);
           ebullets.push({ kind: 'rgear', x: b.x + d * 26 - 7, y: FLOOR_Y - 14, w: 14, h: 14, vx: d * C.gearSpeed * (b.rage ? 1.2 : 1), vy: 0, g: 0, dmg: C.gearDamage, life: 400, static: 1, suckable: true, ammo: 'gear', bounces: 1, roll: 1 }); sfx('tick'); }
         if (b.t >= 34 + n * 22 + 30) { b.state = 'idle'; b.t = 0; } break; }
@@ -56,7 +59,7 @@ BOSS_DEFS.clock = { jp: '大時計の番人 チクタク', en: 'GRANDFATHER TICK
   onDefeat(b) { startClear(); },
   draw(b, lights) {
     const D = this, x = Math.round(b.x - cam.x), y = Math.round(FLOOR_Y - cam.y);
-    if (b.state === 'hands' && b.marks.length) { const k = b.t / bossP('handWarn'); for (const mx of b.marks) { drawFloorMark(mx, k, 'rgba(255,60,60,0.75)'); g.fillStyle = (frame & 4) ? 'rgba(255,80,80,0.45)' : 'rgba(255,200,160,0.25)'; for (let yy = 2 * TS; yy < FLOOR_Y; yy += 6) g.fillRect(Math.round(mx - cam.x), Math.round(yy - cam.y), 1, 3); } }
+    if ((b.state === 'hands' || b.state === 'gears') && b.marks.length) { const k = b.state === 'gears' ? 0.6 : b.t / bossP('handWarn'); for (const mx of b.marks) { drawFloorMark(mx, k, 'rgba(255,60,60,0.75)'); g.fillStyle = (frame & 4) ? 'rgba(255,80,80,0.45)' : 'rgba(255,200,160,0.25)'; for (let yy = 2 * TS; yy < FLOOR_Y; yy += 6) g.fillRect(Math.round(mx - cam.x), Math.round(yy - cam.y), 1, 3); } }
     if (b.state === 'pendulum' && b.t < bossP('pendWarn')) { g.fillStyle = (frame & 4) ? 'rgba(255,220,120,0.7)' : 'rgba(255,220,120,0.3)'; for (let a = -1.25; a <= 1.25; a += 0.05) { const px = D.PIV.x + Math.sin(a) * D.PLEN, py = D.PIV.y + Math.cos(a) * D.PLEN; g.fillRect(Math.round(px - cam.x), Math.round(py - cam.y), 2, 2); } }
     if (b.state === 'dying' && b.t >= 90) return;
     // swinging pendulum (outside the body)

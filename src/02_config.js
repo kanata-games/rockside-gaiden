@@ -84,22 +84,25 @@ const CONFIG = {
 
   // ---- boss: 呪いのシャンデリア GRAND LUMIERE ----
   boss: {
-    hp: 100, idle: 64, idleRage: 42, trackSpeed: 0.7, trackSpeedRage: 1.0,
-    candleWarn: 46, candleWarnRage: 36, candles: 3, candlesRage: 4, candleFire: 110, candleDamage: 1, fireDamage: 1,
-    wispCount: 2, wispCountRage: 3, wispLife: 420, wispSpeed: 0.55, wispHp: 34, wispDamage: 1,
-    shardWarn: 38, shardWarnRage: 30, shards: 5, shardsRage: 7, shardDamage: 1,
-    crashTrack: 64, crashTrackRage: 52, crashLock: 30, crashDamage: 2, crashFollow: 1.2, waveDamage: 1, waveSpeed: 2.4,
-    stuck: 170, stuckRage: 140, coreHp: 70,
+    // v0.3: the first boss is gentler (fewer/slower drops, wider gaps, longer warnings, lower HP)
+    hp: 80, idle: 80, idleRage: 58, trackSpeed: 0.6, trackSpeedRage: 0.85,
+    candleWarn: 64, candleWarnRage: 50, candles: 2, candlesRage: 3, candleGap: 84, candleFire: 90, candleDamage: 1, fireDamage: 1,
+    wispCount: 2, wispCountRage: 2, wispLife: 380, wispSpeed: 0.45, wispHp: 30, wispDamage: 1,
+    shardWarn: 54, shardWarnRage: 44, shards: 4, shardsRage: 5, shardDamage: 1,
+    crashTrack: 80, crashTrackRage: 66, crashLock: 44, crashDamage: 2, crashFollow: 1.0, waveDamage: 1, waveSpeed: 2.0,
+    stuck: 200, stuckRage: 170, coreHp: 70,
     coreCap: 25, coreBaseDrain: 0.06, corePullDrain: 0.18,  // boss HP per frame while the core is in a tug-of-war
-    contactDamage: 2,
+    contactDamage: 1,
   },
   // ---- boss 2: リネン・ゴーレム LINEN GOLEM (laundry) ----
-  golem: { hp: 140, idle: 70, idleRage: 48, walk: 0.55, walkRage: 0.8, slamWarn: 44, slamWarnRage: 34, waveSpeed: 2.3, slamDamage: 2,
-    bubbles: 3, bubblesRage: 5, bubbleDamage: 1, spinWarn: 50, spinWarnRage: 40, spinSpeed: 3.2, spinDamage: 2, dizzy: 170, dizzyRage: 140, contactDamage: 1 },
+  // v0.3: noticeably stronger (faster, double slam + wall-bounce roll when angry, sock rain)
+  golem: { hp: 175, idle: 52, idleRage: 36, walk: 0.8, walkRage: 1.1, slamWarn: 40, slamWarnRage: 32, waveSpeed: 2.8, slamDamage: 2,
+    bubbles: 3, bubblesRage: 4, bubbleDamage: 1, bubbleSpeed: 1.0, spinWarn: 40, spinWarnRage: 34, spinSpeed: 4.2, spinDamage: 2, dizzy: 130, dizzyRage: 110,
+    socks: 4, socksRage: 5, sockWarn: 44, sockWarnRage: 36, sockDamage: 1, contactDamage: 1 },
   // ---- boss 3: 夜咲きの女王 マダム・ローズ MADAME ROSE (greenhouse) ----
-  rose: { hp: 170, idle: 64, idleRage: 44, thornWarn: 46, thornWarnRage: 36, thorns: 3, thornsRage: 4, thornDamage: 2,
-    seeds: 3, seedsRage: 4, seedDamage: 1, petalWarn: 50, petalWarnRage: 40, petalSpeed: 2.2, petalDamage: 1, bloom: 170, bloomRage: 140, burnBonus: 3, contactDamage: 1 },
+  rose: { hp: 200, idle: 52, idleRage: 38, thornWarn: 42, thornWarnRage: 34, thorns: 4, thornsRage: 5, thornGap: 44, thornDamage: 2,
+    seeds: 4, seedsRage: 6, seedDamage: 1, petalWarn: 44, petalWarnRage: 36, petalSpeed: 2.6, petalDamage: 1, bloom: 170, bloomRage: 140, burnBonus: 3, contactDamage: 1 },
   // ---- boss 4: 大時計の番人 グランドファーザー・チクタク GRANDFATHER TICKTOCK (clock tower) ----
-  clock: { hp: 180, spitMul: 1.2, idle: 56, idleRage: 40, handWarn: 40, handWarnRage: 32, hands: 3, handsRage: 4, handDamage: 2,
-    gears: 3, gearsRage: 4, gearSpeed: 2.0, gearDamage: 1, pendWarn: 50, pendWarnRage: 40, pendDamage: 2, chime: 170, chimeRage: 140, contactDamage: 1 },
+  clock: { hp: 220, spitMul: 1.2, idle: 46, idleRage: 34, handWarn: 34, handWarnRage: 28, hands: 4, handsRage: 6, handDamage: 2,
+    gears: 5, gearsRage: 7, gearSpeed: 2.8, gearDamage: 1, pendWarn: 42, pendWarnRage: 34, pendDamage: 2, chime: 160, chimeRage: 130, contactDamage: 2 },
 };

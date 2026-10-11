@@ -13,8 +13,8 @@ async function fight(browser, url, kind, god) {
   await page.evaluate(BOT); await page.evaluate(() => { window.__speed = 8; });
   const t0 = Date.now(); let res;
   while (Date.now() - t0 < 150000) {
-    res = await page.evaluate(() => { const b = GAIDEN.boss, P = GAIDEN.P; return { st: GAIDEN.state, bs: b ? b.state : 'none', hp: P.hp, dead: P.dead || GAIDEN.state === 'gameover', bhp: b ? Math.round(b.hp) : 0, rage: b && b.rage, f: window.__botStats.frames, hits: window.__botStats.hits, causes: window.__botStats.causes, spits: window.__botStats.spits, beaten: GAIDEN.progress.bosses.has(b ? b.kind : '') }; });
-    if (res.dead || res.beaten || res.st === 'clear' || res.bs === 'done') break;
+    res = await page.evaluate(() => { const b = GAIDEN.boss, P = GAIDEN.P; return { st: GAIDEN.state, bs: b ? b.state : 'none', hp: P.hp, dead: P.dead || GAIDEN.state === 'gameover', bhp: b ? Math.round(b.hp) : 0, rage: b && b.rage, f: window.__botStats.frames, hits: window.__botStats.hits, dmg: window.__botStats.dmg || 0, causes: window.__botStats.causes, spits: window.__botStats.spits, beaten: !!window.__botStats.won || GAIDEN.progress.bosses.has(b ? b.kind : ''), lh: GAIDEN.stats.lastHurt, px: Math.round(P.x), py: Math.round(P.y), room: GAIDEN.room.id }; });
+    if (res.beaten || res.dead || res.st === 'clear' || res.bs === 'done') break;
     await sleep(250);
   }
   await page.close();
@@ -26,10 +26,10 @@ async function fight(browser, url, kind, god) {
   for (const k of kinds) {
     const rs = [];
     for (let i = 0; i < runs; i++) { const r = await fight(browser, srv.url, k, god); rs.push(r); allErr += r.errs.length;
-      console.log(`  ${k} #${i + 1}: ${r.win ? 'WIN ' : r.dead ? 'DIED' : 'TIMEOUT'} fight ${r.secs}s, hits ${r.hits}, hp left ${r.hp}, boss hp ${r.bhp}, spits ${r.spits}` + (r.errs.length ? ' ERR ' + r.errs[0] : ''));
+      console.log(`  ${k} #${i + 1}: ${r.win ? 'WIN ' : r.dead ? 'DIED' : 'TIMEOUT'} fight ${r.secs}s, hits ${r.hits}, dmg ${r.dmg}, hp left ${r.hp}, boss hp ${r.bhp}, spits ${r.spits}` + (r.errs.length ? ' ERR ' + r.errs[0] : '') + (r.dead ? ` [last hurt: ${r.lh} @${r.room} ${r.px},${r.py} bs=${r.bs}]` : ''));
       if (process.env.CAUSES) console.log('     ' + r.causes.join(' ')); }
-    const w = rs.filter(r => r.win).length, avgHits = (rs.reduce((a, r) => a + r.hits, 0) / rs.length).toFixed(1), avgT = Math.round(rs.reduce((a, r) => a + r.secs, 0) / rs.length);
-    console.log(`${k.toUpperCase()}: ${w}/${rs.length} wins, avg hits ${avgHits}, avg fight ${avgT}s`);
+    const w = rs.filter(r => r.win).length, avgHits = (rs.reduce((a, r) => a + r.hits, 0) / rs.length).toFixed(1), avgDmg = (rs.reduce((a, r) => a + r.dmg, 0) / rs.length).toFixed(1), avgT = Math.round(rs.reduce((a, r) => a + r.secs, 0) / rs.length);
+    console.log(`${k.toUpperCase()}: ${w}/${rs.length} wins, avg hits ${avgHits}, avg dmg ${avgDmg}/10, avg fight ${avgT}s`);
   }
   await browser.close(); srv.close(); process.exit(allErr ? 1 : 0);
 })();
