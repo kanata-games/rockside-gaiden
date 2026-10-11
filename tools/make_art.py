@@ -196,6 +196,10 @@ THEMES = {
     'crypt':   dict(w1='#141614', w2='#20241e', w3='#3a3e34', pat='niche'),
     'bath':    dict(w1='#1e4a52', w2='#2a6470', w3='#4a9aa4', pat='mosaic'),
     'cistern': dict(w1='#10202a', w2='#18303c', w3='#2a4a5a', pat='wetstone'),
+    'theater': dict(w1='#2a0a14', w2='#3e1220', w3='#5e1e30', pat='damask'),     # v0.4 marionette theater
+    'stage':   dict(w1='#1a0a10', w2='#2a121a', w3='#4a1e2a', pat='velvet'),
+    'stars':   dict(w1='#080c1e', w2='#10183a', w3='#2a3a6a', pat='starfield'),  # v0.4 observatory
+    'observatory': dict(w1='#141a2e', w2='#1c2440', w3='#2e3a62', pat='panel'),
     'heart':   dict(w1='#120e22', w2='#1c1632', w3='#3a2e5e', pat='gothic'),   # v0.4 clock heart (Chronoa)
 }
 for name, th in THEMES.items():
@@ -305,6 +309,16 @@ for name, th in THEMES.items():
             for y in range(32):
                 if (y + x0) % 9 < 6: s.px(x0, y, w3)
         s.hline(0, 31, 0, '#060c10')
+    elif th['pat'] == 'velvet':  # heavy stage-curtain folds
+        for y in range(32):
+            for x in range(32):
+                f = math.sin(x / 32 * 6.283 * 2) * .5 + .5; s.px(x, y, lerp(w1, w3, f * .9))
+        for x in range(0, 32, 4): s.px(x, 31, w3)
+    elif th['pat'] == 'starfield':  # night sky through the dome glass
+        for y in range(32):
+            for x in range(32): s.px(x, y, lerp(w1, w2, (math.sin(x * .2 + y * .1) + 1) / 2))
+        for (x, y) in ((3, 5), (17, 2), (26, 13), (9, 21), (21, 27), (30, 30), (12, 11)): s.px(x, y, '#ffffff'); s.px(x + 1, y, w3)
+        s.vline(0, 0, 31, w3); s.hline(0, 31, 0, w3)
     elif th['pat'] == 'diamond':
         for y in range(32):
             for x in range(32):
@@ -348,6 +362,7 @@ B.save()
 # =====================================================================
 P = Atlas('props', 512)
 GOLD, GOLDH, GOLDL, GOLDD = '#c9a24a', '#f3d98a', '#8a6a2a', '#4a3612'
+exec(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'art_areas.py'), encoding='utf-8').read())   # v0.4 areas (add_area_* below)
 def frame_rect(s, x, y, w, h, t=3):
     s.rect(x, y, w, h, GOLDL); s.rect(x + 1, y + 1, w - 2, h - 2, GOLD)
     s.hline(x + 1, x + w - 2, y + 1, GOLDH); s.vline(x + 1, y + 1, y + h - 2, GOLDH)
@@ -948,6 +963,7 @@ for x in range(48):
 for k in range(12): a = k / 12 * 6.28; s.px(24 + math.cos(a) * 18, 5 + math.sin(a) * 3.2, '#c8f0ff')
 s.ellipse(24, 5, 6, 2, '#a8e8ff'); s.outline('#140c28'); P.add('warp_pad', s)
 s = Spr(14, 30); s.rect(6, 8, 2, 22, '#3a2a2a'); s.rect(3, 0, 8, 9, '#2a2a3a'); s.rect(4, 1, 6, 7, '#8ad0ff'); s.rect(5, 2, 4, 5, '#d8f4ff'); s.outline('#0a0a14'); P.add('spiritlamp', s)
+add_area_props(P)
 P.save()
 
 # =====================================================================
@@ -1196,6 +1212,7 @@ def crab(f, snap=False):
         for k in range(3): s.line(12 + side * (3 + k * 2), 13, 12 + side * (5 + k * 2), 15 - ((k + f) % 2), shd)
     s.outline('#3a0e04'); return s
 E.add('crab0', crab(0)); E.add('crab1', crab(1)); E.add('crab_snap', crab(0, True))
+add_area_enemies(E)
 E.save()
 
 # =====================================================================
@@ -1486,6 +1503,7 @@ for x in range(44):
     hh = int(5 + 4 * math.sin((x + .5) / 44 * math.pi))
     for y in range(12 - hh, 12): s.px(x, y, '#8ad8f0' if y > 12 - hh + 1 else '#ffffff')
 s.outline('#1a4a5a'); BO.add('splashring', s)
+add_area_boss(BO)
 # v0.4: Chronoa's eye core (teal) for the tug-of-war
 for m in ('tug', 'dizzy'): BO.add('ecore_' + m, tinted_core(m, '#f0fffc', '#9ae8dc', '#2a9a90', '#0e3a38'))
 BO.save()

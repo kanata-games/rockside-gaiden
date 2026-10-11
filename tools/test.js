@@ -244,14 +244,18 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       ok('clock hands: the marked stab actually comes down from the ceiling', await waitFor(page, () => GAIDEN.ebullets.some(q => q.kind === 'hand' && q.h > 150), 20000)); await ctx.close(); }
 
     // ---- bosses 2-4, played by the bot (god mode; balance runs without god mode: tools/bossrun.js)
-    for (const [kind, roomId, abil] of [['golem', 'washroom', 'float,turbo'], ['rose', 'rosebed', 'float,turbo,djump'], ['organ', 'choir', 'float,turbo,djump'], ['serpent', 'yubune', 'float,turbo,djump,phase'], ['clock', 'clockroom', 'float,turbo,djump,phase']]) {
+    for (const [kind, roomId, abil] of [['golem', 'washroom', 'float,turbo'], ['rose', 'rosebed', 'float,turbo,djump'], ['organ', 'choir', 'float,turbo,djump'], ['serpent', 'yubune', 'float,turbo,djump,phase'], ['clock', 'clockroom', 'float,turbo,djump,phase'], ['chronoa', 'clockheart', 'float,turbo,djump,phase,tank']]) {
       const { ctx, page } = await open(browser, `?room=${roomId}&x=2&y=16&god=1&abil=${abil}`);
       await waitFor(page, () => GAIDEN.state === 'play', 5000);
       await E(page, BOT); await E(page, () => { window.__speed = 8; });
       ok(`boss ${kind}: intro`, await waitFor(page, () => GAIDEN.boss && GAIDEN.boss.state !== 'sleep', 6000));
       ok(`boss ${kind}: weak point -> core tug-of-war`, await waitFor(page, () => GAIDEN.P.tug && GAIDEN.P.tug.boss, 60000));
       ok(`boss ${kind}: defeated`, await waitFor(page, k => GAIDEN.progress.bosses.has(k), 150000, kind));
-      if (kind === 'clock') { ok('final boss -> clear screen', await waitFor(page, () => GAIDEN.state === 'clear', 10000)); await E(page, () => { window.__speed = 0; }); await sleep(2500); await shot(page, 'v02_clear.png'); }
+      if (kind === 'clock') { await sleep(400); ok('v0.4: beating the clock opens the seal door to the tower top (no clear yet)', await E(page, () => GAIDEN.state === 'play' && GAIDEN.progress.perm.has('clockroom:gate:heart') && GAIDEN.room.grid[12 * GAIDEN.room.cols + 23] === 0));
+        ok('v0.4: Vel appears after the clock with one line', await waitFor(page, () => GAIDEN.STORY.vel && GAIDEN.STORY.box && GAIDEN.STORY.box.who === 'vel', 3000)); }
+      if (kind === 'chronoa') { ok('v0.4 ending: Vel comes for Chronoa', await waitFor(page, () => GAIDEN.STORY.scene && GAIDEN.STORY.scene.vel, 20000));
+        ok('v0.4 ending: Chronoa is lifted by something unseen', await waitFor(page, () => GAIDEN.STORY.scene && GAIDEN.STORY.scene.lift > 0.5, 20000));
+        ok('true final boss -> ending -> clear screen', await waitFor(page, () => GAIDEN.state === 'clear', 30000)); await E(page, () => { window.__speed = 0; }); await sleep(2500); await shot(page, 'v02_clear.png'); }
       await ctx.close(); }
   } catch (e) { errors.push('test crash: ' + e.stack); }
   ok('no JS errors', errors.length === 0, errors.slice(0, 8));

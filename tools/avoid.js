@@ -57,7 +57,7 @@ function search(H, x0, startF, C, ctx, reaim) { // reaim: a re-aimed volley - ha
 }
 module.exports.run = async function run(base, bosses, opt = {}) {
   const browser = await chromium.launch(); const results = [];
-  const jobs = []; for (const boss of bosses) for (const atk of ATTACKS[boss][2]) for (const rage of [false, true]) jobs.push([boss, atk, rage]);
+  const jobs = []; for (const boss of bosses) for (const atk of ATTACKS[boss][2]) if (!process.env.ATK || process.env.ATK.split(',').includes(atk)) for (const rage of [false, true]) jobs.push([boss, atk, rage]);
   const worker = async () => { while (jobs.length) { const [boss, atk, rage] = jobs.shift(); let r = await one(browser, base, boss, atk, rage, opt);
     if (r.fails.length && r.fails.every(f => f.why === 'attack never started')) r = await one(browser, base, boss, atk, rage, opt); // load hiccup: retry once
     results.push(r); } };
