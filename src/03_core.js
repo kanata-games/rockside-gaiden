@@ -342,7 +342,7 @@ try { if (localStorage.getItem('gaiden_muted') === '1') { Snd.muted = true; mute
 
 function place(el, x, y, w, h) { el.style.left = Math.round(x) + 'px'; el.style.top = Math.round(y) + 'px'; el.style.width = Math.round(w) + 'px'; el.style.height = Math.round(h) + 'px'; }
 // Portrait: canvas at the top, then the message panel (tips / room name), the MAP + SOUND row and the controls
-// packed right underneath (no dead gap), any spare height goes below the controls.
+// packed right underneath (no dead gap); spare height is split around the controls (a bit more below).
 function doLayout() {
   const W = window.innerWidth, H = window.innerHeight, dpr = Math.min(window.devicePixelRatio || 1, 3);
   const portrait = H >= W * 1.1;
@@ -373,7 +373,7 @@ function doLayout() {
     bs = Math.max(66, Math.min(92, Math.floor((W / 2 - 30) / 2)));
     const off = bs * 0.62, vb = Math.round(bs * 1.12), clusterH = off * 1.75 + bs / 2 + vb / 2;
     const spare = Math.max(0, H - 24 - ctrlTop - clusterH);
-    cy = ctrlTop + Math.min(spare * 0.3, 70) + off + bs / 2;
+    cy = ctrlTop + Math.min(spare * 0.45, 90) + off + bs / 2; // a little lower = easier thumb reach
     hintEl.style.top = (H - 20) + 'px';
   } else {
     bs = Math.max(60, Math.min(84, H * 0.2));
