@@ -6,6 +6,9 @@
 //    petals : petals glow + a guide line LOW (jump) or HIGH (stay on the floor) -> a petal stream sweeps the room
 //    bloom  : (every 3rd) the flower opens wide, sneezes pollen and droops: the ghost core peeks out = weak point.
 //             afterwards she burrows and comes up on the other side of the bed.
+//    roots  : (v0.3b) the stem glows -> a root ridge races along the floor toward the far wall (jump it; two when enraged)
+//    garden : (v0.3b, phase 2) thorns over the whole bed in two alternating passes - stand between, then shift
+//    combo  : (v0.3b, phase 2) seeds flow straight into thorns; 2-3 thorn waves
 //  Fire is super effective (burnBonus).
 // =====================================================================
 BOSS_DEFS.rose = { jp: '夜咲きの女王 マダム・ローズ', en: 'MADAME ROSE', cfg: 'rose', cols: ['#ff5d8a', '#ffb0c8', '#6ad08a', '#ffffff'], rageText: 'マダム・ローズが怒った！ 花びらが真っ赤に',
@@ -17,7 +20,7 @@ BOSS_DEFS.rose = { jp: '夜咲きの女王 マダム・ローズ', en: 'MADAME R
   update(b) {
     const C = CONFIG.rose, D = this;
     switch (b.state) {
-      case 'idle': if (b.t >= bossP('idle')) chooseAttack(b, ['thorns', 'seeds', 'petals'], 'bloom'); break;
+      case 'idle': if (b.t >= bossP('idle')) chooseAttack(b, b.rage ? ['thorns', 'seeds', 'petals', 'roots', 'garden'] : ['thorns', 'seeds', 'petals', 'roots'], 'bloom'); break;
       case 'thorns': {
         const warn = bossP('thornWarn');
         if (b.t === 1) b.wave = 0;
@@ -31,7 +34,7 @@ BOSS_DEFS.rose = { jp: '夜咲きの女王 マダム・ローズ', en: 'MADAME R
         if (b.t === 36) { const h = D.head(b); sfx('spit');
           for (let i = 0; i < n; i++) { const tx = clamp(pcx() + (i - (n - 1) / 2) * 36, 20, room.W - 20), tf = 56, gg = 0.12, vx = (tx - h.x) / tf, vy = (FLOOR_Y - 8 - h.y - 0.5 * gg * tf * tf) / tf;
             ebullets.push({ kind: 'seedpod', x: h.x - 5, y: h.y - 5, w: 10, h: 10, vx, vy, g: gg, dmg: C.seedDamage, life: 200, suckable: true, ammo: 'seed', tx, onLand: q => { spawnItem('seed', q.x + 5, FLOOR_Y); sfx('hit'); } }); } }
-        if (b.t >= 80) { b.state = 'idle'; b.t = 0; } break; }
+        if (b.t >= 80) { b.state = b.rage ? 'thorns' : 'idle'; b.t = 0; } break; }
       case 'petals': {
         const warn = bossP('petalWarn');
         if (b.t === 1) { b.petalHigh = Math.random() < 0.45; sfx('warn'); }
@@ -42,6 +45,17 @@ BOSS_DEFS.rose = { jp: '夜咲きの女王 マダム・ローズ', en: 'MADAME R
         if (b.rage && b.t >= warn + 84 && b.t < warn + 84 + 40 && (b.t - warn - 84) % 8 === 0) { const h = D.head(b), y = b.petalHigh ? FLOOR_Y - 76 : FLOOR_Y - 14;
           ebullets.push({ kind: 'petal', x: h.x - 6, y: y + rnd(-3, 3), w: 12, h: 8, vx: -b.side * bossP('petalSpeed') * (b.rage ? 1.2 : 1), vy: 0, g: 0, dmg: C.petalDamage, life: 260, static: 1, wall: 1 }); sfx('flap'); }
         if (b.t >= warn + (b.rage ? 150 : 80)) { b.state = 'idle'; b.t = 0; } break; }
+      case 'roots': {
+        const warn = bossP('rootWarn'), dir = -b.side;
+        if (b.t === 1) { sfx('warn'); tip('roots', '根っこが床を走ってくる！ ジャンプでかわせ'); }
+        if (b.t === warn || (b.rage && b.t === warn + 34)) { sfx('thorn'); cam.shake = 3;
+          ebullets.push({ kind: 'root', x: b.x + dir * 20 - 8, y: FLOOR_Y - 16, w: 16, h: 16, vx: dir * C.rootSpeed * (b.t > warn ? 1.15 : 1), vy: 0, dmg: C.rootDamage, life: 260 }); }
+        if (b.t >= warn + (b.rage ? 80 : 50)) { b.state = 'idle'; b.t = 0; } break; }
+      case 'garden': {
+        const warn = bossP('gardenWarn');
+        if (b.t === 1 || b.t === warn + 30) { const off = b.t === 1 ? 0 : 24; b.marks = []; b.markR = 16; for (let x = 16 + off; x < room.W - 12; x += 48) if (Math.abs(x - b.x) > 30) b.marks.push(x); b.gT = b.t; sfx('warn'); tip('garden', 'バラ園じゅうにトゲ！ 印と印のあいだに立て'); }
+        if (b.t === b.gT + warn) { for (const mx of b.marks) ebullets.push({ kind: 'thorn', x: mx - 8, y: FLOOR_Y - 44, w: 16, h: 44, vx: 0, vy: 0, g: 0, dmg: C.thornDamage, life: 34, static: 1 }); b.marks = []; sfx('thorn'); cam.shake = 5; }
+        if (b.t >= 2 * warn + 30 + 36) { b.state = 'idle'; b.t = 0; b.markR = 0; } break; }
       case 'bloom': {
         if (b.t === 1) { sfx('warn'); }
         if (b.t < 50) { if (b.t % 10 === 0) sfx('warn'); break; }
@@ -63,6 +77,8 @@ BOSS_DEFS.rose = { jp: '夜咲きの女王 マダム・ローズ', en: 'MADAME R
   onDefeat(b) { bossReward(b, b.x); say('……バラ、しずかになった。……いい匂い', 200); tip('roseDown', 'マダム・ローズをやっつけた！', true); },
   draw(b, lights) {
     const D = this, h = D.head(b), fl = b.side < 0;
+    if (b.state === 'garden' && b.marks.length) { const k = Math.min(1, (b.t - b.gT) / bossP('gardenWarn')); for (const mx of b.marks) drawFloorMark(mx, k, 'rgba(255,60,120,0.85)'); }
+    if (b.state === 'roots' && b.t < bossP('rootWarn') && (frame & 4)) { g.globalAlpha = 0.5; g.fillStyle = '#ff8040'; g.fillRect(Math.round(b.x - cam.x - 3), Math.round(FLOOR_Y - cam.y - 90), 6, 90); g.globalAlpha = 1; }
     if (b.state === 'thorns' && b.marks.length) { const k = b.t / bossP('thornWarn'); for (const mx of b.marks) drawFloorMark(mx, k, 'rgba(255,60,120,0.75)'); }
     if (b.state === 'seeds' && b.t < 36) { g.globalCompositeOperation = 'lighter'; g.fillStyle = 'rgba(255,200,80,' + (0.15 + 0.15 * Math.sin(frame * 0.6)) + ')'; g.beginPath(); g.arc(h.x - cam.x, h.y - cam.y, 30 + b.t / 3, 0, 7); g.fill(); g.globalCompositeOperation = 'source-over'; }
     if (b.state === 'petals' && b.t < bossP('petalWarn')) { const y = (b.petalHigh ? FLOOR_Y - 72 : FLOOR_Y - 10) - cam.y; g.fillStyle = (frame & 4) ? 'rgba(255,90,140,0.6)' : 'rgba(255,200,220,0.3)'; for (let x = 0; x < VW; x += 10) g.fillRect(x, Math.round(y), 5, 2);

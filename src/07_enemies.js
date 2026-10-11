@@ -184,7 +184,7 @@ function checkLockedDoor() {
 // ---------------------------------------------------------------------
 //  enemy bullets (plates, candles, crystal shards, fire patches, floor waves)
 // ---------------------------------------------------------------------
-const PERSIST_BULLETS = new Set(['firepatch', 'wave', 'suds', 'thorn', 'hand']);
+const PERSIST_BULLETS = new Set(['firepatch', 'wave', 'suds', 'thorn', 'hand', 'root', 'blast', 'geyser', 'puddle']);
 function updateEBullets() {
   for (const b of ebullets) {
     if (b.dead) continue;
@@ -195,7 +195,7 @@ function updateEBullets() {
     }
     b.captured = false;
     b.x += b.vx; b.y += b.vy; b.spin = (b.spin || 0) + 1;
-    if (b.kind === 'wave' || b.kind === 'suds' || b.kind === 'firepatch') { if (b.kind !== 'firepatch' && (solidAtPx(b.x + (b.vx > 0 ? b.w : 0), b.y + b.h / 2) || b.x < 0 || b.x > room.W)) b.dead = true; }
+    if (b.kind === 'wave' || b.kind === 'suds' || b.kind === 'root' || b.kind === 'firepatch') { if (b.kind !== 'firepatch' && (solidAtPx(b.x + (b.vx > 0 ? b.w : 0), b.y + b.h / 2) || b.x < 0 || b.x > room.W)) b.dead = true; }
     else if (b.static) {
       if ((b.roll || b.wall || b.home) && (solidAtPx(b.x + (b.vx > 0 ? b.w : 0), b.y + b.h / 2) || b.x < -4 || b.x + b.w > room.W + 4 || (b.home && (solidAtPx(b.x + b.w / 2, b.y) || solidAtPx(b.x + b.w / 2, b.y + b.h))))) {
         if (b.bounces > 0) { b.bounces--; b.vx = -b.vx; b.x += b.vx * 2; sfx('tink'); }

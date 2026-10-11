@@ -5,9 +5,11 @@
 //    gears    : gears rattle in its base -> gears roll along the floor (jump them / vacuum them = GEAR ammo, bounces)
 //    pendulum : the pendulum glows + dotted arc -> it swings out across the whole room (stand near a wall, or jump over at the centre)
 //    chime    : (every 3rd) strikes twelve: three rings, then floor shockwaves (jump) -> overwound and stopped:
-//               the cuckoo-ghost core pops out = weak point.  Beating it = the end of v0.2.
+//               the cuckoo-ghost core pops out = weak point.
+//    midnight : (v0.3b, phase 2) the room goes dark: a chain of hand stabs chases Kanata (+ gears in OVERDRIVE)
+//    combo    : (v0.3b, phase 2) hands stab during the pendulum swing; OVERDRIVE (25% HP): faster everything, double chime quake  Beating it = the end of v0.2.
 // =====================================================================
-BOSS_DEFS.clock = { jp: '大時計の番人 チクタク', en: 'GRANDFATHER TICKTOCK', cfg: 'clock', cols: ['#ffe080', '#c9a24a', '#ffffff', '#8a6a2a'], rageText: '大時計が怒った！ 針が速くなった',
+BOSS_DEFS.clock = { jp: '大時計の番人 チクタク', en: 'GRANDFATHER TICKTOCK', cfg: 'clock', cols: ['#ffe080', '#c9a24a', '#ffffff', '#8a6a2a'], rageText: '大時計が怒った！ 針が速くなった', overText: '大時計が暴走した！ 真夜中の鐘が鳴りやまない…',
   sayIntro: '……時計のおばけ。……もう寝る時間なのに', sayCore: '……鳩時計の、ゴースト……',
   PIV: { x: 192, y: 34 }, PLEN: 190,
   make(b) { b.x = 192; b.tx = 192; b.pend = 0; b.pendOut = false; },
@@ -18,7 +20,7 @@ BOSS_DEFS.clock = { jp: '大時計の番人 チクタク', en: 'GRANDFATHER TICK
     const C = CONFIG.clock, D = this;
     b.x += clamp(b.tx - b.x, -0.6, 0.6);
     switch (b.state) {
-      case 'idle': if (b.t === 1) b.tx = clamp(pcx() < 192 ? 230 : 154, 120, 264); if (b.t >= bossP('idle')) chooseAttack(b, ['hands', 'gears', 'pendulum'], 'chime'); break;
+      case 'idle': if (b.t === 1) b.tx = clamp(pcx() < 192 ? 230 : 154, 120, 264); if (b.t >= bossP('idle')) chooseAttack(b, b.rage ? ['hands', 'gears', 'pendulum', 'midnight'] : ['hands', 'gears', 'pendulum'], 'chime'); break;
       case 'hands': {
         const warn = bossP('handWarn');
         if (b.t === 1) b.wave = 0;
@@ -32,7 +34,7 @@ BOSS_DEFS.clock = { jp: '大時計の番人 チクタク', en: 'GRANDFATHER TICK
         if (b.t === 40 || (b.rage && b.t === 106)) b.marks = [clamp(pcx(), 16, room.W - 16)], b.handT = b.t + bossP('handWarn');  // a hand stabs during the gear roll (twice when enraged)
         if (b.handT && b.t === b.handT) { for (const mx of b.marks) ebullets.push({ kind: 'hand', x: mx - 5, y: 2 * TS, w: 10, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: 1, life: 22, static: 1 }); b.marks = []; b.handT = 0; sfx('thud'); }
         if (b.t >= 34 && (b.t - 34) % 22 === 0 && (b.t - 34) / 22 < n) { const i = (b.t - 34) / 22, d = i % 2 === 0 ? Math.sign(pcx() - b.x) || 1 : -(Math.sign(pcx() - b.x) || 1);
-          ebullets.push({ kind: 'rgear', x: b.x + d * 26 - 7, y: FLOOR_Y - 14, w: 14, h: 14, vx: d * C.gearSpeed * (b.rage ? 1.2 : 1), vy: 0, g: 0, dmg: C.gearDamage, life: 400, static: 1, suckable: true, ammo: 'gear', bounces: 1, roll: 1 }); sfx('tick'); }
+          ebullets.push({ kind: 'rgear', x: b.x + d * 26 - 7, y: FLOOR_Y - 14, w: 14, h: 14, vx: d * C.gearSpeed * (b.over ? 1.35 : b.rage ? 1.2 : 1), vy: 0, g: 0, dmg: C.gearDamage, life: 400, static: 1, suckable: true, ammo: 'gear', bounces: 1, roll: 1 }); sfx('tick'); }
         if (b.t >= 34 + n * 22 + 30) { b.state = 'idle'; b.t = 0; } break; }
       case 'pendulum': {
         const warn = bossP('pendWarn');
@@ -42,11 +44,21 @@ BOSS_DEFS.clock = { jp: '大時計の番人 チクタク', en: 'GRANDFATHER TICK
         if (b.pendOut) { const bb = D.bob(b); if (Math.hypot(pcx() - bb.x, clamp(bb.y, hurtBox().y0, hurtBox().y1) - bb.y) < 14 + (P.w / 2 - CONFIG.hurtInsetX)) hurtPlayer(C.pendDamage, bb.x, 'pendulum');
           if (frame % 2 === 0) parts.push({ x: bb.x + rnd(-6, 6), y: bb.y + rnd(-6, 6), vx: 0, vy: 0, life: 12, col: '#ffe080', size: 2, glow: 1 }); }
         if (b.t === warn + 50) sfx('whoosh');
-        if (b.t >= warn + 120) { b.state = 'idle'; b.t = 0; b.pendOut = false; } break; }
+        if (b.rage && (b.t === warn + 24 || (b.over && b.t === warn + 64))) { b.marks = [clamp(pcx(), 16, room.W - 16)]; b.handT = b.t + bossP('handWarn') + 6; }   // combo: a hand stab during the swing
+        if (b.handT && b.t === b.handT) { for (const mx of b.marks) ebullets.push({ kind: 'hand', x: mx - 5, y: 2 * TS, w: 10, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: 1, life: 22, static: 1 }); b.marks = []; b.handT = 0; sfx('thud'); }
+        if (b.t >= warn + 120) { b.state = 'idle'; b.t = 0; b.pendOut = false; b.marks = []; b.handT = 0; } break; }
+      case 'midnight': {
+        const n = bossP('midStabs'), gap = C.midGap, w = C.midWarn;
+        if (b.t === 1) { b.mids = []; sfx('bell'); cam.shake = 4; tip('midnight', '真夜中！ 針が追いかけてくる。止まらず走りつづけろ'); }
+        if (b.t >= 20 && (b.t - 20) % gap === 0 && (b.t - 20) / gap < n) { b.mids.push({ x: clamp(pcx() + P.vx * 8, 16, room.W - 16), t: b.t + w }); sfx('tick'); }
+        for (const m of b.mids) if (m.t === b.t) { ebullets.push({ kind: 'hand', x: m.x - 5, y: 2 * TS, w: 10, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: C.handDamage, life: 22, static: 1 }); sfx('thud'); cam.shake = 2; }
+        b.mids = b.mids.filter(m => m.t > b.t); b.marks = b.mids.map(m => m.x);
+        if (b.over && (b.t === 30 || b.t === 80)) for (const d of [-1, 1]) ebullets.push({ kind: 'rgear', x: b.x + d * 26 - 7, y: FLOOR_Y - 14, w: 14, h: 14, vx: d * C.gearSpeed, vy: 0, g: 0, dmg: C.gearDamage, life: 400, static: 1, suckable: true, ammo: 'gear', bounces: 0, roll: 1 });
+        if (b.t >= 20 + n * gap + w + 20) { b.state = 'idle'; b.t = 0; b.marks = []; } break; }
       case 'chime': {
         for (const k of [20, 44, 68]) if (b.t === k) { sfx('bell'); cam.shake = 5; b.ring = 1; }
         if (b.ring) b.ring++;
-        if (b.t === 80) { for (const d of [-1, 1]) ebullets.push({ kind: 'wave', x: b.x + d * 30 - 8, y: FLOOR_Y - 14, w: 16, h: 14, vx: d * 2.4, vy: 0, dmg: 1, life: 200 }); sfx('boom'); }
+        if (b.t === 80 || (b.over && b.t === 36)) { for (const d of [-1, 1]) ebullets.push({ kind: 'wave', x: b.x + d * 30 - 8, y: FLOOR_Y - 14, w: 16, h: 14, vx: d * 2.4, vy: 0, dmg: 1, life: 200 }); sfx('boom'); }
         if (b.t === 100) { b.state = 'stopped'; b.t = 0; b.winLen = bossP('chime'); sfx('crash'); const side = Math.sign(pcx() - b.x) || 1;
           b.core = makeCore(b, b.x + side * 36, FLOOR_Y - 30, () => ({ x: boss.x, y: FLOOR_Y - 96 }), 'ccore'); b.coreSide = side;
           tip('ccore', '時計が止まった！ 鳩時計のゴーストを VAC で吸い込め！', true); }
@@ -59,7 +71,8 @@ BOSS_DEFS.clock = { jp: '大時計の番人 チクタク', en: 'GRANDFATHER TICK
   onDefeat(b) { startClear(); },
   draw(b, lights) {
     const D = this, x = Math.round(b.x - cam.x), y = Math.round(FLOOR_Y - cam.y);
-    if ((b.state === 'hands' || b.state === 'gears') && b.marks.length) { const k = b.state === 'gears' ? 0.6 : b.t / bossP('handWarn'); for (const mx of b.marks) { drawFloorMark(mx, k, 'rgba(255,60,60,0.75)'); g.fillStyle = (frame & 4) ? 'rgba(255,80,80,0.45)' : 'rgba(255,200,160,0.25)'; for (let yy = 2 * TS; yy < FLOOR_Y; yy += 6) g.fillRect(Math.round(mx - cam.x), Math.round(yy - cam.y), 1, 3); } }
+    if (b.state === 'midnight') { g.fillStyle = 'rgba(10,0,30,' + Math.min(0.45, b.t / 40) + ')'; g.fillRect(0, 0, VW, VH); }
+    if ((b.state === 'hands' || b.state === 'gears' || b.state === 'pendulum' || b.state === 'midnight') && b.marks.length) { const k = b.state === 'hands' ? b.t / bossP('handWarn') : 0.7; for (const mx of b.marks) { drawFloorMark(mx, k, 'rgba(255,60,60,0.75)'); g.fillStyle = (frame & 4) ? 'rgba(255,80,80,0.45)' : 'rgba(255,200,160,0.25)'; for (let yy = 2 * TS; yy < FLOOR_Y; yy += 6) g.fillRect(Math.round(mx - cam.x), Math.round(yy - cam.y), 1, 3); } }
     if (b.state === 'pendulum' && b.t < bossP('pendWarn')) { g.fillStyle = (frame & 4) ? 'rgba(255,220,120,0.7)' : 'rgba(255,220,120,0.3)'; for (let a = -1.25; a <= 1.25; a += 0.05) { const px = D.PIV.x + Math.sin(a) * D.PLEN, py = D.PIV.y + Math.cos(a) * D.PLEN; g.fillRect(Math.round(px - cam.x), Math.round(py - cam.y), 2, 2); } }
     if (b.state === 'dying' && b.t >= 90) return;
     // swinging pendulum (outside the body)

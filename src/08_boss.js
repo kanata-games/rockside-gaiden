@@ -11,7 +11,7 @@
 const FLOOR_Y = 15 * TS;
 const BOSS_DEFS = {};
 function bossCfg(b) { return CONFIG[b.D.cfg]; }
-function bossP(k) { const B = bossCfg(boss); return boss.rage && B[k + 'Rage'] !== undefined ? B[k + 'Rage'] : B[k]; }
+function bossP(k) { const B = bossCfg(boss); if (boss.over && B[k + 'Over'] !== undefined) return B[k + 'Over']; return boss.rage && B[k + 'Rage'] !== undefined ? B[k + 'Rage'] : B[k]; }
 function makeBoss(kind, x, y) {
   const D = BOSS_DEFS[kind], C = CONFIG[D.cfg];
   const b = { type: 'boss', kind, D, hp: C.hp, maxHp: C.hp, state: 'sleep', t: 0, x, y, px: x, flash: 0, rage: false, lastAtk: '', atkN: 0, marks: [], core: null, dead: false, burnT: 0,
@@ -20,6 +20,7 @@ function makeBoss(kind, x, y) {
       if (s.burn) { this.burnT = 40; if (kind === 'rose') tip('roseFire', 'よく燃える！ バラには火のついた物がとくに効く', true); } },
     damage(n) { if (this.state === 'dying' || this.state === 'done') return; this.hp -= n; this.flash = 10; sfx('bhit'); if (this.core) this.core.hp = this.hp;
       if (this.hp <= C.hp / 2 && !this.rage) { this.rage = true; tip('rage_' + kind, D.rageText, true); cam.shake = 8; }
+      if (C.phase3 && this.hp <= C.hp * C.phase3 && !this.over) { this.over = true; tip('over_' + kind, D.overText || D.rageText, true); cam.shake = 12; sfx('crash'); }
       if (this.hp <= 0) this.die(); },
     die() { if (this.state === 'dying' || this.state === 'done') return; this.hp = 0; endTug(true); this.state = 'dying'; this.t = 0; sfx('crash'); cam.shake = 12;
       for (const e of ents) if (e.type === 'firewisp') e.dead = true; ebullets.length = 0; },
@@ -36,7 +37,7 @@ function makeCore(b, x, y, anchor, sprite) {
   const B = CONFIG.boss;
   return { ghost: true, boss: true, x, y, hp: b.hp, maxHp: b.maxHp, state: 'out', t: 0, catchT: 0, seed: 3, inCone: 0, sprite: sprite || 'core', drained: 0,
     onDrain(d) { this.drained += d; boss.hp = this.hp;
-      if (this.drained >= B.coreCap && boss.hp > 0 && P.tug === this) { endTug(false); this.state = 'flee'; boss.t = Math.max(boss.t, boss.winLen - 20); tip('coreBreak', 'コアがふりほどいた！ 次のチャンスを待とう', true); }
+      if (this.drained >= (bossCfg(boss).coreCap || B.coreCap) && boss.hp > 0 && P.tug === this) { endTug(false); this.state = 'flee'; boss.t = Math.max(boss.t, boss.winLen - 20); tip('coreBreak', 'コアがふりほどいた！ 次のチャンスを待とう', true); }
       if (boss.hp <= boss.maxHp / 2 && !boss.rage) boss.damage(0); },
     onCaptured() { boss.die(); },
     clampTug() { const a = anchor(), dx = this.x - a.x, dy = this.y - a.y, d = Math.hypot(dx, dy); if (d > 120) { this.x = a.x + dx / d * 120; this.y = a.y + dy / d * 120; } } };
@@ -75,7 +76,8 @@ function updateBoss() {
 }
 function chooseAttack(b, normal, special) {
   b.atkN++; let pick;
-  if (b.atkN % 3 === 0) pick = special;
+  const C = bossCfg(b), ev = b.over && C.specialEveryOver ? C.specialEveryOver : C.specialEvery || 3;
+  if (b.atkN % ev === 0) pick = special;
   else { const opts = normal.filter(k => k !== b.lastAtk); pick = opts[Math.floor(Math.random() * opts.length)]; }
   if (QS.get('bossatk')) pick = QS.get('bossatk');
   b.lastAtk = pick; b.state = pick; b.t = 0; return pick;
