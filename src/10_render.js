@@ -427,7 +427,7 @@ function renderTitle() {
   drawTextShadow('GAIDEN', 26, 46, 'p', 1);
   const hasSave = assetsReady() && !!loadSave();
   if (hasSave) { TITLE_MENU.forEach((m, i) => { const on = i === titleSel; g.fillStyle = on ? 'rgba(90,76,192,0.85)' : 'rgba(20,16,40,0.8)'; g.fillRect(m.x, m.y, m.w, m.h); rectLine(m.x, m.y, m.w, m.h, on ? '#e0d8ff' : '#5a5488'); }); }
-  else if ((stateT >> 5) & 1) drawTextShadow('TAP / PRESS ENTER', VW / 2 - 50, 254, 'w', 1, 'c');
+  else drawTextShadow('TAP / PRESS ENTER', VW / 2 - 50, 254, ((stateT >> 5) & 1) ? 'w' : 'b', 1, 'c');
   drawText('v' + GAME_VERSION + '  PROTOTYPE', 6, VH - 9, 'd', 1);
   blit();
   drawHiText('清掃員カナタ', 104, 62, 30, '#f4f0ff', '#2a1648');

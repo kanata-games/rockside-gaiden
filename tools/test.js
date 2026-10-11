@@ -42,8 +42,11 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       await E(page, () => { GAIDEN.P.x = GAIDEN.room.W - 40; GAIDEN.P.y = 15 * 16 - GAIDEN.P.h; GAIDEN.P.vy = 0; });
       await page.keyboard.down('ArrowRight');
       ok('foyer -> gallery through door', await waitFor(page, () => GAIDEN.room.id === 'gallery', 3000));
-      await page.keyboard.up('ArrowRight');
-      await sleep(400); await shot(page, '2_exploration.png');
+      await sleep(1100); await page.keyboard.up('ArrowRight');
+      await sleep(500); await shot(page, '2_exploration.png');
+      // visit a few rooms so the map has something to show, then come back
+      await E(page, () => { for (const id of ['library', 'dining', 'cellar', 'gallery']) GAIDEN.loadRoom(id, { start: true }); GAIDEN.placePlayer(40 * 16, 15 * 16, 1); GAIDEN.snapCamera(); });
+      await sleep(300);
       // map screen
       await page.keyboard.press('Tab');
       ok('map screen opens', await waitFor(page, () => GAIDEN.state === 'map', 1500));
