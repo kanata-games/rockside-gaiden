@@ -149,8 +149,8 @@ const CONFIG = {
     stun: 150, stunRage: 130, coreCap: 30, specialEvery: 3 },
   // ---- v0.5 expansion bosses: a little harder than the v0.4 pair (shorter idle, a bit more HP), every attack audited
   // 樽蜘蛛 バレルタラント BARRELTARANT (old vintage vaults)
-  tarant: { hp: 210, idle: 42, idleRage: 32, corks: 4, corksRage: 5, corkWarn: 44, corkWarnRage: 38, corkDamage: 1, spillWarn: 42, spillWarnRage: 36, waveSpeed: 2.7, waveDamage: 1,
-    dropWarn: 44, dropWarnRage: 38, dropDamage: 2, plungeTrack: 56, plungeLock: 32, plungeLockRage: 28, plungeDamage: 2, stun: 150, stunRage: 130, coreCap: 30, specialEvery: 3 },
+  tarant: { hp: 195, idle: 42, idleRage: 32, corks: 4, corksRage: 5, corkWarn: 44, corkWarnRage: 38, corkDamage: 1, spillWarn: 42, spillWarnRage: 36, waveSpeed: 2.7, waveDamage: 1,
+    dropWarn: 44, dropWarnRage: 38, dropDamage: 2, plungeTrack: 56, plungeLock: 38, plungeLockRage: 34, plungeDamage: 2, stun: 150, stunRage: 130, coreCap: 30, specialEvery: 3 },
   // 空っぽの騎士団長 アイアンホロウ IRON HOLLOW (hall of knights)
   knight: { hp: 225, idle: 40, idleRage: 30, halberds: 3, halberdsRage: 4, halbWarn: 40, halbWarnRage: 34, halbDamage: 1, slashWarn: 40, slashWarnRage: 34, slashDamage: 2,
     waveSpeed: 2.8, waveDamage: 1, leapWarn: 40, leapWarnRage: 36, leapAir: 40, leapDamage: 2, gleamTrack: 56, gleamLock: 30, gleamLockRage: 27, gswordDamage: 2,

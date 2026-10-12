@@ -51,7 +51,7 @@ BOSS_DEFS.tarant = { jp: '樽蜘蛛 バレルタラント', en: 'BARRELTARANT, T
         if (b.t < warn + fall) { b.x = b.marks[0]; b.hy = TAR_UP + (FLOOR_Y - 28 - TAR_UP) * ((b.t - warn) / fall) ** 2; break; }
         if (b.t === warn + fall) { b.hy = FLOOR_Y - 28; b.marks = []; sfx('boom'); cam.shake = 9; hitStop = 3;
           if (overlapBox(b.x - 32, FLOOR_Y - 56, b.x + 32, FLOOR_Y)) hurtPlayer(C.dropDamage, b.x, 'drop');
-          for (const d of [-1, 1]) ebullets.push({ kind: 'wave', spr: 'winewave', x: b.x + d * 36 - 9, y: FLOOR_Y - 14, w: 18, h: 14, vx: d * C.waveSpeed, vy: 0, dmg: C.waveDamage, life: 200 }); }
+          if (b.rage) for (const d of [-1, 1]) ebullets.push({ kind: 'wave', spr: 'winewave', x: b.x + d * 36 - 9, y: FLOOR_Y - 14, w: 18, h: 14, vx: d * C.waveSpeed, vy: 0, dmg: C.waveDamage, life: 200 }); }
         if (b.t > warn + fall + 24) b.hy += (TAR_UP - b.hy) * 0.06;
         if (b.t >= warn + fall + 70) { b.markR = 20; b.state = 'idle'; b.t = 0; } break; }
       case 'plunge': {
