@@ -1,4 +1,4 @@
-# ROCKSIDE外伝 – 清掃員カナタ 〜幽霊屋敷のおそうじ〜 (v0.4.2)
+# ROCKSIDE外伝 – 清掃員カナタ 〜幽霊屋敷のおそうじ〜 (v0.4.3)
 
 A small SotN-style exploration game with a Luigi's-Mansion vacuum. It is a spin-off of ROCKSIDE.
 Play it here: https://kanata-games.github.io/rockside-gaiden/ (the page has noindex).
@@ -77,6 +77,13 @@ Other features:
 - Secret rooms (4).
 - Map screen with completion %, plus a mini-map.
 - Max-HP hearts.
+
+## v0.4.3 – softlock fix
+- Fixed a wedge on the top-left ledge of the theater lobby: ledges now need full headroom (lobby, wings and pump room ledges moved), and one-way ledges without room for Kanata can't be landed on.
+- Unstick: if Kanata ever overlaps a wall, she is nudged to the nearest free spot (or sent back to the room entrance).
+- Drop through ledges: ↓ (or S) on keyboard, or swipe down on the ←→ pad on mobile.
+- Universal escape: holding inputs for 3 s without moving returns you to the room entrance. The MAP screen also has a 「部屋の入口に戻る」 button (or press VAC / ↓).
+- reach.js now fails on low-ceiling ledges and on any spot you can reach but not get back from.
 
 ## v0.4.2 – final art
 Chronoa (10-frame sheet + clock mimic), Vel (7 frames: walk in, bow, turn, leave) and 64px portraits from `assets/gaiden_src/`, packed 1:1 into `assets/gaiden.png` by `tools/import_gaiden_art.py`. Chronoa's watch, glyph orbs and eye beam spawn from the art's marked points; soft rim light keeps both readable in dark rooms.

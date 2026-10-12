@@ -65,7 +65,7 @@ body.land #hint{display:none;}
 <script>
 'use strict';
 // Version label (title screen + footer). Bump on every release.
-const GAME_VERSION = '0.4.2';
+const GAME_VERSION = '0.4.3';
 // =====================================================================
 //  ROCKSIDE外伝 清掃員カナタ  -  haunted-mansion exploration + vacuum action (prototype)
 //  All gameplay tuning lives in CONFIG. Units: pixels and frames @60Hz.
@@ -501,16 +501,16 @@ function sfx(n) { Snd.play(n); }
 // ---------------------------------------------------------------------
 //  Input: keyboard + on-screen buttons (← → JUMP VAC SPIT, MAP)
 // ---------------------------------------------------------------------
-const keys = { left: false, right: false, jump: false, vac: false, spit: false };
-const touch = { left: false, right: false, jump: false, vac: false, spit: false };
-const inp = { jumpPressed: false, spitPressed: false, vacPressed: false, startPressed: false, mapPressed: false, leftPressed: false, rightPressed: false };
+const keys = { left: false, right: false, jump: false, vac: false, spit: false, down: false };
+const touch = { left: false, right: false, jump: false, vac: false, spit: false, down: false };
+const inp = { jumpPressed: false, spitPressed: false, vacPressed: false, startPressed: false, mapPressed: false, dropPressed: false, leftPressed: false, rightPressed: false };
 const held = k => keys[k] || touch[k];
 const KEYMAP = { ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right', KeyZ: 'jump', Space: 'jump', KeyK: 'jump', ArrowUp: 'jump', KeyW: 'jump',
-  KeyX: 'vac', KeyJ: 'vac', KeyC: 'spit', KeyL: 'spit' };
+  ArrowDown: 'down', KeyS: 'down', KeyX: 'vac', KeyJ: 'vac', KeyC: 'spit', KeyL: 'spit' };
 window.addEventListener('keydown', e => {
   Snd.init();
   const k = KEYMAP[e.code];
-  if (k) { if (!keys[k]) { if (k === 'jump') inp.jumpPressed = true; if (k === 'spit') inp.spitPressed = true; if (k === 'vac') inp.vacPressed = true; if (k === 'left') inp.leftPressed = true; if (k === 'right') inp.rightPressed = true; } keys[k] = true; e.preventDefault(); refreshButtons(); }
+  if (k) { if (!keys[k]) { if (k === 'jump') inp.jumpPressed = true; if (k === 'spit') inp.spitPressed = true; if (k === 'vac') inp.vacPressed = true; if (k === 'left') inp.leftPressed = true; if (k === 'right') inp.rightPressed = true; if (k === 'down') inp.dropPressed = true; } keys[k] = true; e.preventDefault(); refreshButtons(); }
   if (e.code === 'Enter') { inp.startPressed = true; e.preventDefault(); }
   if (e.code === 'Tab' || e.code === 'KeyQ') { inp.mapPressed = true; e.preventDefault(); }
   if (e.code === 'KeyM' && !e.repeat) toggleMute();
@@ -551,13 +551,15 @@ pad.addEventListener('pointerdown', e => {
   if (gx >= 0 && gx < VW && gy >= 0 && gy < VH && screenTap(gx, gy)) return;
   inp.startPressed = true;
   try { pad.setPointerCapture(e.pointerId); } catch (_) {}
-  ptrs.set(e.pointerId, zoneAt(e.clientX, e.clientY)); recomputeTouch();
+  ptrs.set(e.pointerId, zoneAt(e.clientX, e.clientY)); swipe.set(e.pointerId, { y: e.clientY, x: e.clientX, done: false }); recomputeTouch();
 });
+const swipe = new Map();   // v0.4.3: swipe down on the ←→ pad = drop through a ledge
 pad.addEventListener('pointermove', e => {
   if (!ptrs.has(e.pointerId)) return; e.preventDefault();
+  const sw = swipe.get(e.pointerId); if (sw && !sw.done && sw.x < layout.W / 2 && e.clientY - sw.y > 26) { sw.done = true; inp.dropPressed = true; }
   const z = zoneAt(e.clientX, e.clientY); if (ptrs.get(e.pointerId) !== z) { ptrs.set(e.pointerId, z); recomputeTouch(); }
 });
-function ptrUp(e) { if (ptrs.delete(e.pointerId)) recomputeTouch(); }
+function ptrUp(e) { swipe.delete(e.pointerId); if (ptrs.delete(e.pointerId)) recomputeTouch(); }
 pad.addEventListener('pointerup', ptrUp); pad.addEventListener('pointercancel', ptrUp); pad.addEventListener('lostpointercapture', ptrUp);
 const stopEv = e => { if (e.cancelable) e.preventDefault(); };
 for (const ev of ['touchstart', 'touchmove', 'touchend', 'gesturestart', 'dblclick']) document.addEventListener(ev, stopEv, { passive: false });
@@ -986,8 +988,8 @@ ROOM_DEFS.push(
     decor: [['liontap', 12, 7], ['bathstool', 3, 15], ['lamp_wall', 6, 8, { light: 1 }], ['lamp_wall', 19, 8, { light: 1 }]] },
 
   { id: 'pumproom', jp: 'ポンプ室', en: 'PUMP ROOM', area: 'bath', theme: 'boiler', tiles: 't', cx: 14, cy: 3, cw: 1, ch: 1, dark: 0.55,
-    build(R) { R.box(); R.open('T', 0, 8, 11); R.open('L', 0, 11, 14); R.plat(2, 7, 11); R.plat(10, 15, 7); R.plat(18, 21, 4); },
-    ents: [['heartbig', 19.5, 2], ['crab', 16, 15], ['skullwisp', 6, 5], ['gear', 4, 11], ['pan', 12, 7], ['coin', 18, 15], ['coin', 20, 15]],
+    build(R) { R.box(); R.open('T', 0, 8, 11); R.open('L', 0, 11, 14); R.plat(2, 7, 11); R.plat(10, 15, 9); R.plat(18, 21, 6); },
+    ents: [['heartbig', 19.5, 4], ['crab', 16, 15], ['skullwisp', 6, 5], ['gear', 4, 11], ['pan', 12, 9], ['coin', 18, 15], ['coin', 20, 15]],
     decor: [['pipes', 14, 15], ['boiler', 20, 15, { light: 1 }], ['lamp_wall', 4, 8, { light: 1 }]] },
 
   { id: 'cistern', jp: '地下貯水槽', en: 'UNDERGROUND CISTERN', area: 'bath', theme: 'cistern', tiles: 'b', cx: 12, cy: 3, cw: 2, ch: 1, dark: 0.6,
@@ -1022,15 +1024,15 @@ ROOM_DEFS.push(
   { id: 'lobby', jp: '劇場のロビー', en: 'THEATER LOBBY', area: 'theater', theme: 'theater', tiles: 'w', cx: 2, cy: 0, cw: 2, ch: 1, dark: 0.42,
     vel: 'theater', velAt: [44, 15],
     build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.open('B', 1, 10, 13); R.open('T', 0, 8, 11);
-      R.plat(38, 43, 12); R.plat(20, 25, 12); R.plat(13, 18, 9); R.plat(6, 11, 5); R.plat(28, 32, 8); },
+      R.plat(38, 43, 12); R.plat(20, 25, 12); R.plat(13, 18, 9); R.plat(6, 11, 6); R.plat(28, 32, 8); },
     ents: [['save', 30, 15], ['puppet', 16, 15, { foe: { skin: 'dancer' } }], ['puppet', 36, 15, { foe: { skin: 'dancer' } }], ['coin', 29, 8], ['coin', 31, 8],
       ['plate', 22, 12], ['chair', 4, 15], ['bottle', 41, 12], ['dust', 44, 15, { drop: ['coin', 'coin'] }], ['curtain', 2.5, 15, { drop: ['coin', 'heart'] }], ['vase', 24, 15, { drop: ['coin', 'coin'] }]],
     decor: [['stagecurtain', 9, 15], ['portrait_big', 24, 9], ['masks', 34, 8], ['chandelier_deco', 24, 3.5, { hang: 1, light: 2 }], ['sconce', 18, 8, { light: 1 }], ['sconce', 40, 8, { light: 1 }],
       ['rug', 30, 15], ['rug', 37, 15], ['pillar', 12, 15], ['pillar', 46, 15], ['cobweb', 46.75, 2, { top: 1, flip: 1 }]] },
 
   { id: 'wings', jp: '舞台袖', en: 'BACKSTAGE WINGS', area: 'theater', theme: 'stage', tiles: 'w', cx: 4, cy: 0, cw: 1, ch: 1, dark: 0.55,
-    build(R) { R.box(); R.open('L', 0, 11, 14); R.plat(4, 9, 11); R.plat(12, 16, 8); R.plat(17, 21, 4); },
-    ents: [['heartbig', 19, 2.5], ['puppet', 12, 15, { foe: { skin: 'dancer' } }], ['puppet', 18, 15, { foe: { skin: 'dancer' } }], ['chair', 6, 11], ['plate', 14, 8], ['coin', 20, 15], ['coin', 21, 15],
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.plat(4, 9, 11); R.plat(12, 16, 9); R.plat(17, 21, 6); },
+    ents: [['heartbig', 19, 4], ['puppet', 12, 15, { foe: { skin: 'dancer' } }], ['puppet', 18, 15, { foe: { skin: 'dancer' } }], ['chair', 6, 11], ['plate', 14, 9], ['coin', 20, 15], ['coin', 21, 15],
       ['curtain', 21.5, 15, { drop: ['coin', 'coin', 'coin'] }]],
     decor: [['stagecurtain', 4, 15], ['masks', 15, 11], ['dollshelf', 10, 15], ['footlight', 14, 15, { light: 1 }], ['sconce', 20, 9, { light: 1 }], ['cobweb', 22.75, 2, { top: 1, flip: 1 }]] },
 
@@ -1205,7 +1207,7 @@ function moveBody(b, oneWay) {
     const c0 = Math.floor(b.x / TS), c1 = Math.floor((b.x + b.w - 0.001) / TS), r = Math.floor((b.y + b.h - 0.001) / TS);
     if (!b.onFloat) for (let c = c0; c <= c1; c++) {
       const t = tileAt(c, r);
-      if (isSolidT(t) || (oneWay && t === T_PLAT && prevBottom <= r * TS + 0.5)) { b.y = r * TS - b.h; b.vy = 0; b.onGround = true; break; }
+      if (isSolidT(t) || (oneWay && t === T_PLAT && prevBottom <= r * TS + 0.5 && !(b.dropT > 0) && !boxHitsSolid(b.x, r * TS - b.h, b.w, b.h))) { b.y = r * TS - b.h; b.vy = 0; b.onGround = true; break; }
     }
   } else if (b.vy < 0) {
     if (boxHitsSolid(b.x, b.y, b.w, b.h)) { const r = Math.floor(b.y / TS); b.y = (r + 1) * TS + 0.01; b.vy = 0; b.hitCeil = true; }
@@ -1521,6 +1523,8 @@ function updatePlayer() {
   if (P.chomp > 0) P.chomp--; if (P.gabuShot > 0) P.gabuShot--;
   if (P.spitPose > 0) P.spitPose--;
   P.animT++;
+  if (P.dropT > 0) P.dropT--;
+  unstickPlayer();
   const dir = (held('right') ? 1 : 0) - (held('left') ? 1 : 0);
   if (inp.jumpPressed) P.jumpBuf = C.jumpBuffer; else if (P.jumpBuf > 0) P.jumpBuf--;
   const vacHeld = held('vac') && P.knock <= 0;
@@ -1532,7 +1536,8 @@ function updatePlayer() {
     const sp = (vacHeld ? C.vacWalkSpeed : C.walkSpeed) * timeSlowAt(pcx(), P.y + P.h), acc = P.onGround ? C.accel : C.airAccel;
     if (dir) { P.face = dir; P.vx += clamp(dir * sp - P.vx, -acc, acc); }
     else { P.vx += clamp(-P.vx, -C.decel, C.decel); }
-    if (P.jumpBuf > 0 && (P.onGround || P.coyote > 0)) { P.vy = -C.jumpVel; P.jumpBuf = 0; P.coyote = 0; P.onGround = false; sfx('jump'); }
+    if (P.onGround && !P.onFloat && (inp.dropPressed || (held('down') && P.jumpBuf > 0)) && onPlatOnly()) { P.dropT = 12; P.jumpBuf = 0; P.onGround = false; P.coyote = 0; P.y += 2; P.vy = 1; }   // v0.4.3 drop through
+    else if (P.jumpBuf > 0 && (P.onGround || P.coyote > 0)) { P.vy = -C.jumpVel; P.jumpBuf = 0; P.coyote = 0; P.onGround = false; sfx('jump'); }
     else if (inp.jumpPressed && !P.onGround && P.coyote <= 0 && hasAbil('djump') && !P.dj) { // ゴーストステップ: second jump in the air
       P.vy = -C.djumpVel; P.dj = true; P.djT = 18; P.jumpBuf = 0; stats.djumps++; sfx('djump');
       for (let i = 0; i < 10; i++) parts.push({ x: pcx() + rnd(-6, 6), y: P.y + P.h, vx: rnd(-1.5, 1.5), vy: rnd(0.5, 1.8), life: 20, col: i & 1 ? '#c8a0ff' : '#ffffff', size: 2, glow: 1 });
@@ -1550,6 +1555,10 @@ function updatePlayer() {
   if (P.vy > C.maxFall) P.vy = C.maxFall;
   const vyBefore = P.vy, wasGround = P.onGround;
   moveBody(P, true);
+  // v0.4.3 universal escape: pressing inputs in mid-air without moving for 3s = wedged -> back to the room entry
+  // (holding JUMP, or ←→ in mid-air, while staying inside an 8px box for 3s; walking into a wall on the ground doesn't count)
+  const pushing = held('jump') || (dir && !P.onGround);
+  if (pushing && !P.tug && !(P.knock > 0) && !P.dead) { if (!(P.stuckT > 0) || Math.abs(P.x - P.ax) > 8 || Math.abs(P.y - P.ay) > 8) { P.ax = P.x; P.ay = P.y; P.stuckT = 1; } else if (++P.stuckT > 180) returnToEntry('stuck'); } else P.stuckT = 0;
   if (P.onGround) { if (!wasGround && vyBefore > 3) sfx('land'); P.hover = C.hoverFrames; P.coyote = C.coyote; P.airT = 0; P.dj = false; }
   else { if (P.coyote > 0) P.coyote--; P.airT++; }
   // vacuum
@@ -1562,6 +1571,22 @@ function updatePlayer() {
   else if (P.x + P.w / 2 > room.W) { if (P.knock > 0 || !exitRoom('R')) { P.x = room.W - P.w / 2; if (P.knock > 0) P.vx = Math.min(0, P.vx); } }
   else if (P.y < -10 && P.vy < 0) { if (!exitRoom('T')) { P.y = -10; P.vy = 0; } }
   else if (P.y + P.h / 2 > room.H) { if (!exitRoom('B')) { P.y = P.spawnY; P.x = P.spawnX; P.vy = 0; hurtPlayer(2, pcx(), 'pit'); } }
+}
+
+// v0.4.3: standing only on one-way ledge tiles (nothing solid under the feet)
+function onPlatOnly() { const r = Math.floor((P.y + P.h + 1) / TS), c0 = Math.floor(P.x / TS), c1 = Math.floor((P.x + P.w - 0.001) / TS); let plat = false;
+  for (let c = c0; c <= c1; c++) { const t = tileAt(c, r); if (isSolidT(t)) return false; if (t === T_PLAT) plat = true; } return plat; }
+// v0.4.3: if Kanata overlaps a solid tile, nudge her to the nearest free spot (up to 3 tiles); otherwise back to the entry
+function unstickPlayer() {
+  if (P.dead || !boxHitsSolid(P.x, P.y, P.w, P.h)) { P.inSolidT = 0; return; }
+  for (let d = 1; d <= 48; d++) for (const [dx, dy] of [[0, d], [0, -d], [-d, 0], [d, 0], [-d, d], [d, d], [-d, -d], [d, -d]])
+    if (!boxHitsSolid(P.x + dx, P.y + dy, P.w, P.h)) { P.x += dx; P.y += dy; stats.unsticks = (stats.unsticks || 0) + 1; return; }
+  returnToEntry('solid');
+}
+function returnToEntry(why) {
+  P.x = P.spawnX; P.y = P.spawnY; P.vx = 0; P.vy = 0; P.knock = 0; P.tug = null; P.stuckT = 0; P.dropT = 0;
+  let n = 0; while (boxHitsSolid(P.x, P.y, P.w, P.h) && n++ < 64) P.y -= 1;
+  P.grace = Math.max(P.grace, CONFIG.entryGrace); fadeT = 14; stats.escapes = (stats.escapes || 0) + 1; stats.lastEscape = why || 'menu';
 }
 
 // suck items / ghosts / objects in the cone
@@ -4046,7 +4071,7 @@ function update() {
   else if (state === 'title') updateTitle();
   else if (state === 'play') updatePlay();
   else if (state === 'warp') updateWarpMenu();
-  else if (state === 'map') { if (inp.mapPressed || inp.startPressed || inp.jumpPressed) { setState('play'); sfx('cursor'); } }
+  else if (state === 'map') { if (inp.vacPressed || inp.dropPressed) { setState('play'); returnToEntry('menu'); sfx('cursor'); } else if (inp.mapPressed || inp.startPressed || inp.jumpPressed) { setState('play'); sfx('cursor'); } }
   else if (state === 'clear') { clearT++; if (clearT > 240 && (inp.startPressed || inp.jumpPressed)) { setState('title'); sfx('start'); } }
   musicTick();
   for (const k in inp) inp[k] = false;
@@ -4486,6 +4511,7 @@ function renderPlay() {
   if (abilityGet.t > 0) { const a = Math.min(1, abilityGet.t / 20, (300 - abilityGet.t) / 15), I = ABIL_INFO[abilityGet.abil]; drawHiText('NEW POWER', VW / 2, 96, 8, '#ffffff', '#140a20', 'center', a); drawHiText(I.jp, VW / 2, 110, 18, I.col, '#140a20', 'center', a); }
   if (P.dead && P.deadT > 40) drawHiText('やられちゃった…', VW / 2, VH / 2 - 10, 16, '#ffd0e0', '#200818', 'center', Math.min(1, (P.deadT - 40) / 20));
 }
+const MAP_ENTRY_BTN = { x: VW / 2 - 78, y: VH - 36, w: 156, h: 17 };   // v0.4.3 escape hatch
 function mapLayout() { const cw = Math.min(20, Math.floor(368 / WORLD.cols)); return { cw, chh: Math.min(14, Math.round(cw * 0.75)) }; }
 function renderMap() {
   renderPlayBase();
@@ -4503,8 +4529,10 @@ function renderMap() {
   let ax = 14; for (const k in ABIL_INFO) { drawAbilIcon(k, ax, by + 12, hasAbil(k)); ax += abW(k); }
   // area legend
   let lx = 14; for (const k in AREAS) { g.fillStyle = AREAS[k].col; g.fillRect(lx, by + 40, 8, 8); rectLine(lx, by + 40, 8, 8, '#a8b8e8'); lx += 46; }
+  const EB = MAP_ENTRY_BTN; g.fillStyle = '#2a1e48'; g.fillRect(EB.x, EB.y, EB.w, EB.h); rectLine(EB.x, EB.y, EB.w, EB.h, '#c8a0ff');
   drawText('TAP / MAP: BACK', VW / 2, VH - 10, 'b', 1, 'c');
   blit();
+  drawHiText('部屋の入口に戻る（VAC / ↓）', VW / 2, EB.y + 4, 8, '#f0e0ff', '#140a20', 'center');
   drawHiText((AREAS[room.def.area] || AREAS.east).jp + '　' + room.def.jp, VW / 2, 12, 10, '#fff4e0', '#1a0e28');
   ax = 14; for (const k in ABIL_INFO) { drawHiText(hasAbil(k) ? ABIL_INFO[k].jp : '？？？', ax + 13, by + 11, 6.5, hasAbil(k) ? ABIL_INFO[k].col : '#5a5488', null, 'left'); ax += abW(k); }
   lx = 14; for (const k in AREAS) { drawHiText(AREAS[k].short, lx + 11, by + 39, 6, '#c8c0f0', null, 'left'); lx += 46; }
@@ -4582,7 +4610,7 @@ function screenTap(gx, gy) {
   if (state === 'title' && assetsReady() && loadSave()) {
     for (let i = 0; i < TITLE_MENU.length; i++) { const m = TITLE_MENU[i]; if (gx >= m.x && gx < m.x + m.w && gy >= m.y && gy < m.y + m.h) { titleSel = i; inp.startPressed = true; return true; } }
   }
-  if (state === 'map') { inp.mapPressed = true; return true; }
+  if (state === 'map') { const B = MAP_ENTRY_BTN; if (gx >= B.x && gx < B.x + B.w && gy >= B.y - 3 && gy < B.y + B.h + 3) inp.vacPressed = true; else inp.mapPressed = true; return true; }
   if (state === 'warp') return warpTap(gx, gy);
   return false;
 }
@@ -4600,7 +4628,7 @@ function loop(now) {
 }
 doLayout();
 requestAnimationFrame(loop);
-window.GAIDEN = { CONFIG, P, cam, layout, stats, progress, ents, items, ebullets, playerShots, parts, ROOM_DEFS, CELL_ROOM,
+window.GAIDEN = { boxHitsSolid, returnToEntry, CONFIG, P, cam, layout, stats, progress, ents, items, ebullets, playerShots, parts, ROOM_DEFS, CELL_ROOM,
   get state() { return state; }, get stateT() { return stateT; }, get room() { return room; }, get boss() { return boss; }, get frame() { return frame; }, get tipBox() { return tipBox; },
   get music() { return Music; }, nozzle, inCone, loadRoom, placePlayer, startNewGame, continueGame, enterGame, eraseSave, saveGame, loadSave, mapPercent, setState, snapCamera, buildRoomGrid, roomOpenings,
   spawnItem, makeGhost, startTug, STORY, velAppear, startEnding, storySay, checkBossGates, storyFit, VEL_LINES, get banner() { return banner; }, floats, foes: () => ents.filter(e => FOE_SIZE[e.type]), hasAbil, openGate, gainAbility, AREAS, ROOM_BY_ID, TOTAL_CELLS, makeFoe, BOSS_DEFS, entrySafety, openWarpMenu, warpTo,

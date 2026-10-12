@@ -27,8 +27,8 @@ ROOM_DEFS.push(
     decor: [['liontap', 12, 7], ['bathstool', 3, 15], ['lamp_wall', 6, 8, { light: 1 }], ['lamp_wall', 19, 8, { light: 1 }]] },
 
   { id: 'pumproom', jp: 'ポンプ室', en: 'PUMP ROOM', area: 'bath', theme: 'boiler', tiles: 't', cx: 14, cy: 3, cw: 1, ch: 1, dark: 0.55,
-    build(R) { R.box(); R.open('T', 0, 8, 11); R.open('L', 0, 11, 14); R.plat(2, 7, 11); R.plat(10, 15, 7); R.plat(18, 21, 4); },
-    ents: [['heartbig', 19.5, 2], ['crab', 16, 15], ['skullwisp', 6, 5], ['gear', 4, 11], ['pan', 12, 7], ['coin', 18, 15], ['coin', 20, 15]],
+    build(R) { R.box(); R.open('T', 0, 8, 11); R.open('L', 0, 11, 14); R.plat(2, 7, 11); R.plat(10, 15, 9); R.plat(18, 21, 6); },
+    ents: [['heartbig', 19.5, 4], ['crab', 16, 15], ['skullwisp', 6, 5], ['gear', 4, 11], ['pan', 12, 9], ['coin', 18, 15], ['coin', 20, 15]],
     decor: [['pipes', 14, 15], ['boiler', 20, 15, { light: 1 }], ['lamp_wall', 4, 8, { light: 1 }]] },
 
   { id: 'cistern', jp: '地下貯水槽', en: 'UNDERGROUND CISTERN', area: 'bath', theme: 'cistern', tiles: 'b', cx: 12, cy: 3, cw: 2, ch: 1, dark: 0.6,

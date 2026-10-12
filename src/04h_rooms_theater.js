@@ -7,15 +7,15 @@ ROOM_DEFS.push(
   { id: 'lobby', jp: '劇場のロビー', en: 'THEATER LOBBY', area: 'theater', theme: 'theater', tiles: 'w', cx: 2, cy: 0, cw: 2, ch: 1, dark: 0.42,
     vel: 'theater', velAt: [44, 15],
     build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.open('B', 1, 10, 13); R.open('T', 0, 8, 11);
-      R.plat(38, 43, 12); R.plat(20, 25, 12); R.plat(13, 18, 9); R.plat(6, 11, 5); R.plat(28, 32, 8); },
+      R.plat(38, 43, 12); R.plat(20, 25, 12); R.plat(13, 18, 9); R.plat(6, 11, 6); R.plat(28, 32, 8); },
     ents: [['save', 30, 15], ['puppet', 16, 15, { foe: { skin: 'dancer' } }], ['puppet', 36, 15, { foe: { skin: 'dancer' } }], ['coin', 29, 8], ['coin', 31, 8],
       ['plate', 22, 12], ['chair', 4, 15], ['bottle', 41, 12], ['dust', 44, 15, { drop: ['coin', 'coin'] }], ['curtain', 2.5, 15, { drop: ['coin', 'heart'] }], ['vase', 24, 15, { drop: ['coin', 'coin'] }]],
     decor: [['stagecurtain', 9, 15], ['portrait_big', 24, 9], ['masks', 34, 8], ['chandelier_deco', 24, 3.5, { hang: 1, light: 2 }], ['sconce', 18, 8, { light: 1 }], ['sconce', 40, 8, { light: 1 }],
       ['rug', 30, 15], ['rug', 37, 15], ['pillar', 12, 15], ['pillar', 46, 15], ['cobweb', 46.75, 2, { top: 1, flip: 1 }]] },
 
   { id: 'wings', jp: '舞台袖', en: 'BACKSTAGE WINGS', area: 'theater', theme: 'stage', tiles: 'w', cx: 4, cy: 0, cw: 1, ch: 1, dark: 0.55,
-    build(R) { R.box(); R.open('L', 0, 11, 14); R.plat(4, 9, 11); R.plat(12, 16, 8); R.plat(17, 21, 4); },
-    ents: [['heartbig', 19, 2.5], ['puppet', 12, 15, { foe: { skin: 'dancer' } }], ['puppet', 18, 15, { foe: { skin: 'dancer' } }], ['chair', 6, 11], ['plate', 14, 8], ['coin', 20, 15], ['coin', 21, 15],
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.plat(4, 9, 11); R.plat(12, 16, 9); R.plat(17, 21, 6); },
+    ents: [['heartbig', 19, 4], ['puppet', 12, 15, { foe: { skin: 'dancer' } }], ['puppet', 18, 15, { foe: { skin: 'dancer' } }], ['chair', 6, 11], ['plate', 14, 9], ['coin', 20, 15], ['coin', 21, 15],
       ['curtain', 21.5, 15, { drop: ['coin', 'coin', 'coin'] }]],
     decor: [['stagecurtain', 4, 15], ['masks', 15, 11], ['dollshelf', 10, 15], ['footlight', 14, 15, { light: 1 }], ['sconce', 20, 9, { light: 1 }], ['cobweb', 22.75, 2, { top: 1, flip: 1 }]] },
 

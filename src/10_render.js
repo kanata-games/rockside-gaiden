@@ -40,7 +40,7 @@ function update() {
   else if (state === 'title') updateTitle();
   else if (state === 'play') updatePlay();
   else if (state === 'warp') updateWarpMenu();
-  else if (state === 'map') { if (inp.mapPressed || inp.startPressed || inp.jumpPressed) { setState('play'); sfx('cursor'); } }
+  else if (state === 'map') { if (inp.vacPressed || inp.dropPressed) { setState('play'); returnToEntry('menu'); sfx('cursor'); } else if (inp.mapPressed || inp.startPressed || inp.jumpPressed) { setState('play'); sfx('cursor'); } }
   else if (state === 'clear') { clearT++; if (clearT > 240 && (inp.startPressed || inp.jumpPressed)) { setState('title'); sfx('start'); } }
   musicTick();
   for (const k in inp) inp[k] = false;
@@ -480,6 +480,7 @@ function renderPlay() {
   if (abilityGet.t > 0) { const a = Math.min(1, abilityGet.t / 20, (300 - abilityGet.t) / 15), I = ABIL_INFO[abilityGet.abil]; drawHiText('NEW POWER', VW / 2, 96, 8, '#ffffff', '#140a20', 'center', a); drawHiText(I.jp, VW / 2, 110, 18, I.col, '#140a20', 'center', a); }
   if (P.dead && P.deadT > 40) drawHiText('やられちゃった…', VW / 2, VH / 2 - 10, 16, '#ffd0e0', '#200818', 'center', Math.min(1, (P.deadT - 40) / 20));
 }
+const MAP_ENTRY_BTN = { x: VW / 2 - 78, y: VH - 36, w: 156, h: 17 };   // v0.4.3 escape hatch
 function mapLayout() { const cw = Math.min(20, Math.floor(368 / WORLD.cols)); return { cw, chh: Math.min(14, Math.round(cw * 0.75)) }; }
 function renderMap() {
   renderPlayBase();
@@ -497,8 +498,10 @@ function renderMap() {
   let ax = 14; for (const k in ABIL_INFO) { drawAbilIcon(k, ax, by + 12, hasAbil(k)); ax += abW(k); }
   // area legend
   let lx = 14; for (const k in AREAS) { g.fillStyle = AREAS[k].col; g.fillRect(lx, by + 40, 8, 8); rectLine(lx, by + 40, 8, 8, '#a8b8e8'); lx += 46; }
+  const EB = MAP_ENTRY_BTN; g.fillStyle = '#2a1e48'; g.fillRect(EB.x, EB.y, EB.w, EB.h); rectLine(EB.x, EB.y, EB.w, EB.h, '#c8a0ff');
   drawText('TAP / MAP: BACK', VW / 2, VH - 10, 'b', 1, 'c');
   blit();
+  drawHiText('部屋の入口に戻る（VAC / ↓）', VW / 2, EB.y + 4, 8, '#f0e0ff', '#140a20', 'center');
   drawHiText((AREAS[room.def.area] || AREAS.east).jp + '　' + room.def.jp, VW / 2, 12, 10, '#fff4e0', '#1a0e28');
   ax = 14; for (const k in ABIL_INFO) { drawHiText(hasAbil(k) ? ABIL_INFO[k].jp : '？？？', ax + 13, by + 11, 6.5, hasAbil(k) ? ABIL_INFO[k].col : '#5a5488', null, 'left'); ax += abW(k); }
   lx = 14; for (const k in AREAS) { drawHiText(AREAS[k].short, lx + 11, by + 39, 6, '#c8c0f0', null, 'left'); lx += 46; }
@@ -576,7 +579,7 @@ function screenTap(gx, gy) {
   if (state === 'title' && assetsReady() && loadSave()) {
     for (let i = 0; i < TITLE_MENU.length; i++) { const m = TITLE_MENU[i]; if (gx >= m.x && gx < m.x + m.w && gy >= m.y && gy < m.y + m.h) { titleSel = i; inp.startPressed = true; return true; } }
   }
-  if (state === 'map') { inp.mapPressed = true; return true; }
+  if (state === 'map') { const B = MAP_ENTRY_BTN; if (gx >= B.x && gx < B.x + B.w && gy >= B.y - 3 && gy < B.y + B.h + 3) inp.vacPressed = true; else inp.mapPressed = true; return true; }
   if (state === 'warp') return warpTap(gx, gy);
   return false;
 }
@@ -594,7 +597,7 @@ function loop(now) {
 }
 doLayout();
 requestAnimationFrame(loop);
-window.GAIDEN = { CONFIG, P, cam, layout, stats, progress, ents, items, ebullets, playerShots, parts, ROOM_DEFS, CELL_ROOM,
+window.GAIDEN = { boxHitsSolid, returnToEntry, CONFIG, P, cam, layout, stats, progress, ents, items, ebullets, playerShots, parts, ROOM_DEFS, CELL_ROOM,
   get state() { return state; }, get stateT() { return stateT; }, get room() { return room; }, get boss() { return boss; }, get frame() { return frame; }, get tipBox() { return tipBox; },
   get music() { return Music; }, nozzle, inCone, loadRoom, placePlayer, startNewGame, continueGame, enterGame, eraseSave, saveGame, loadSave, mapPercent, setState, snapCamera, buildRoomGrid, roomOpenings,
   spawnItem, makeGhost, startTug, STORY, velAppear, startEnding, storySay, checkBossGates, storyFit, VEL_LINES, get banner() { return banner; }, floats, foes: () => ents.filter(e => FOE_SIZE[e.type]), hasAbil, openGate, gainAbility, AREAS, ROOM_BY_ID, TOTAL_CELLS, makeFoe, BOSS_DEFS, entrySafety, openWarpMenu, warpTo,

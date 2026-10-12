@@ -30,7 +30,8 @@ const CC = 24, CR = 18;
     const stand = (c, r) => r < H && (base[r * W + c] === 2 || !pass[r * W + c]);
     const best = new Int8Array(W * H).fill(-1), seen = new Uint8Array(W * H * KS * HS), q = [];
     par = new Int32Array(W * H).fill(-1); let cur = -1;
-    const push = (c, r, k, h) => { if (!Pp(c, r - 1) || !Pp(c, r - 2) || !Pp(c, r - 3)) return; if (stand(c, r)) { k = K; h = HB; }
+    const push = (c, r, k, h) => { if (!Pp(c, r - 1) || !Pp(c, r - 2) || !Pp(c, r - 3) || (r >= 4 && !Pp(c, r - 4))) return;   // v0.4.3: 50px body needs 4 clear rows
+      if (EDGES && cur >= 0) EDGES.push(cur, r * W + c); if (stand(c, r)) { k = K; h = HB; }
       const i = r * W + c, si = (i * KS + k) * HS + h; if (seen[si]) return; seen[si] = 1;
       if (best[i] < 0 && i !== cur) par[i] = cur; if (k > best[i]) best[i] = k; q.push(c, r, k, h); };
     push(start.c, start.r, K, HB);
@@ -48,6 +49,7 @@ const CC = 24, CR = 18;
     return best;
   }
   const near = (best, e, dx = 2, dy = 3) => { for (let r = e.r - dy; r <= e.r + dy; r++) for (let c = e.c - dx; c <= e.c + dx; c++) if (c >= 0 && r >= 0 && c < W && r < H && best[r * W + c] >= 0) return true; return false; };
+  let EDGES = null;
   let par; const log = [], seenArea = new Set(); let best;
   for (let it = 0; it < 60; it++) {
     best = flood(); let changed = false;
@@ -83,11 +85,21 @@ const CC = 24, CR = 18;
   const PICK = new Set(['key', 'heartbig', 'ability', 'coin', 'candle', 'book', 'bottle', 'chair', 'plate', 'pan', 'pot', 'barrel', 'gear', 'seed', 'flowerpot', 'soap', 'crystal', 'save', 'lever', 'heavy', 'vines', 'warp', 'bone', 'duck']);
   const missEnts = ents.filter(e => PICK.has(e.t) && !near(best, e, e.t === 'lever' || e.t === 'heavy' ? 4 : 2, 3)).map(e => e.t + '@' + e.room + '(' + (e.c % CC) + ',' + (e.r % CR) + ')');
   const unbeaten = defs.filter(d => d.boss && !S.beat.has(d.boss)).map(d => d.boss);
+  // v0.4.3 one-way trap check: with everything unlocked, every reachable spot must lead back to the start
+  EDGES = []; best = flood(); const radj = new Map(); for (let i = 0; i < EDGES.length; i += 2) { const a = EDGES[i], b = EDGES[i + 1]; if (a === b) continue; let l = radj.get(b); if (!l) radj.set(b, l = []); l.push(a); }
+  const back = new Uint8Array(W * H), bq = [start.r * W + start.c]; back[bq[0]] = 1;
+  while (bq.length) { const i = bq.pop(); for (const j of radj.get(i) || []) if (!back[j]) { back[j] = 1; bq.push(j); } }
+  const traps = {}; for (let i = 0; i < W * H; i++) if (best[i] >= 0 && !back[i]) { const o = owner[i], d = defs.find(z => z.id === o); const k = o + '(' + (i % W - (d.cx - X0) * CC) + ',' + (Math.floor(i / W) - (d.cy - Y0) * CR) + ')'; (traps[o] = traps[o] || []).push(k); }
+  const trapRooms = Object.keys(traps); console.log('one-way traps:', trapRooms.length ? trapRooms.map(o => o + ' x' + traps[o].length + ' e.g. ' + traps[o][0]).join(' | ') : 'none');
+  // v0.4.3 ledge headroom: a one-way ledge needs 4 clear rows above it (Kanata is 50px tall)
+  const lowLedges = []; for (const d of defs) for (let r = 0; r < d.rows; r++) for (let c = 0; c < d.cols; c++) if (d.grid[r * d.cols + c] === 2) {
+    let bad = false; for (let k = 1; k <= 4 && r - k >= 0; k++) { const t = d.grid[(r - k) * d.cols + c]; if (t === 1 || t === 3 || t === 4) bad = true; } if (bad) lowLedges.push(d.id + '(' + c + ',' + r + ')'); }
+  console.log('low-ceiling ledges:', lowLedges.length ? lowLedges.join(' ') : 'none');
   console.log('abilities:', [...S.abil].join(','), '| bosses:', [...S.beat].join(','));
   console.log('unreached cells:', missCells.length ? missCells.join(' ') : 'none');
   console.log('unreached pickups:', missEnts.length ? missEnts.join(' ') : 'none');
   // gating sanity: which areas are reachable with NO abilities?
-  const problems = missCells.length + missEnts.length + unbeaten.length;
+  const problems = missCells.length + missEnts.length + unbeaten.length + trapRooms.length + lowLedges.length;
   console.log(problems ? 'REACH: PROBLEMS (' + problems + ')' : 'REACH: OK — every cell, pickup and boss reachable');
   process.exit(problems ? 1 : 0);
 })();

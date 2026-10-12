@@ -74,7 +74,7 @@ function moveBody(b, oneWay) {
     const c0 = Math.floor(b.x / TS), c1 = Math.floor((b.x + b.w - 0.001) / TS), r = Math.floor((b.y + b.h - 0.001) / TS);
     if (!b.onFloat) for (let c = c0; c <= c1; c++) {
       const t = tileAt(c, r);
-      if (isSolidT(t) || (oneWay && t === T_PLAT && prevBottom <= r * TS + 0.5)) { b.y = r * TS - b.h; b.vy = 0; b.onGround = true; break; }
+      if (isSolidT(t) || (oneWay && t === T_PLAT && prevBottom <= r * TS + 0.5 && !(b.dropT > 0) && !boxHitsSolid(b.x, r * TS - b.h, b.w, b.h))) { b.y = r * TS - b.h; b.vy = 0; b.onGround = true; break; }
     }
   } else if (b.vy < 0) {
     if (boxHitsSolid(b.x, b.y, b.w, b.h)) { const r = Math.floor(b.y / TS); b.y = (r + 1) * TS + 0.01; b.vy = 0; b.hitCeil = true; }

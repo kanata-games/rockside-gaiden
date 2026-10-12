@@ -287,16 +287,16 @@ function sfx(n) { Snd.play(n); }
 // ---------------------------------------------------------------------
 //  Input: keyboard + on-screen buttons (← → JUMP VAC SPIT, MAP)
 // ---------------------------------------------------------------------
-const keys = { left: false, right: false, jump: false, vac: false, spit: false };
-const touch = { left: false, right: false, jump: false, vac: false, spit: false };
-const inp = { jumpPressed: false, spitPressed: false, vacPressed: false, startPressed: false, mapPressed: false, leftPressed: false, rightPressed: false };
+const keys = { left: false, right: false, jump: false, vac: false, spit: false, down: false };
+const touch = { left: false, right: false, jump: false, vac: false, spit: false, down: false };
+const inp = { jumpPressed: false, spitPressed: false, vacPressed: false, startPressed: false, mapPressed: false, dropPressed: false, leftPressed: false, rightPressed: false };
 const held = k => keys[k] || touch[k];
 const KEYMAP = { ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right', KeyZ: 'jump', Space: 'jump', KeyK: 'jump', ArrowUp: 'jump', KeyW: 'jump',
-  KeyX: 'vac', KeyJ: 'vac', KeyC: 'spit', KeyL: 'spit' };
+  ArrowDown: 'down', KeyS: 'down', KeyX: 'vac', KeyJ: 'vac', KeyC: 'spit', KeyL: 'spit' };
 window.addEventListener('keydown', e => {
   Snd.init();
   const k = KEYMAP[e.code];
-  if (k) { if (!keys[k]) { if (k === 'jump') inp.jumpPressed = true; if (k === 'spit') inp.spitPressed = true; if (k === 'vac') inp.vacPressed = true; if (k === 'left') inp.leftPressed = true; if (k === 'right') inp.rightPressed = true; } keys[k] = true; e.preventDefault(); refreshButtons(); }
+  if (k) { if (!keys[k]) { if (k === 'jump') inp.jumpPressed = true; if (k === 'spit') inp.spitPressed = true; if (k === 'vac') inp.vacPressed = true; if (k === 'left') inp.leftPressed = true; if (k === 'right') inp.rightPressed = true; if (k === 'down') inp.dropPressed = true; } keys[k] = true; e.preventDefault(); refreshButtons(); }
   if (e.code === 'Enter') { inp.startPressed = true; e.preventDefault(); }
   if (e.code === 'Tab' || e.code === 'KeyQ') { inp.mapPressed = true; e.preventDefault(); }
   if (e.code === 'KeyM' && !e.repeat) toggleMute();
@@ -337,13 +337,15 @@ pad.addEventListener('pointerdown', e => {
   if (gx >= 0 && gx < VW && gy >= 0 && gy < VH && screenTap(gx, gy)) return;
   inp.startPressed = true;
   try { pad.setPointerCapture(e.pointerId); } catch (_) {}
-  ptrs.set(e.pointerId, zoneAt(e.clientX, e.clientY)); recomputeTouch();
+  ptrs.set(e.pointerId, zoneAt(e.clientX, e.clientY)); swipe.set(e.pointerId, { y: e.clientY, x: e.clientX, done: false }); recomputeTouch();
 });
+const swipe = new Map();   // v0.4.3: swipe down on the ←→ pad = drop through a ledge
 pad.addEventListener('pointermove', e => {
   if (!ptrs.has(e.pointerId)) return; e.preventDefault();
+  const sw = swipe.get(e.pointerId); if (sw && !sw.done && sw.x < layout.W / 2 && e.clientY - sw.y > 26) { sw.done = true; inp.dropPressed = true; }
   const z = zoneAt(e.clientX, e.clientY); if (ptrs.get(e.pointerId) !== z) { ptrs.set(e.pointerId, z); recomputeTouch(); }
 });
-function ptrUp(e) { if (ptrs.delete(e.pointerId)) recomputeTouch(); }
+function ptrUp(e) { swipe.delete(e.pointerId); if (ptrs.delete(e.pointerId)) recomputeTouch(); }
 pad.addEventListener('pointerup', ptrUp); pad.addEventListener('pointercancel', ptrUp); pad.addEventListener('lostpointercapture', ptrUp);
 const stopEv = e => { if (e.cancelable) e.preventDefault(); };
 for (const ev of ['touchstart', 'touchmove', 'touchend', 'gesturestart', 'dblclick']) document.addEventListener(ev, stopEv, { passive: false });

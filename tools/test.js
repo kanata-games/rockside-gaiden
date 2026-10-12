@@ -120,7 +120,7 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       ok('fewer rats and bat swarms (<= 15 rats, <= 6 swarms)', crit.rats <= 15 && crit.bats <= 6, crit);
       ok('a warp room in every area', ['east', 'laundry', 'garden', 'clock', 'crypt', 'bath'].every(a => crit.warps.includes(a)), crit.warps);
       ok('title has no PROTOTYPE', !(await E(page, () => document.documentElement.innerHTML.includes('PROTOTYPE'))));
-      ok('version 0.4.2', await E(page, () => (typeof GAME_VERSION !== 'undefined' && GAME_VERSION === '0.4.2') || GAIDEN.CONFIG.version === '0.4.2'));
+      ok('version 0.4.3', await E(page, () => (typeof GAME_VERSION !== 'undefined' && GAME_VERSION === '0.4.3') || GAIDEN.CONFIG.version === '0.4.3'));
       await ctx.close(); }
 
     // ---- world reachability / ability gating (static check over the stitched tile grid)
@@ -176,6 +176,23 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       await E(page, () => { GAIDEN.loadRoom('audience', { start: true }); GAIDEN.placePlayer(10 * 16, 15 * 16, 1); }); await sleep(300);
       ok('v0.4: theater foes wear their own skins (dancer / maskbat)', await E(page, () => GAIDEN.foes().some(e => e.skin === 'dancer') && GAIDEN.foes().some(e => e.skin === 'maskbat')));
       ok('v0.4: area music + Vel line exist for both new areas', await E(page, () => GAIDEN.AREAS.theater.music === 'theater' && GAIDEN.AREAS.stars.music === 'stars' && !!GAIDEN.ROOM_BY_ID.lobby.vel && !!GAIDEN.ROOM_BY_ID.starhall.vel));
+      await ctx.close(); }
+
+    // ---- v0.4.3: softlock fixes (lobby ledge wedge): unstick, drop-through, stuck escape, map 'return to entry'
+    { const { ctx, page } = await open(browser, '?room=lobby&x=40&y=16&abil=float,turbo,djump');
+      await waitFor(page, () => GAIDEN.state === 'play', 5000); await sleep(300);
+      await E(page, () => { GAIDEN.placePlayer(8 * 16 + 8, 6 * 16, 1); }); await sleep(400);
+      const on = await E(page, () => GAIDEN.P.onGround && Math.abs(GAIDEN.P.y + GAIDEN.P.h - 96) < 1);
+      await page.keyboard.press('ArrowDown'); await sleep(600);
+      const dropped = await E(page, () => GAIDEN.P.y + GAIDEN.P.h > 96 + 32);
+      ok('v0.4.3: the lobby ledge has headroom and ↓ drops through it', on && dropped, { on, dropped });
+      await E(page, () => { const P = GAIDEN.P; P.x = 8 * 16; P.y = 0; P.vx = P.vy = 0; }); await sleep(300);   // shove her into the ceiling
+      ok('v0.4.3: overlapping a solid nudges her free', await E(page, () => !GAIDEN.boxHitsSolid(GAIDEN.P.x, GAIDEN.P.y, GAIDEN.P.w, GAIDEN.P.h)));
+      await E(page, () => { const R = GAIDEN.room; window.__jv = GAIDEN.CONFIG.jumpVel; GAIDEN.CONFIG.jumpVel = 0; GAIDEN.STORY.box = null; GAIDEN.loadRoom('warp_east', { start: true }); GAIDEN.placePlayer(10 * 16 + 8, 15 * 16, 1); GAIDEN._test.keys.jump = true; }); await sleep(5500);   // simulate a wedge: JUMP held, 
+      const esc = await E(page, () => { GAIDEN._test.keys.jump = false; GAIDEN.CONFIG.jumpVel = window.__jv; return GAIDEN.stats.lastEscape || null; });
+      ok('v0.4.3: wedged in mid-air while pushing for 3s -> back to the room entry', esc === 'stuck', { esc });
+      await E(page, () => { GAIDEN.P.x = 300; GAIDEN.P.y = 100; GAIDEN.stats.lastEscape = null; }); await page.keyboard.press('Tab'); await sleep(300); await page.keyboard.press('KeyX'); await sleep(300);
+      ok('v0.4.3: MAP screen offers 部屋の入口に戻る', await E(page, () => GAIDEN.state === 'play' && GAIDEN.stats.lastEscape === 'menu'));
       await ctx.close(); }
 
     // ---- v0.3: room entry safety (no stunlock at the door)

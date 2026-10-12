@@ -106,6 +106,8 @@ function updatePlayer() {
   if (P.chomp > 0) P.chomp--; if (P.gabuShot > 0) P.gabuShot--;
   if (P.spitPose > 0) P.spitPose--;
   P.animT++;
+  if (P.dropT > 0) P.dropT--;
+  unstickPlayer();
   const dir = (held('right') ? 1 : 0) - (held('left') ? 1 : 0);
   if (inp.jumpPressed) P.jumpBuf = C.jumpBuffer; else if (P.jumpBuf > 0) P.jumpBuf--;
   const vacHeld = held('vac') && P.knock <= 0;
@@ -117,7 +119,8 @@ function updatePlayer() {
     const sp = (vacHeld ? C.vacWalkSpeed : C.walkSpeed) * timeSlowAt(pcx(), P.y + P.h), acc = P.onGround ? C.accel : C.airAccel;
     if (dir) { P.face = dir; P.vx += clamp(dir * sp - P.vx, -acc, acc); }
     else { P.vx += clamp(-P.vx, -C.decel, C.decel); }
-    if (P.jumpBuf > 0 && (P.onGround || P.coyote > 0)) { P.vy = -C.jumpVel; P.jumpBuf = 0; P.coyote = 0; P.onGround = false; sfx('jump'); }
+    if (P.onGround && !P.onFloat && (inp.dropPressed || (held('down') && P.jumpBuf > 0)) && onPlatOnly()) { P.dropT = 12; P.jumpBuf = 0; P.onGround = false; P.coyote = 0; P.y += 2; P.vy = 1; }   // v0.4.3 drop through
+    else if (P.jumpBuf > 0 && (P.onGround || P.coyote > 0)) { P.vy = -C.jumpVel; P.jumpBuf = 0; P.coyote = 0; P.onGround = false; sfx('jump'); }
     else if (inp.jumpPressed && !P.onGround && P.coyote <= 0 && hasAbil('djump') && !P.dj) { // ゴーストステップ: second jump in the air
       P.vy = -C.djumpVel; P.dj = true; P.djT = 18; P.jumpBuf = 0; stats.djumps++; sfx('djump');
       for (let i = 0; i < 10; i++) parts.push({ x: pcx() + rnd(-6, 6), y: P.y + P.h, vx: rnd(-1.5, 1.5), vy: rnd(0.5, 1.8), life: 20, col: i & 1 ? '#c8a0ff' : '#ffffff', size: 2, glow: 1 });
@@ -135,6 +138,10 @@ function updatePlayer() {
   if (P.vy > C.maxFall) P.vy = C.maxFall;
   const vyBefore = P.vy, wasGround = P.onGround;
   moveBody(P, true);
+  // v0.4.3 universal escape: pressing inputs in mid-air without moving for 3s = wedged -> back to the room entry
+  // (holding JUMP, or ←→ in mid-air, while staying inside an 8px box for 3s; walking into a wall on the ground doesn't count)
+  const pushing = held('jump') || (dir && !P.onGround);
+  if (pushing && !P.tug && !(P.knock > 0) && !P.dead) { if (!(P.stuckT > 0) || Math.abs(P.x - P.ax) > 8 || Math.abs(P.y - P.ay) > 8) { P.ax = P.x; P.ay = P.y; P.stuckT = 1; } else if (++P.stuckT > 180) returnToEntry('stuck'); } else P.stuckT = 0;
   if (P.onGround) { if (!wasGround && vyBefore > 3) sfx('land'); P.hover = C.hoverFrames; P.coyote = C.coyote; P.airT = 0; P.dj = false; }
   else { if (P.coyote > 0) P.coyote--; P.airT++; }
   // vacuum
@@ -147,6 +154,22 @@ function updatePlayer() {
   else if (P.x + P.w / 2 > room.W) { if (P.knock > 0 || !exitRoom('R')) { P.x = room.W - P.w / 2; if (P.knock > 0) P.vx = Math.min(0, P.vx); } }
   else if (P.y < -10 && P.vy < 0) { if (!exitRoom('T')) { P.y = -10; P.vy = 0; } }
   else if (P.y + P.h / 2 > room.H) { if (!exitRoom('B')) { P.y = P.spawnY; P.x = P.spawnX; P.vy = 0; hurtPlayer(2, pcx(), 'pit'); } }
+}
+
+// v0.4.3: standing only on one-way ledge tiles (nothing solid under the feet)
+function onPlatOnly() { const r = Math.floor((P.y + P.h + 1) / TS), c0 = Math.floor(P.x / TS), c1 = Math.floor((P.x + P.w - 0.001) / TS); let plat = false;
+  for (let c = c0; c <= c1; c++) { const t = tileAt(c, r); if (isSolidT(t)) return false; if (t === T_PLAT) plat = true; } return plat; }
+// v0.4.3: if Kanata overlaps a solid tile, nudge her to the nearest free spot (up to 3 tiles); otherwise back to the entry
+function unstickPlayer() {
+  if (P.dead || !boxHitsSolid(P.x, P.y, P.w, P.h)) { P.inSolidT = 0; return; }
+  for (let d = 1; d <= 48; d++) for (const [dx, dy] of [[0, d], [0, -d], [-d, 0], [d, 0], [-d, d], [d, d], [-d, -d], [d, -d]])
+    if (!boxHitsSolid(P.x + dx, P.y + dy, P.w, P.h)) { P.x += dx; P.y += dy; stats.unsticks = (stats.unsticks || 0) + 1; return; }
+  returnToEntry('solid');
+}
+function returnToEntry(why) {
+  P.x = P.spawnX; P.y = P.spawnY; P.vx = 0; P.vy = 0; P.knock = 0; P.tug = null; P.stuckT = 0; P.dropT = 0;
+  let n = 0; while (boxHitsSolid(P.x, P.y, P.w, P.h) && n++ < 64) P.y -= 1;
+  P.grace = Math.max(P.grace, CONFIG.entryGrace); fadeT = 14; stats.escapes = (stats.escapes || 0) + 1; stats.lastEscape = why || 'menu';
 }
 
 // suck items / ghosts / objects in the cone
