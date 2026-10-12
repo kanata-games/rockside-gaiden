@@ -76,18 +76,37 @@ function renderWarpMenu() {
   if (sel) drawHiText(sel.id === room.id ? '（いまいる場所）' : AREAS[sel.area].jp + ' の ' + sel.jp + ' へワープ', VW / 2, 250, 8, sel.id === room.id ? '#a8a0d8' : '#fff4c0', '#1a0e28');
 }
 
-// ---- spirit barriers -----------------------------------------------------
+// ---- ability barriers (v0.3 spirit; v0.5 key-ring locks, darkness) -----------------
+// gate id prefix -> the power that removes it for good: spirit_* (霊体化), ring_* (鍵束), dark_* (ランタン)
+const GATE_ABIL = { spirit: 'phase', ring: 'keyring', dark: 'lantern' };
+const gateAbil = gid => { for (const p in GATE_ABIL) if (gid.startsWith(p)) return GATE_ABIL[p]; return null; };
+const gateKind = gid => { for (const p in GATE_ABIL) if (gid.startsWith(p)) return p; return null; };
 const isSpirit = gid => gid.startsWith('spirit');
-function openSpiritGates() { for (const gid in room.gates) if (isSpirit(gid)) openGate(room.id, gid); }
+const GATE_TIP = { spirit: '青白い霊の結界… 体が押し返される。霊体になれる力があれば通れそうだ',
+  ring: '金色の錠前がいくつもかかった扉… 鍵がたくさんあれば開けられそう',
+  dark: '真っ暗で一歩も進めない… 明かりがあれば通れそうだ' };
+function openAbilGates(abil) { for (const gid in room.gates) if (gateAbil(gid) === abil) openGate(room.id, gid); }
+function openSpiritGates() { openAbilGates('phase'); }
 function updateSpirit() {
   for (const gid in room.gates) {
-    if (!isSpirit(gid) || progress.perm.has(room.id + ':gate:' + gid)) continue;
+    const kind = gateKind(gid); if (!kind || progress.perm.has(room.id + ':gate:' + gid)) continue;
     const cells = room.gates[gid];
     if (frame % 4 === 0) { const i = cells[(Math.random() * cells.length) | 0], c = i % room.cols, r = (i / room.cols) | 0;
-      parts.push({ x: c * TS + rnd(0, 16), y: r * TS + rnd(0, 16), vx: rnd(-0.2, 0.2), vy: -rnd(0.2, 0.7), life: 26, col: (frame & 8) ? '#e0b8ff' : '#a8e8ff', size: 1, glow: 1 }); }
+      const col = kind === 'spirit' ? ((frame & 8) ? '#e0b8ff' : '#a8e8ff') : kind === 'ring' ? '#ffe080' : '#3a3050';
+      parts.push({ x: c * TS + rnd(0, 16), y: r * TS + rnd(0, 16), vx: rnd(-0.2, 0.2), vy: -rnd(0.2, 0.7), life: 26, col, size: 1, glow: kind !== 'dark' ? 1 : 0 }); }
     for (const i of cells) { const c = i % room.cols, r = (i / room.cols) | 0;
-      if (hitsKanata(c * TS - 6, r * TS - 6, c * TS + TS + 6, r * TS + TS + 6)) { tip('spirit', '青白い霊の結界… 体が押し返される。霊体になれる力があれば通れそうだ'); break; } }
+      if (hitsKanata(c * TS - 6, r * TS - 6, c * TS + TS + 6, r * TS + TS + 6)) { tip(kind === 'spirit' ? 'spirit' : 'gate_' + kind, GATE_TIP[kind]); break; } }
   }
+}
+// v0.5: key-ring lock (gold padlocked bars) and darkness (a wall of black fog that only a lantern pushes back)
+function drawRingTile(c, x, y, col, row) {
+  c.fillStyle = 'rgba(20,12,4,0.75)'; c.fillRect(x, y, TS, TS);
+  c.fillStyle = '#8a6a2a'; for (const bx of [2, 7, 12]) c.fillRect(x + bx, y, 3, TS); c.fillStyle = '#e8c860'; for (const bx of [2, 7, 12]) c.fillRect(x + bx, y, 1, TS);
+  if ((row + col) % 2 === 0) { c.fillStyle = '#ffd84a'; c.fillRect(x + 4, y + 6, 8, 7); c.fillStyle = '#7a5a10'; c.fillRect(x + 7, y + 8, 2, 3); c.strokeStyle = '#ffd84a'; c.lineWidth = 1; c.strokeRect(x + 5.5, y + 2.5, 5, 5); }
+}
+function drawDarkTile(c, x, y, col, row) {
+  c.fillStyle = 'rgba(2,1,6,0.94)'; c.fillRect(x, y, TS, TS);
+  c.fillStyle = 'rgba(40,30,70,0.5)'; for (let k = 0; k < 3; k++) c.fillRect(x + ((k * 5 + row * 7 + col * 3) % 15), y + ((k * 6 + col * 5) % 15), 1, 1);
 }
 // static look of a closed spirit barrier (drawn into the room canvas)
 function drawSpiritTile(c, x, y, col, row) {

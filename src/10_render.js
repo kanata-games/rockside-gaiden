@@ -258,7 +258,7 @@ function foeSprite(e) {
   }
 }
 // v0.4 area skins: same behaviour, new look (dancer = puppet, maskbat = bat, starwisp = skullwisp, chart = cursedbook)
-const FOE_SKIN_BASE = { dancer: 'puppet', maskbat: 'bat', starwisp: 'skullwisp', chart: 'cbook' };
+const FOE_SKIN_BASE = { dancer: 'puppet', maskbat: 'bat', starwisp: 'skullwisp', chart: 'cbook', corkbat: 'bat', grapewisp: 'skullwisp', squire: 'skel', griffin: 'garg' };   // v0.5 +4
 function foeSkin(e, k) { const base = e.skin && FOE_SKIN_BASE[e.skin]; return base && k.startsWith(base) ? e.skin + k.slice(base.length) : k; }
 function drawFoe(e, x, y) {
   const k = foeSkin(e, foeSprite(e)), r = rectOf('enemies', k), fl = e.type === 'gargoyle' ? pcx() < e.x : e.face < 0;
@@ -300,6 +300,10 @@ function drawShot(s) {
 }
 function drawEBullet(b) {
   const x = b.x - cam.x, y = b.y - cam.y;
+  if (b.spr) { spr('boss', b.spr, x, y, b.vx < 0); return; }   // v0.5: generic sprite bullets (behaviour from kind)
+  if (b.kind === 'corkshot') { g.save(); g.translate(Math.round(x + 6), Math.round(y + 7)); g.rotate(b.life * 0.3); const r = rectOf('boss', 'corkshot'); g.drawImage(IMG.boss, r.x, r.y, r.w, r.h, -6, -7, r.w, r.h); g.restore(); return; }
+  if (b.kind === 'halberd') { const k = Math.min(1, (22 - b.life) / 4), yy = Math.round(y + (b.h - 64) * k); g.fillStyle = 'rgba(220,230,255,0.25)'; g.fillRect(Math.round(x + 2), Math.round(y), 8, yy - Math.round(y)); spr('boss', 'halberd', x, yy); return; }
+  if (b.kind === 'gsword') { spr('boss', 'greatsword', Math.round(x + 8), Math.round(y)); return; }
   if (b.kind === 'plate') { spr('items', 'plate', x, y); if (b.spin & 4) { g.fillStyle = '#ffffff'; g.fillRect(Math.round(x + 2), Math.round(y + 1), 3, 1); } }
   // v0.4 area bosses
   else if (b.kind === 'string') { const k = Math.min(1, (22 - b.life) / 4), h = Math.round(b.h * k); g.fillStyle = 'rgba(255,240,220,0.35)'; g.fillRect(Math.round(x + 1), Math.round(y), 8, h);
@@ -494,18 +498,19 @@ function renderMap() {
   const tsec = Math.floor(progress.time / 60); drawText('TIME ' + Math.floor(tsec / 60) + ':' + String(tsec % 60).padStart(2, '0'), 160, by, 'b', 1);
   drawText('BOSS ' + progress.bosses.size + '/' + BOSS_TOTAL, 240, by, 'r', 1);
   drawText('GHOST ' + progress.captures, 306, by, 'c', 1);
-  const abW = k => 26 + (hasAbil(k) ? ABIL_INFO[k].jp.length : 3) * 10;
-  let ax = 14; for (const k in ABIL_INFO) { drawAbilIcon(k, ax, by + 12, hasAbil(k)); ax += abW(k); }
-  // area legend
-  let lx = 14; for (const k in AREAS) { g.fillStyle = AREAS[k].col; g.fillRect(lx, by + 40, 8, 8); rectLine(lx, by + 40, 8, 8, '#a8b8e8'); lx += 46; }
+  // v0.5: powers in rows of 4, area legend in rows of 5 (15 areas)
+  const AB = Object.keys(ABIL_INFO), abX = i => 14 + (i % 4) * 92, abY = i => by + 11 + Math.floor(i / 4) * 12;
+  AB.forEach((k, i) => drawAbilIcon(k, abX(i), abY(i), hasAbil(k)));
+  const AR = Object.keys(AREAS), lgY0 = by + 14 + Math.ceil(AB.length / 4) * 12, lgX = i => 14 + (i % 5) * 72, lgY = i => lgY0 + Math.floor(i / 5) * 10;
+  AR.forEach((k, i) => { g.fillStyle = AREAS[k].col; g.fillRect(lgX(i), lgY(i), 7, 7); rectLine(lgX(i), lgY(i), 7, 7, '#a8b8e8'); });
   const EB = MAP_ENTRY_BTN; g.fillStyle = '#2a1e48'; g.fillRect(EB.x, EB.y, EB.w, EB.h); rectLine(EB.x, EB.y, EB.w, EB.h, '#c8a0ff');
   drawText('TAP / MAP: BACK', VW / 2, VH - 10, 'b', 1, 'c');
   blit();
   drawHiText('部屋の入口に戻る（VAC / ↓）', VW / 2, EB.y + 4, 8, '#f0e0ff', '#140a20', 'center');
   drawHiText((AREAS[room.def.area] || AREAS.east).jp + '　' + room.def.jp, VW / 2, 12, 10, '#fff4e0', '#1a0e28');
-  ax = 14; for (const k in ABIL_INFO) { drawHiText(hasAbil(k) ? ABIL_INFO[k].jp : '？？？', ax + 13, by + 11, 6.5, hasAbil(k) ? ABIL_INFO[k].col : '#5a5488', null, 'left'); ax += abW(k); }
-  lx = 14; for (const k in AREAS) { drawHiText(AREAS[k].short, lx + 11, by + 39, 6, '#c8c0f0', null, 'left'); lx += 46; }
-  drawHiText('■セーブ  B＝ボス  W＝ワープの間  ・光＝新しい力  黄色＝とびら' + (progress.hasKey ? '  舞踏会場の鍵あり' : ''), VW / 2, by + 54, 6.5, '#a8a0d8', null);
+  AB.forEach((k, i) => drawHiText(hasAbil(k) ? ABIL_INFO[k].jp : '？？？', abX(i) + 13, abY(i) - 1, 6.5, hasAbil(k) ? ABIL_INFO[k].col : '#5a5488', null, 'left'));
+  AR.forEach((k, i) => drawHiText(AREAS[k].short, lgX(i) + 10, lgY(i) - 1, 6, '#c8c0f0', null, 'left'));
+  drawHiText('■セーブ  B＝ボス  W＝ワープの間  ・光＝新しい力  黄色＝とびら' + (progress.hasKey ? '  舞踏会場の鍵あり' : ''), VW / 2, lgY0 + Math.ceil(AR.length / 5) * 10 + 2, 6.5, '#a8a0d8', null);
 }
 function renderPlayBase() { g.fillStyle = '#000'; g.fillRect(0, 0, VW, VH); g.drawImage(room.canvas, clamp(Math.round(cam.x), 0, room.W - VW), clamp(Math.round(cam.y), 0, room.H - VH), VW, VH, 0, 0, VW, VH); }
 const TITLE_MENU = [{ x: 108, y: 246, w: 76, h: 18 }, { x: 200, y: 246, w: 76, h: 18 }];

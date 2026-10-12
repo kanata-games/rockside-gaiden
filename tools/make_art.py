@@ -92,7 +92,9 @@ def brick(variant, top=False, crack=False, theme='stone'):
                          'garden': ('#3c4a3a', '#566a52', '#2a3428', '#161c15'),
                          'wood': ('#4a3426', '#6a4c36', '#33231a', '#1c130d'),
                          'crypt': ('#3a3e3a', '#565c54', '#282c28', '#121412'),
-                         'bath': ('#7a98a0', '#b8d4da', '#56747c', '#26363c')}[theme]
+                         'bath': ('#7a98a0', '#b8d4da', '#56747c', '#26363c'),
+                         'wine': ('#4a2a2e', '#6a3e42', '#321c20', '#1a0c10'),       # v0.5 vintage vaults
+                         'armory': ('#4a5060', '#6a7488', '#323844', '#16181e')}[theme]   # v0.5 hall of knights
     s.rect(0, 0, 16, 16, mort)
     rows = [(0, 7), (8, 15)]
     for ri, (y0, y1) in enumerate(rows):
@@ -130,6 +132,12 @@ def brick(variant, top=False, crack=False, theme='stone'):
         elif theme == 'bath':  # white glazed tiles, aqua grout, water shine
             s.rect(0, 0, 16, 5, '#e8f4f4'); s.hline(0, 15, 0, '#ffffff'); s.vline(7 + variant, 0, 4, '#6ab8c0'); s.hline(0, 15, 4, '#6ab8c0')
             s.px(3, 1, '#c8f0ff'); s.px(12, 2, '#ffffff'); s.hline(0, 15, 5, '#1a2a30'); s.hline(0, 15, 6, '#26363c')
+        elif theme == 'wine':  # dark red flagstones, a spill of wine
+            s.rect(0, 0, 16, 5, '#5a3a34'); s.hline(0, 15, 0, '#9a6a5a'); s.hline(0, 15, 1, '#7a4e44'); s.vline((6 + variant * 5) % 16, 0, 4, '#2a1612')
+            s.px((3 + variant * 7) % 16, 2, '#9a2a4a'); s.px((4 + variant * 7) % 16, 2, '#7a1a3a'); s.hline(0, 15, 5, '#1a0c10'); s.hline(0, 15, 6, '#2a161a')
+        elif theme == 'armory':  # polished steel-grey slabs with rivets
+            s.rect(0, 0, 16, 5, '#7a8294'); s.hline(0, 15, 0, '#c8d0e0'); s.hline(0, 15, 1, '#9aa2b4'); s.vline(7 + variant * 4, 0, 4, '#3a404c')
+            s.px(2, 3, '#e8ecf4'); s.px(13, 3, '#e8ecf4'); s.hline(0, 15, 5, '#16181e'); s.hline(0, 15, 6, '#22262e')
         elif theme == 'wood':
             s.rect(0, 0, 16, 5, '#7a5238'); s.hline(0, 15, 0, '#c99a66'); s.hline(0, 15, 1, '#9a6a48'); s.px((5 + variant * 7) % 16, 2, '#4a2e1e')
             s.hline(0, 15, 5, '#1c130d'); s.hline(0, 15, 6, '#2a1c14')
@@ -141,7 +149,7 @@ def brick(variant, top=False, crack=False, theme='stone'):
 T.add('brick0', brick(0)); T.add('brick1', brick(1)); T.add('top0', brick(0, True)); T.add('top1', brick(1, True))
 T.add('secret', brick(0, crack=True))
 T.add('csecret', brick(0, crack=True, theme='cellar'))
-for pre, th in (('t', 'laundry'), ('g', 'garden'), ('w', 'wood'), ('k', 'crypt'), ('b', 'bath')):
+for pre, th in (('t', 'laundry'), ('g', 'garden'), ('w', 'wood'), ('k', 'crypt'), ('b', 'bath'), ('r', 'wine'), ('a', 'armory')):
     T.add(pre + 'brick0', brick(0, theme=th)); T.add(pre + 'brick1', brick(1, theme=th)); T.add(pre + 'top0', brick(0, True, theme=th)); T.add(pre + 'top1', brick(1, True, theme=th))
     T.add(pre + 'secret', brick(0, crack=True, theme=th))
 s = Spr(16, 16)  # iron bars (vertical gate)
@@ -201,6 +209,10 @@ THEMES = {
     'stars':   dict(w1='#080c1e', w2='#10183a', w3='#2a3a6a', pat='starfield'),  # v0.4 observatory
     'observatory': dict(w1='#141a2e', w2='#1c2440', w3='#2e3a62', pat='panel'),
     'heart':   dict(w1='#120e22', w2='#1c1632', w3='#3a2e5e', pat='gothic'),   # v0.4 clock heart (Chronoa)
+    'vintage': dict(w1='#1e1012', w2='#2c181a', w3='#4a2a2a', pat='stone'),     # v0.5 old vintage vaults
+    'casks':   dict(w1='#24140e', w2='#341e14', w3='#5a3420', pat='plank'),
+    'armory':  dict(w1='#161a24', w2='#202634', w3='#384258', pat='rivet'),     # v0.5 hall of knights
+    'knights': dict(w1='#1a1020', w2='#2a1830', w3='#5a1e2a', pat='gothic'),
 }
 for name, th in THEMES.items():
     s = Spr(32, 32); w1, w2, w3 = th['w1'], th['w2'], th['w3']
@@ -338,6 +350,8 @@ for name, th in THEMES.items():
     if name in ('crypt', 'cistern'): wood, woodh, woodl = '#2e322c', '#4a5046', '#161a16'
     if name == 'bath': wood, woodh, woodl = '#d8ecee', '#ffffff', '#6ab0b8'
     if name == 'chapel': wood, woodh, woodl = '#2a1a2a', '#4a2e48', '#140a14'
+    if name in ('vintage', 'casks'): wood, woodh, woodl = '#3a1e16', '#5a3020', '#1e0e0a'
+    if name in ('armory', 'knights'): wood, woodh, woodl = '#3a3e4a', '#5a6070', '#1c1e26'
     s.rect(0, 0, 32, 24, wood); s.hline(0, 31, 0, woodh); s.hline(0, 31, 1, '#c9a24a' if name in ('ballroom', 'vault', 'foyer') else woodh); s.hline(0, 31, 3, woodl)
     for x0 in (2, 18):
         s.rect(x0, 6, 12, 14, woodl); s.rect(x0 + 1, 7, 10, 12, wood); s.hline(x0 + 1, x0 + 11, 7, woodh); s.vline(x0 + 1, 7, 18, woodh)
@@ -362,7 +376,8 @@ B.save()
 # =====================================================================
 P = Atlas('props', 512)
 GOLD, GOLDH, GOLDL, GOLDD = '#c9a24a', '#f3d98a', '#8a6a2a', '#4a3612'
-exec(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'art_areas.py'), encoding='utf-8').read())   # v0.4 areas (add_area_* below)
+exec(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'art_areas.py'), encoding='utf-8').read())
+exec(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'art_v05.py'), encoding='utf-8').read())   # v0.5 expansion (add_v05_*)   # v0.4 areas (add_area_* below)
 def frame_rect(s, x, y, w, h, t=3):
     s.rect(x, y, w, h, GOLDL); s.rect(x + 1, y + 1, w - 2, h - 2, GOLD)
     s.hline(x + 1, x + w - 2, y + 1, GOLDH); s.vline(x + 1, y + 1, y + h - 2, GOLDH)
@@ -964,6 +979,7 @@ for k in range(12): a = k / 12 * 6.28; s.px(24 + math.cos(a) * 18, 5 + math.sin(
 s.ellipse(24, 5, 6, 2, '#a8e8ff'); s.outline('#140c28'); P.add('warp_pad', s)
 s = Spr(14, 30); s.rect(6, 8, 2, 22, '#3a2a2a'); s.rect(3, 0, 8, 9, '#2a2a3a'); s.rect(4, 1, 6, 7, '#8ad0ff'); s.rect(5, 2, 4, 5, '#d8f4ff'); s.outline('#0a0a14'); P.add('spiritlamp', s)
 add_area_props(P)
+add_v05_props(P)
 P.save()
 
 # =====================================================================
@@ -1041,6 +1057,7 @@ for k, (c1, c2, sym) in {'float': ('#8fe8ff', '#2a8ac8', 'f'), 'turbo': ('#ff9a5
 s = Spr(16, 8); s.rect(3, 3, 10, 2, '#e8e4d0'); s.ellipse(2.5, 2.5, 2, 2, '#f0ecd8'); s.ellipse(2.5, 5.5, 2, 2, '#f0ecd8'); s.ellipse(13.5, 2.5, 2, 2, '#f0ecd8'); s.ellipse(13.5, 5.5, 2, 2, '#f0ecd8'); s.outline('#3a3628'); I.add('bone', s)
 s = Spr(14, 13); s.ellipse(7, 8, 6, 4.5, '#ffd83a'); s.ellipse(9, 4, 3.5, 3.5, '#ffd83a'); s.rect(11, 4, 3, 2, '#ff8a2a'); s.px(9, 3, '#000000'); s.ellipse(5, 7, 2.5, 1.5, '#ffe880'); s.outline('#5a4008'); I.add('duck', s)
 s = Spr(12, 12); s.ellipse(4, 9, 3.5, 2.5, '#d8b8ff'); s.vline(7, 1, 9, '#d8b8ff'); s.line(7, 1, 11, 4, '#d8b8ff'); s.ellipse(4, 8, 1.5, 1, '#ffffff'); s.outline('#3a1a6a'); I.add('note', s)
+add_v05_items(I)
 I.save()
 
 # =====================================================================
@@ -1213,6 +1230,7 @@ def crab(f, snap=False):
     s.outline('#3a0e04'); return s
 E.add('crab0', crab(0)); E.add('crab1', crab(1)); E.add('crab_snap', crab(0, True))
 add_area_enemies(E)
+add_v05_enemies(E)
 E.save()
 
 # =====================================================================
@@ -1506,6 +1524,7 @@ s.outline('#1a4a5a'); BO.add('splashring', s)
 add_area_boss(BO)
 # v0.4: Chronoa's eye core (teal) for the tug-of-war
 for m in ('tug', 'dizzy'): BO.add('ecore_' + m, tinted_core(m, '#f0fffc', '#9ae8dc', '#2a9a90', '#0e3a38'))
+add_v05_boss(BO)
 BO.save()
 
 # =====================================================================

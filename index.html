@@ -65,7 +65,7 @@ body.land #hint{display:none;}
 <script>
 'use strict';
 // Version label (title screen + footer). Bump on every release.
-const GAME_VERSION = '0.4.3';
+const GAME_VERSION = '0.5.0';
 // =====================================================================
 //  ROCKSIDE外伝 清掃員カナタ  -  haunted-mansion exploration + vacuum action (prototype)
 //  All gameplay tuning lives in CONFIG. Units: pixels and frames @60Hz.
@@ -112,6 +112,7 @@ const CONFIG = {
 
   // ---- abilities found in the mansion ----
   turboRange: 1.18,                  // ターボ吸引: cone length multiplier; also lifts heavy objects, levers and wardrobes
+  wallJumpVel: 6.4, wallJumpVx: 2.6, wallJumpLock: 8, clingFall: 0.9,   // v0.5 グリム吸着 wall cling / wall jump
   djumpVel: 6.3,                     // 二段ジャンプ (ゴーストステップ): second jump in the air
   float: { holdFrames: 16, life: 330, max: 2, w: 26, h: 8 },   // ふわり化: hold SPIT -> the oldest stored object floats as a platform
 
@@ -136,6 +137,7 @@ const CONFIG = {
     bone:      { dmg: 2, w: 16, h: 8, pierce: 1 },          // v0.3 crypt: skull wisps spit bones
     duck:      { dmg: 2, w: 14, h: 13, bounce: 3 },         // v0.3 bath: rubber ducks bounce around
     note:      { dmg: 2, w: 12, h: 12, pierce: 1 },          // v0.3 chapel: the organ's music notes
+    cork:      { dmg: 2, w: 10, h: 12, bounce: 1 },         // v0.5 vintage vaults: corks pop and bounce
   },
   bossMul: 2,
 
@@ -208,10 +210,18 @@ const CONFIG = {
     cometWarn: 46, cometWarnRage: 40, cometSpeed: 3.0, cometSpeedRage: 3.4, cometDamage: 1, orbitWarn: 40, orbitWarnRage: 34, planets: 2, planetsRage: 3,
     planetSpeed: 2.8, planetSpeedRage: 3.1, planetDamage: 1, novaWarn: 62, novaWarnRage: 54, shards: 6, shardsRage: 7, shardSpeed: 3.6, shardDamage: 2,
     stun: 150, stunRage: 130, coreCap: 30, specialEvery: 3 },
+  // ---- v0.5 expansion bosses: a little harder than the v0.4 pair (shorter idle, a bit more HP), every attack audited
+  // 樽蜘蛛 バレルタラント BARRELTARANT (old vintage vaults)
+  tarant: { hp: 210, idle: 42, idleRage: 32, corks: 4, corksRage: 5, corkWarn: 44, corkWarnRage: 38, corkDamage: 1, spillWarn: 42, spillWarnRage: 36, waveSpeed: 2.7, waveDamage: 1,
+    dropWarn: 44, dropWarnRage: 38, dropDamage: 2, plungeTrack: 56, plungeLock: 32, plungeLockRage: 28, plungeDamage: 2, stun: 150, stunRage: 130, coreCap: 30, specialEvery: 3 },
+  // 空っぽの騎士団長 アイアンホロウ IRON HOLLOW (hall of knights)
+  knight: { hp: 225, idle: 40, idleRage: 30, halberds: 3, halberdsRage: 4, halbWarn: 40, halbWarnRage: 34, halbDamage: 1, slashWarn: 40, slashWarnRage: 34, slashDamage: 2,
+    waveSpeed: 2.8, waveDamage: 1, leapWarn: 40, leapWarnRage: 36, leapAir: 40, leapDamage: 2, gleamTrack: 56, gleamLock: 30, gleamLockRage: 27, gswordDamage: 2,
+    stun: 145, stunRage: 125, coreCap: 30, specialEvery: 3 },
 };
 
 // ---- sprite metadata embedded at build time (tools/build.py) ----
-const EMBEDDED_META = {"bg":{"wall_foyer":{"x":0,"y":0,"w":32,"h":32},"wain_foyer":{"x":33,"y":0,"w":32,"h":24},"pillar_foyer":{"x":66,"y":0,"w":16,"h":32},"mold_foyer":{"x":83,"y":0,"w":32,"h":10},"wall_gallery":{"x":116,"y":0,"w":32,"h":32},"wain_gallery":{"x":149,"y":0,"w":32,"h":24},"pillar_gallery":{"x":182,"y":0,"w":16,"h":32},"mold_gallery":{"x":199,"y":0,"w":32,"h":10},"wall_library":{"x":232,"y":0,"w":32,"h":32},"wain_library":{"x":265,"y":0,"w":32,"h":24},"pillar_library":{"x":298,"y":0,"w":16,"h":32},"mold_library":{"x":315,"y":0,"w":32,"h":10},"wall_dining":{"x":348,"y":0,"w":32,"h":32},"wain_dining":{"x":381,"y":0,"w":32,"h":24},"pillar_dining":{"x":414,"y":0,"w":16,"h":32},"mold_dining":{"x":431,"y":0,"w":32,"h":10},"wall_cellar":{"x":464,"y":0,"w":32,"h":32},"wain_cellar":{"x":0,"y":33,"w":32,"h":24},"pillar_cellar":{"x":33,"y":33,"w":16,"h":32},"mold_cellar":{"x":50,"y":33,"w":32,"h":10},"wall_vault":{"x":83,"y":33,"w":32,"h":32},"wain_vault":{"x":116,"y":33,"w":32,"h":24},"pillar_vault":{"x":149,"y":33,"w":16,"h":32},"mold_vault":{"x":166,"y":33,"w":32,"h":10},"wall_ballroom":{"x":199,"y":33,"w":32,"h":32},"wain_ballroom":{"x":232,"y":33,"w":32,"h":24},"pillar_ballroom":{"x":265,"y":33,"w":16,"h":32},"mold_ballroom":{"x":282,"y":33,"w":32,"h":10},"wall_laundry":{"x":315,"y":33,"w":32,"h":32},"wain_laundry":{"x":348,"y":33,"w":32,"h":24},"pillar_laundry":{"x":381,"y":33,"w":16,"h":32},"mold_laundry":{"x":398,"y":33,"w":32,"h":10},"wall_kitchen":{"x":431,"y":33,"w":32,"h":32},"wain_kitchen":{"x":464,"y":33,"w":32,"h":24},"pillar_kitchen":{"x":0,"y":66,"w":16,"h":32},"mold_kitchen":{"x":17,"y":66,"w":32,"h":10},"wall_boiler":{"x":50,"y":66,"w":32,"h":32},"wain_boiler":{"x":83,"y":66,"w":32,"h":24},"pillar_boiler":{"x":116,"y":66,"w":16,"h":32},"mold_boiler":{"x":133,"y":66,"w":32,"h":10},"wall_garden":{"x":166,"y":66,"w":32,"h":32},"wain_garden":{"x":199,"y":66,"w":32,"h":24},"pillar_garden":{"x":232,"y":66,"w":16,"h":32},"mold_garden":{"x":249,"y":66,"w":32,"h":10},"wall_courtyard":{"x":282,"y":66,"w":32,"h":32},"wain_courtyard":{"x":315,"y":66,"w":32,"h":24},"pillar_courtyard":{"x":348,"y":66,"w":16,"h":32},"mold_courtyard":{"x":365,"y":66,"w":32,"h":10},"wall_thorn":{"x":398,"y":66,"w":32,"h":32},"wain_thorn":{"x":431,"y":66,"w":32,"h":24},"pillar_thorn":{"x":464,"y":66,"w":16,"h":32},"mold_thorn":{"x":0,"y":99,"w":32,"h":10},"wall_shed":{"x":33,"y":99,"w":32,"h":32},"wain_shed":{"x":66,"y":99,"w":32,"h":24},"pillar_shed":{"x":99,"y":99,"w":16,"h":32},"mold_shed":{"x":116,"y":99,"w":32,"h":10},"wall_attic":{"x":149,"y":99,"w":32,"h":32},"wain_attic":{"x":182,"y":99,"w":32,"h":24},"pillar_attic":{"x":215,"y":99,"w":16,"h":32},"mold_attic":{"x":232,"y":99,"w":32,"h":10},"wall_gears":{"x":265,"y":99,"w":32,"h":32},"wain_gears":{"x":298,"y":99,"w":32,"h":24},"pillar_gears":{"x":331,"y":99,"w":16,"h":32},"mold_gears":{"x":348,"y":99,"w":32,"h":10},"wall_tower":{"x":381,"y":99,"w":32,"h":32},"wain_tower":{"x":414,"y":99,"w":32,"h":24},"pillar_tower":{"x":447,"y":99,"w":16,"h":32},"mold_tower":{"x":464,"y":99,"w":32,"h":10},"wall_chapel":{"x":0,"y":132,"w":32,"h":32},"wain_chapel":{"x":33,"y":132,"w":32,"h":24},"pillar_chapel":{"x":66,"y":132,"w":16,"h":32},"mold_chapel":{"x":83,"y":132,"w":32,"h":10},"wall_crypt":{"x":116,"y":132,"w":32,"h":32},"wain_crypt":{"x":149,"y":132,"w":32,"h":24},"pillar_crypt":{"x":182,"y":132,"w":16,"h":32},"mold_crypt":{"x":199,"y":132,"w":32,"h":10},"wall_bath":{"x":232,"y":132,"w":32,"h":32},"wain_bath":{"x":265,"y":132,"w":32,"h":24},"pillar_bath":{"x":298,"y":132,"w":16,"h":32},"mold_bath":{"x":315,"y":132,"w":32,"h":10},"wall_cistern":{"x":348,"y":132,"w":32,"h":32},"wain_cistern":{"x":381,"y":132,"w":32,"h":24},"pillar_cistern":{"x":414,"y":132,"w":16,"h":32},"mold_cistern":{"x":431,"y":132,"w":32,"h":10},"wall_theater":{"x":464,"y":132,"w":32,"h":32},"wain_theater":{"x":0,"y":165,"w":32,"h":24},"pillar_theater":{"x":33,"y":165,"w":16,"h":32},"mold_theater":{"x":50,"y":165,"w":32,"h":10},"wall_stage":{"x":83,"y":165,"w":32,"h":32},"wain_stage":{"x":116,"y":165,"w":32,"h":24},"pillar_stage":{"x":149,"y":165,"w":16,"h":32},"mold_stage":{"x":166,"y":165,"w":32,"h":10},"wall_stars":{"x":199,"y":165,"w":32,"h":32},"wain_stars":{"x":232,"y":165,"w":32,"h":24},"pillar_stars":{"x":265,"y":165,"w":16,"h":32},"mold_stars":{"x":282,"y":165,"w":32,"h":10},"wall_observatory":{"x":315,"y":165,"w":32,"h":32},"wain_observatory":{"x":348,"y":165,"w":32,"h":24},"pillar_observatory":{"x":381,"y":165,"w":16,"h":32},"mold_observatory":{"x":398,"y":165,"w":32,"h":10},"wall_heart":{"x":431,"y":165,"w":32,"h":32},"wain_heart":{"x":464,"y":165,"w":32,"h":24},"pillar_heart":{"x":0,"y":198,"w":16,"h":32},"mold_heart":{"x":17,"y":198,"w":32,"h":10}},"boss":{"chandelier":{"x":0,"y":0,"w":128,"h":84,"ax":64,"ay":0},"chandelier_cracked":{"x":129,"y":0,"w":128,"h":84,"ax":64,"ay":0},"core_normal":{"x":258,"y":0,"w":30,"h":30},"core_angry":{"x":289,"y":0,"w":30,"h":30},"core_tug":{"x":320,"y":0,"w":30,"h":30},"core_dizzy":{"x":351,"y":0,"w":30,"h":30},"chain":{"x":382,"y":0,"w":6,"h":10},"gcore_tug":{"x":389,"y":0,"w":30,"h":30},"gcore_dizzy":{"x":420,"y":0,"w":30,"h":30},"rcore_tug":{"x":451,"y":0,"w":30,"h":30},"rcore_dizzy":{"x":482,"y":0,"w":30,"h":30},"ccore_tug":{"x":0,"y":85,"w":30,"h":30},"ccore_dizzy":{"x":31,"y":85,"w":30,"h":30},"golem_idle0":{"x":62,"y":85,"w":72,"h":84},"golem_idle1":{"x":135,"y":85,"w":72,"h":84},"golem_raise":{"x":208,"y":85,"w":72,"h":84},"golem_slam":{"x":281,"y":85,"w":72,"h":84},"golem_puff":{"x":354,"y":85,"w":72,"h":84},"golem_dizzy":{"x":427,"y":85,"w":72,"h":84},"golem_ball0":{"x":0,"y":170,"w":46,"h":46},"golem_ball1":{"x":47,"y":170,"w":46,"h":46},"golem_ball2":{"x":94,"y":170,"w":46,"h":46},"golem_ball3":{"x":141,"y":170,"w":46,"h":46},"rose_stem":{"x":188,"y":170,"w":60,"h":112},"rose_head":{"x":249,"y":170,"w":64,"h":58},"rose_rage":{"x":314,"y":170,"w":64,"h":58},"rose_bloom":{"x":379,"y":170,"w":64,"h":58},"rose_wilt":{"x":444,"y":170,"w":64,"h":58},"rose_mound":{"x":0,"y":283,"w":40,"h":12},"clock_body":{"x":41,"y":283,"w":76,"h":156},"clock_rage":{"x":118,"y":283,"w":76,"h":156},"clock_stop":{"x":195,"y":283,"w":76,"h":156},"pend_bob":{"x":272,"y":283,"w":32,"h":32},"ocore_tug":{"x":305,"y":283,"w":30,"h":30},"ocore_dizzy":{"x":336,"y":283,"w":30,"h":30},"dcore_tug":{"x":367,"y":283,"w":30,"h":30},"dcore_dizzy":{"x":398,"y":283,"w":30,"h":30},"organ_idle":{"x":0,"y":440,"w":132,"h":128},"organ_sing":{"x":133,"y":440,"w":132,"h":128},"organ_rage":{"x":266,"y":440,"w":132,"h":128},"organ_stop":{"x":0,"y":569,"w":132,"h":128},"note":{"x":133,"y":569,"w":12,"h":12},"serp_head":{"x":146,"y":569,"w":56,"h":48},"serp_spit":{"x":203,"y":569,"w":56,"h":48},"serp_rage":{"x":260,"y":569,"w":56,"h":48},"serp_dizzy":{"x":317,"y":569,"w":56,"h":48},"serp_seg":{"x":374,"y":569,"w":30,"h":30},"serp_seg_r":{"x":405,"y":569,"w":30,"h":30},"splashring":{"x":436,"y":569,"w":44,"h":12},"str_idle0":{"x":0,"y":698,"w":64,"h":104},"str_idle1":{"x":65,"y":698,"w":64,"h":104},"str_jump":{"x":130,"y":698,"w":64,"h":104},"str_cast":{"x":195,"y":698,"w":64,"h":104},"str_slump":{"x":260,"y":698,"w":64,"h":104},"sandbag":{"x":325,"y":698,"w":44,"h":40},"maskshot":{"x":370,"y":698,"w":14,"h":14},"mcore_tug":{"x":385,"y":698,"w":30,"h":30},"mcore_dizzy":{"x":416,"y":698,"w":30,"h":30},"astra_idle":{"x":0,"y":803,"w":112,"h":112},"astra_nova":{"x":113,"y":803,"w":112,"h":112},"astra_rage":{"x":226,"y":803,"w":112,"h":112},"astra_stop":{"x":339,"y":803,"w":112,"h":112},"starshot":{"x":452,"y":803,"w":16,"h":16},"planet":{"x":469,"y":803,"w":18,"h":18},"scor_tug":{"x":0,"y":916,"w":30,"h":30},"scor_dizzy":{"x":31,"y":916,"w":30,"h":30},"ecore_tug":{"x":62,"y":916,"w":30,"h":30},"ecore_dizzy":{"x":93,"y":916,"w":30,"h":30}},"chars":{"chr_idle0":{"x":0,"y":0,"w":44,"h":68},"chr_idle1":{"x":45,"y":0,"w":44,"h":68},"chr_cast":{"x":90,"y":0,"w":44,"h":68},"chr_hurt":{"x":135,"y":0,"w":44,"h":68},"chr_sleep":{"x":180,"y":0,"w":44,"h":68},"vel_idle":{"x":225,"y":0,"w":40,"h":72},"vel_bow":{"x":266,"y":0,"w":40,"h":72},"portrait_chronoa":{"x":307,"y":0,"w":48,"h":48},"portrait_vel":{"x":356,"y":0,"w":48,"h":48},"mimic_open":{"x":0,"y":73,"w":128,"h":128},"mimic_charge":{"x":129,"y":73,"w":128,"h":128},"mimic_shut":{"x":258,"y":73,"w":128,"h":128},"mimic_crack":{"x":0,"y":202,"w":128,"h":128},"pocketwatch":{"x":129,"y":202,"w":26,"h":26},"sandorb":{"x":156,"y":202,"w":14,"h":14}},"enemies":{"puff0":{"x":0,"y":0,"w":32,"h":32},"puff1":{"x":33,"y":0,"w":32,"h":32},"puff2":{"x":66,"y":0,"w":32,"h":32},"puff3":{"x":99,"y":0,"w":32,"h":32},"puff_tug":{"x":132,"y":0,"w":32,"h":32},"puff_angry":{"x":165,"y":0,"w":32,"h":32},"dish0":{"x":198,"y":0,"w":36,"h":36},"dish1":{"x":235,"y":0,"w":36,"h":36},"dish2":{"x":272,"y":0,"w":36,"h":36},"dish_throw":{"x":309,"y":0,"w":36,"h":36},"dish_tug":{"x":346,"y":0,"w":36,"h":36},"armor0":{"x":383,"y":0,"w":28,"h":52},"armor1":{"x":412,"y":0,"w":28,"h":52},"armor_shell":{"x":441,"y":0,"w":28,"h":52},"helmet":{"x":470,"y":0,"w":12,"h":12},"firewisp0":{"x":483,"y":0,"w":16,"h":18},"firewisp1":{"x":0,"y":53,"w":16,"h":18},"firewisp2":{"x":17,"y":53,"w":16,"h":18},"bat0":{"x":34,"y":53,"w":20,"h":12},"bat1":{"x":55,"y":53,"w":20,"h":12},"bat_hang":{"x":76,"y":53,"w":12,"h":14},"rat0":{"x":89,"y":53,"w":22,"h":12},"rat1":{"x":112,"y":53,"w":22,"h":12},"garg_stone":{"x":135,"y":53,"w":30,"h":28},"garg_fly0":{"x":166,"y":53,"w":30,"h":28},"garg_fly1":{"x":197,"y":53,"w":30,"h":28},"garg_dive":{"x":228,"y":53,"w":30,"h":28},"puppet0":{"x":259,"y":53,"w":20,"h":34},"puppet1":{"x":280,"y":53,"w":20,"h":34},"puppet_throw":{"x":301,"y":53,"w":20,"h":34},"skel0":{"x":322,"y":53,"w":24,"h":42},"skel1":{"x":347,"y":53,"w":24,"h":42},"skel_throw":{"x":372,"y":53,"w":24,"h":42},"cbook0":{"x":397,"y":53,"w":22,"h":18},"cbook1":{"x":420,"y":53,"w":22,"h":18},"cbook_bite":{"x":443,"y":53,"w":22,"h":18},"sheet0":{"x":466,"y":53,"w":34,"h":34},"sheet1":{"x":0,"y":96,"w":34,"h":34},"sheet_angry":{"x":35,"y":96,"w":34,"h":34},"sheet_tug":{"x":70,"y":96,"w":34,"h":34},"skullwisp0":{"x":105,"y":96,"w":20,"h":22},"skullwisp1":{"x":126,"y":96,"w":20,"h":22},"crab0":{"x":147,"y":96,"w":24,"h":16},"crab1":{"x":172,"y":96,"w":24,"h":16},"crab_snap":{"x":197,"y":96,"w":24,"h":16},"dancer0":{"x":222,"y":96,"w":20,"h":34},"dancer1":{"x":243,"y":96,"w":20,"h":34},"dancer_throw":{"x":264,"y":96,"w":20,"h":34},"maskbat0":{"x":285,"y":96,"w":20,"h":12},"maskbat1":{"x":306,"y":96,"w":20,"h":12},"maskbat_hang":{"x":327,"y":96,"w":12,"h":14},"starwisp0":{"x":340,"y":96,"w":20,"h":22},"starwisp1":{"x":361,"y":96,"w":20,"h":22},"chart0":{"x":382,"y":96,"w":22,"h":18},"chart1":{"x":405,"y":96,"w":22,"h":18},"chart_bite":{"x":428,"y":96,"w":22,"h":18}},"gaiden":{"chr0":{"x":0,"y":0,"w":128,"h":80},"chr1":{"x":129,"y":0,"w":128,"h":80},"chr2":{"x":258,"y":0,"w":128,"h":80},"chr3":{"x":387,"y":0,"w":128,"h":80},"chr4":{"x":0,"y":81,"w":128,"h":80},"chr5":{"x":129,"y":81,"w":128,"h":80},"chr6":{"x":258,"y":81,"w":128,"h":80},"chr7":{"x":387,"y":81,"w":128,"h":80},"chr8":{"x":0,"y":162,"w":128,"h":80},"chr9":{"x":129,"y":162,"w":128,"h":80},"clk0":{"x":258,"y":162,"w":48,"h":48},"clk1":{"x":307,"y":162,"w":48,"h":48},"clk2":{"x":356,"y":162,"w":48,"h":48},"clk3":{"x":405,"y":162,"w":48,"h":48},"vel0":{"x":454,"y":162,"w":64,"h":80},"vel1":{"x":519,"y":162,"w":64,"h":80},"vel2":{"x":0,"y":243,"w":64,"h":80},"vel3":{"x":65,"y":243,"w":64,"h":80},"vel4":{"x":130,"y":243,"w":64,"h":80},"vel5":{"x":195,"y":243,"w":64,"h":80},"vel6":{"x":260,"y":243,"w":64,"h":80},"portrait_vel64":{"x":325,"y":243,"w":64,"h":64},"portrait_chronoa64":{"x":390,"y":243,"w":64,"h":64},"watch":{"x":455,"y":243,"w":16,"h":17},"face_chronoa":{"x":472,"y":243,"w":24,"h":24},"face_vel":{"x":497,"y":243,"w":24,"h":24}},"items":{"coin0":{"x":0,"y":0,"w":10,"h":10},"coin1":{"x":11,"y":0,"w":10,"h":10},"coin2":{"x":22,"y":0,"w":10,"h":10},"coin3":{"x":33,"y":0,"w":10,"h":10},"heart":{"x":44,"y":0,"w":11,"h":10},"heartbig":{"x":56,"y":0,"w":18,"h":16},"plate":{"x":75,"y":0,"w":14,"h":6},"book":{"x":90,"y":0,"w":12,"h":10},"candle":{"x":103,"y":0,"w":6,"h":12},"dustball":{"x":110,"y":0,"w":10,"h":8},"crystal":{"x":121,"y":0,"w":12,"h":12},"spark":{"x":134,"y":0,"w":10,"h":10},"key":{"x":145,"y":0,"w":14,"h":10},"fireball":{"x":160,"y":0,"w":12,"h":12},"bottle":{"x":173,"y":0,"w":8,"h":14},"chair":{"x":182,"y":0,"w":14,"h":16},"pan":{"x":197,"y":0,"w":16,"h":8},"gear":{"x":214,"y":0,"w":12,"h":12},"flowerpot":{"x":227,"y":0,"w":12,"h":12},"soap":{"x":240,"y":0,"w":12,"h":12},"seed":{"x":0,"y":17,"w":10,"h":10},"pot":{"x":11,"y":17,"w":16,"h":14},"barrel":{"x":28,"y":17,"w":16,"h":18},"shard":{"x":45,"y":17,"w":6,"h":6},"bubble":{"x":52,"y":17,"w":16,"h":16},"petal":{"x":69,"y":17,"w":12,"h":8},"orb_float":{"x":82,"y":17,"w":16,"h":16},"orb_turbo":{"x":99,"y":17,"w":16,"h":16},"orb_djump":{"x":116,"y":17,"w":16,"h":16},"orb_phase":{"x":133,"y":17,"w":16,"h":16},"orb_tank":{"x":150,"y":17,"w":16,"h":16},"bone":{"x":167,"y":17,"w":16,"h":8},"duck":{"x":184,"y":17,"w":14,"h":13},"note":{"x":199,"y":17,"w":12,"h":12}},"kanata":{"frameWidth":106,"frameHeight":70,"anchorX":46,"anchorY":69,"targetHeight":68,"frames":[{"i":0,"sheet":"a","pose":"idle"},{"i":1,"sheet":"a","pose":"blink"},{"i":2,"sheet":"a","pose":"move1"},{"i":3,"sheet":"a","pose":"move2"},{"i":4,"sheet":"a","pose":"suck"},{"i":5,"sheet":"a","pose":"spit"},{"i":6,"sheet":"a","pose":"hurt"},{"i":7,"sheet":"a","pose":"down"},{"i":8,"sheet":"b","pose":"idle"},{"i":9,"sheet":"b","pose":"blink"},{"i":10,"sheet":"b","pose":"move1"},{"i":11,"sheet":"b","pose":"move2"},{"i":12,"sheet":"b","pose":"suck"},{"i":13,"sheet":"b","pose":"spit"},{"i":14,"sheet":"b","pose":"hurt"},{"i":15,"sheet":"b","pose":"down"}],"poses":{"idle":[0,8],"blink":[1,9],"move1":[2,10],"move2":[3,11],"suck":[4,12],"spit":[5,13],"hurt":[6,14],"down":[7,15]}},"props":{"window":{"x":0,"y":0,"w":40,"h":76},"window_wide":{"x":41,"y":0,"w":56,"h":84},"portrait_lord":{"x":98,"y":0,"w":28,"h":36},"portrait_lady":{"x":127,"y":0,"w":28,"h":36},"portrait_land":{"x":156,"y":0,"w":44,"h":32},"portrait_big":{"x":201,"y":0,"w":44,"h":56},"sconce":{"x":246,"y":0,"w":12,"h":22},"flame0":{"x":259,"y":0,"w":6,"h":8},"flame1":{"x":266,"y":0,"w":6,"h":8},"flame2":{"x":273,"y":0,"w":6,"h":8},"flame3":{"x":280,"y":0,"w":6,"h":8},"bflame0":{"x":287,"y":0,"w":8,"h":10},"bflame1":{"x":296,"y":0,"w":8,"h":10},"bflame2":{"x":305,"y":0,"w":8,"h":10},"bflame3":{"x":314,"y":0,"w":8,"h":10},"curtain":{"x":323,"y":0,"w":32,"h":72},"curtain_rod":{"x":356,"y":0,"w":32,"h":4},"dust0":{"x":389,"y":0,"w":20,"h":10},"dust1":{"x":410,"y":0,"w":20,"h":10},"dust2":{"x":431,"y":0,"w":20,"h":10},"cobweb":{"x":452,"y":0,"w":20,"h":20},"vase":{"x":473,"y":0,"w":14,"h":22},"table":{"x":0,"y":85,"w":80,"h":30},"chair":{"x":81,"y":85,"w":16,"h":30},"candelabra":{"x":98,"y":85,"w":24,"h":18},"bookshelf":{"x":123,"y":85,"w":40,"h":72},"clock":{"x":164,"y":85,"w":22,"h":64},"save":{"x":187,"y":85,"w":28,"h":40},"doorframe":{"x":216,"y":85,"w":20,"h":64},"door":{"x":237,"y":85,"w":10,"h":48},"chandelier_deco":{"x":248,"y":85,"w":48,"h":30},"rail":{"x":297,"y":85,"w":16,"h":24},"rug":{"x":314,"y":85,"w":96,"h":4},"winerack":{"x":411,"y":85,"w":40,"h":40},"pedestal":{"x":452,"y":85,"w":28,"h":34},"linenshelf":{"x":0,"y":158,"w":36,"h":52},"pipes":{"x":37,"y":158,"w":20,"h":80},"lamp_wall":{"x":58,"y":158,"w":12,"h":18},"sheetline":{"x":71,"y":158,"w":90,"h":40},"basket":{"x":162,"y":158,"w":24,"h":16},"washtub":{"x":187,"y":158,"w":32,"h":22},"boiler":{"x":220,"y":158,"w":40,"h":64},"stove":{"x":261,"y":158,"w":44,"h":34},"potshelf":{"x":306,"y":158,"w":40,"h":40},"hangpans":{"x":347,"y":158,"w":56,"h":30},"sack":{"x":404,"y":158,"w":22,"h":24},"barrel":{"x":427,"y":158,"w":26,"h":30},"crate":{"x":454,"y":158,"w":24,"h":22},"trunk":{"x":0,"y":239,"w":34,"h":22},"dollshelf":{"x":35,"y":239,"w":40,"h":48},"gear_big":{"x":76,"y":239,"w":50,"h":50},"gear_med":{"x":127,"y":239,"w":32,"h":32},"clockface":{"x":160,"y":239,"w":46,"h":46},"bell":{"x":207,"y":239,"w":40,"h":46},"round_window":{"x":248,"y":239,"w":36,"h":36},"glasspane":{"x":285,"y":239,"w":44,"h":72},"fern":{"x":330,"y":239,"w":30,"h":26},"rosebush":{"x":361,"y":239,"w":36,"h":26},"hedge":{"x":398,"y":239,"w":40,"h":36},"fountain":{"x":439,"y":239,"w":72,"h":52},"statue":{"x":0,"y":312,"w":24,"h":56},"vine_hang":{"x":25,"y":312,"w":20,"h":60},"gardenlamp":{"x":46,"y":312,"w":14,"h":60},"wardrobe":{"x":61,"y":312,"w":32,"h":66},"lever_up":{"x":94,"y":312,"w":18,"h":26},"lever_mid":{"x":113,"y":312,"w":18,"h":26},"lever_down":{"x":132,"y":312,"w":18,"h":26},"abil_pedestal":{"x":151,"y":312,"w":30,"h":30},"sheet":{"x":182,"y":312,"w":32,"h":72},"ivy":{"x":215,"y":312,"w":32,"h":72},"vine0":{"x":248,"y":312,"w":16,"h":16},"vine1":{"x":265,"y":312,"w":16,"h":16},"floatpad":{"x":282,"y":312,"w":26,"h":8},"thornspike":{"x":309,"y":312,"w":16,"h":44},"stainedglass":{"x":326,"y":312,"w":36,"h":70},"pew":{"x":363,"y":312,"w":44,"h":20},"altar":{"x":408,"y":312,"w":48,"h":30},"organpipes":{"x":0,"y":385,"w":64,"h":90},"coffin":{"x":65,"y":385,"w":40,"h":16},"skullpile":{"x":106,"y":385,"w":30,"h":22},"urn":{"x":137,"y":385,"w":14,"h":20},"liontap":{"x":152,"y":385,"w":28,"h":26},"bathstool":{"x":181,"y":385,"w":16,"h":12},"buckets":{"x":198,"y":385,"w":26,"h":18},"duckprop":{"x":225,"y":385,"w":16,"h":14},"warp_pad":{"x":242,"y":385,"w":48,"h":10},"spiritlamp":{"x":291,"y":385,"w":14,"h":30},"stagecurtain":{"x":306,"y":385,"w":64,"h":96},"masks":{"x":371,"y":385,"w":34,"h":22},"footlight":{"x":406,"y":385,"w":16,"h":10},"telescope":{"x":423,"y":385,"w":40,"h":56},"armillary":{"x":464,"y":385,"w":36,"h":46},"starchart":{"x":0,"y":482,"w":40,"h":30}},"tiles":{"brick0":{"x":0,"y":0,"w":16,"h":16},"brick1":{"x":17,"y":0,"w":16,"h":16},"top0":{"x":34,"y":0,"w":16,"h":16},"top1":{"x":51,"y":0,"w":16,"h":16},"secret":{"x":68,"y":0,"w":16,"h":16},"csecret":{"x":85,"y":0,"w":16,"h":16},"tbrick0":{"x":102,"y":0,"w":16,"h":16},"tbrick1":{"x":119,"y":0,"w":16,"h":16},"ttop0":{"x":136,"y":0,"w":16,"h":16},"ttop1":{"x":153,"y":0,"w":16,"h":16},"tsecret":{"x":170,"y":0,"w":16,"h":16},"gbrick0":{"x":187,"y":0,"w":16,"h":16},"gbrick1":{"x":204,"y":0,"w":16,"h":16},"gtop0":{"x":221,"y":0,"w":16,"h":16},"gtop1":{"x":238,"y":0,"w":16,"h":16},"gsecret":{"x":0,"y":17,"w":16,"h":16},"wbrick0":{"x":17,"y":17,"w":16,"h":16},"wbrick1":{"x":34,"y":17,"w":16,"h":16},"wtop0":{"x":51,"y":17,"w":16,"h":16},"wtop1":{"x":68,"y":17,"w":16,"h":16},"wsecret":{"x":85,"y":17,"w":16,"h":16},"kbrick0":{"x":102,"y":17,"w":16,"h":16},"kbrick1":{"x":119,"y":17,"w":16,"h":16},"ktop0":{"x":136,"y":17,"w":16,"h":16},"ktop1":{"x":153,"y":17,"w":16,"h":16},"ksecret":{"x":170,"y":17,"w":16,"h":16},"bbrick0":{"x":187,"y":17,"w":16,"h":16},"bbrick1":{"x":204,"y":17,"w":16,"h":16},"btop0":{"x":221,"y":17,"w":16,"h":16},"btop1":{"x":238,"y":17,"w":16,"h":16},"bsecret":{"x":0,"y":34,"w":16,"h":16},"bars":{"x":17,"y":34,"w":16,"h":16},"grate":{"x":34,"y":34,"w":16,"h":16},"cbrick0":{"x":51,"y":34,"w":16,"h":16},"cbrick1":{"x":68,"y":34,"w":16,"h":16},"ctop0":{"x":85,"y":34,"w":16,"h":16},"ctop1":{"x":102,"y":34,"w":16,"h":16},"platL":{"x":119,"y":34,"w":16,"h":16},"platM":{"x":136,"y":34,"w":16,"h":16},"platR":{"x":153,"y":34,"w":16,"h":16},"shelf":{"x":170,"y":34,"w":16,"h":16}}};
+const EMBEDDED_META = {"bg":{"wall_foyer":{"x":0,"y":0,"w":32,"h":32},"wain_foyer":{"x":33,"y":0,"w":32,"h":24},"pillar_foyer":{"x":66,"y":0,"w":16,"h":32},"mold_foyer":{"x":83,"y":0,"w":32,"h":10},"wall_gallery":{"x":116,"y":0,"w":32,"h":32},"wain_gallery":{"x":149,"y":0,"w":32,"h":24},"pillar_gallery":{"x":182,"y":0,"w":16,"h":32},"mold_gallery":{"x":199,"y":0,"w":32,"h":10},"wall_library":{"x":232,"y":0,"w":32,"h":32},"wain_library":{"x":265,"y":0,"w":32,"h":24},"pillar_library":{"x":298,"y":0,"w":16,"h":32},"mold_library":{"x":315,"y":0,"w":32,"h":10},"wall_dining":{"x":348,"y":0,"w":32,"h":32},"wain_dining":{"x":381,"y":0,"w":32,"h":24},"pillar_dining":{"x":414,"y":0,"w":16,"h":32},"mold_dining":{"x":431,"y":0,"w":32,"h":10},"wall_cellar":{"x":464,"y":0,"w":32,"h":32},"wain_cellar":{"x":0,"y":33,"w":32,"h":24},"pillar_cellar":{"x":33,"y":33,"w":16,"h":32},"mold_cellar":{"x":50,"y":33,"w":32,"h":10},"wall_vault":{"x":83,"y":33,"w":32,"h":32},"wain_vault":{"x":116,"y":33,"w":32,"h":24},"pillar_vault":{"x":149,"y":33,"w":16,"h":32},"mold_vault":{"x":166,"y":33,"w":32,"h":10},"wall_ballroom":{"x":199,"y":33,"w":32,"h":32},"wain_ballroom":{"x":232,"y":33,"w":32,"h":24},"pillar_ballroom":{"x":265,"y":33,"w":16,"h":32},"mold_ballroom":{"x":282,"y":33,"w":32,"h":10},"wall_laundry":{"x":315,"y":33,"w":32,"h":32},"wain_laundry":{"x":348,"y":33,"w":32,"h":24},"pillar_laundry":{"x":381,"y":33,"w":16,"h":32},"mold_laundry":{"x":398,"y":33,"w":32,"h":10},"wall_kitchen":{"x":431,"y":33,"w":32,"h":32},"wain_kitchen":{"x":464,"y":33,"w":32,"h":24},"pillar_kitchen":{"x":0,"y":66,"w":16,"h":32},"mold_kitchen":{"x":17,"y":66,"w":32,"h":10},"wall_boiler":{"x":50,"y":66,"w":32,"h":32},"wain_boiler":{"x":83,"y":66,"w":32,"h":24},"pillar_boiler":{"x":116,"y":66,"w":16,"h":32},"mold_boiler":{"x":133,"y":66,"w":32,"h":10},"wall_garden":{"x":166,"y":66,"w":32,"h":32},"wain_garden":{"x":199,"y":66,"w":32,"h":24},"pillar_garden":{"x":232,"y":66,"w":16,"h":32},"mold_garden":{"x":249,"y":66,"w":32,"h":10},"wall_courtyard":{"x":282,"y":66,"w":32,"h":32},"wain_courtyard":{"x":315,"y":66,"w":32,"h":24},"pillar_courtyard":{"x":348,"y":66,"w":16,"h":32},"mold_courtyard":{"x":365,"y":66,"w":32,"h":10},"wall_thorn":{"x":398,"y":66,"w":32,"h":32},"wain_thorn":{"x":431,"y":66,"w":32,"h":24},"pillar_thorn":{"x":464,"y":66,"w":16,"h":32},"mold_thorn":{"x":0,"y":99,"w":32,"h":10},"wall_shed":{"x":33,"y":99,"w":32,"h":32},"wain_shed":{"x":66,"y":99,"w":32,"h":24},"pillar_shed":{"x":99,"y":99,"w":16,"h":32},"mold_shed":{"x":116,"y":99,"w":32,"h":10},"wall_attic":{"x":149,"y":99,"w":32,"h":32},"wain_attic":{"x":182,"y":99,"w":32,"h":24},"pillar_attic":{"x":215,"y":99,"w":16,"h":32},"mold_attic":{"x":232,"y":99,"w":32,"h":10},"wall_gears":{"x":265,"y":99,"w":32,"h":32},"wain_gears":{"x":298,"y":99,"w":32,"h":24},"pillar_gears":{"x":331,"y":99,"w":16,"h":32},"mold_gears":{"x":348,"y":99,"w":32,"h":10},"wall_tower":{"x":381,"y":99,"w":32,"h":32},"wain_tower":{"x":414,"y":99,"w":32,"h":24},"pillar_tower":{"x":447,"y":99,"w":16,"h":32},"mold_tower":{"x":464,"y":99,"w":32,"h":10},"wall_chapel":{"x":0,"y":132,"w":32,"h":32},"wain_chapel":{"x":33,"y":132,"w":32,"h":24},"pillar_chapel":{"x":66,"y":132,"w":16,"h":32},"mold_chapel":{"x":83,"y":132,"w":32,"h":10},"wall_crypt":{"x":116,"y":132,"w":32,"h":32},"wain_crypt":{"x":149,"y":132,"w":32,"h":24},"pillar_crypt":{"x":182,"y":132,"w":16,"h":32},"mold_crypt":{"x":199,"y":132,"w":32,"h":10},"wall_bath":{"x":232,"y":132,"w":32,"h":32},"wain_bath":{"x":265,"y":132,"w":32,"h":24},"pillar_bath":{"x":298,"y":132,"w":16,"h":32},"mold_bath":{"x":315,"y":132,"w":32,"h":10},"wall_cistern":{"x":348,"y":132,"w":32,"h":32},"wain_cistern":{"x":381,"y":132,"w":32,"h":24},"pillar_cistern":{"x":414,"y":132,"w":16,"h":32},"mold_cistern":{"x":431,"y":132,"w":32,"h":10},"wall_theater":{"x":464,"y":132,"w":32,"h":32},"wain_theater":{"x":0,"y":165,"w":32,"h":24},"pillar_theater":{"x":33,"y":165,"w":16,"h":32},"mold_theater":{"x":50,"y":165,"w":32,"h":10},"wall_stage":{"x":83,"y":165,"w":32,"h":32},"wain_stage":{"x":116,"y":165,"w":32,"h":24},"pillar_stage":{"x":149,"y":165,"w":16,"h":32},"mold_stage":{"x":166,"y":165,"w":32,"h":10},"wall_stars":{"x":199,"y":165,"w":32,"h":32},"wain_stars":{"x":232,"y":165,"w":32,"h":24},"pillar_stars":{"x":265,"y":165,"w":16,"h":32},"mold_stars":{"x":282,"y":165,"w":32,"h":10},"wall_observatory":{"x":315,"y":165,"w":32,"h":32},"wain_observatory":{"x":348,"y":165,"w":32,"h":24},"pillar_observatory":{"x":381,"y":165,"w":16,"h":32},"mold_observatory":{"x":398,"y":165,"w":32,"h":10},"wall_heart":{"x":431,"y":165,"w":32,"h":32},"wain_heart":{"x":464,"y":165,"w":32,"h":24},"pillar_heart":{"x":0,"y":198,"w":16,"h":32},"mold_heart":{"x":17,"y":198,"w":32,"h":10},"wall_vintage":{"x":50,"y":198,"w":32,"h":32},"wain_vintage":{"x":83,"y":198,"w":32,"h":24},"pillar_vintage":{"x":116,"y":198,"w":16,"h":32},"mold_vintage":{"x":133,"y":198,"w":32,"h":10},"wall_casks":{"x":166,"y":198,"w":32,"h":32},"wain_casks":{"x":199,"y":198,"w":32,"h":24},"pillar_casks":{"x":232,"y":198,"w":16,"h":32},"mold_casks":{"x":249,"y":198,"w":32,"h":10},"wall_armory":{"x":282,"y":198,"w":32,"h":32},"wain_armory":{"x":315,"y":198,"w":32,"h":24},"pillar_armory":{"x":348,"y":198,"w":16,"h":32},"mold_armory":{"x":365,"y":198,"w":32,"h":10},"wall_knights":{"x":398,"y":198,"w":32,"h":32},"wain_knights":{"x":431,"y":198,"w":32,"h":24},"pillar_knights":{"x":464,"y":198,"w":16,"h":32},"mold_knights":{"x":0,"y":231,"w":32,"h":10}},"boss":{"chandelier":{"x":0,"y":0,"w":128,"h":84,"ax":64,"ay":0},"chandelier_cracked":{"x":129,"y":0,"w":128,"h":84,"ax":64,"ay":0},"core_normal":{"x":258,"y":0,"w":30,"h":30},"core_angry":{"x":289,"y":0,"w":30,"h":30},"core_tug":{"x":320,"y":0,"w":30,"h":30},"core_dizzy":{"x":351,"y":0,"w":30,"h":30},"chain":{"x":382,"y":0,"w":6,"h":10},"gcore_tug":{"x":389,"y":0,"w":30,"h":30},"gcore_dizzy":{"x":420,"y":0,"w":30,"h":30},"rcore_tug":{"x":451,"y":0,"w":30,"h":30},"rcore_dizzy":{"x":482,"y":0,"w":30,"h":30},"ccore_tug":{"x":0,"y":85,"w":30,"h":30},"ccore_dizzy":{"x":31,"y":85,"w":30,"h":30},"golem_idle0":{"x":62,"y":85,"w":72,"h":84},"golem_idle1":{"x":135,"y":85,"w":72,"h":84},"golem_raise":{"x":208,"y":85,"w":72,"h":84},"golem_slam":{"x":281,"y":85,"w":72,"h":84},"golem_puff":{"x":354,"y":85,"w":72,"h":84},"golem_dizzy":{"x":427,"y":85,"w":72,"h":84},"golem_ball0":{"x":0,"y":170,"w":46,"h":46},"golem_ball1":{"x":47,"y":170,"w":46,"h":46},"golem_ball2":{"x":94,"y":170,"w":46,"h":46},"golem_ball3":{"x":141,"y":170,"w":46,"h":46},"rose_stem":{"x":188,"y":170,"w":60,"h":112},"rose_head":{"x":249,"y":170,"w":64,"h":58},"rose_rage":{"x":314,"y":170,"w":64,"h":58},"rose_bloom":{"x":379,"y":170,"w":64,"h":58},"rose_wilt":{"x":444,"y":170,"w":64,"h":58},"rose_mound":{"x":0,"y":283,"w":40,"h":12},"clock_body":{"x":41,"y":283,"w":76,"h":156},"clock_rage":{"x":118,"y":283,"w":76,"h":156},"clock_stop":{"x":195,"y":283,"w":76,"h":156},"pend_bob":{"x":272,"y":283,"w":32,"h":32},"ocore_tug":{"x":305,"y":283,"w":30,"h":30},"ocore_dizzy":{"x":336,"y":283,"w":30,"h":30},"dcore_tug":{"x":367,"y":283,"w":30,"h":30},"dcore_dizzy":{"x":398,"y":283,"w":30,"h":30},"organ_idle":{"x":0,"y":440,"w":132,"h":128},"organ_sing":{"x":133,"y":440,"w":132,"h":128},"organ_rage":{"x":266,"y":440,"w":132,"h":128},"organ_stop":{"x":0,"y":569,"w":132,"h":128},"note":{"x":133,"y":569,"w":12,"h":12},"serp_head":{"x":146,"y":569,"w":56,"h":48},"serp_spit":{"x":203,"y":569,"w":56,"h":48},"serp_rage":{"x":260,"y":569,"w":56,"h":48},"serp_dizzy":{"x":317,"y":569,"w":56,"h":48},"serp_seg":{"x":374,"y":569,"w":30,"h":30},"serp_seg_r":{"x":405,"y":569,"w":30,"h":30},"splashring":{"x":436,"y":569,"w":44,"h":12},"str_idle0":{"x":0,"y":698,"w":64,"h":104},"str_idle1":{"x":65,"y":698,"w":64,"h":104},"str_jump":{"x":130,"y":698,"w":64,"h":104},"str_cast":{"x":195,"y":698,"w":64,"h":104},"str_slump":{"x":260,"y":698,"w":64,"h":104},"sandbag":{"x":325,"y":698,"w":44,"h":40},"maskshot":{"x":370,"y":698,"w":14,"h":14},"mcore_tug":{"x":385,"y":698,"w":30,"h":30},"mcore_dizzy":{"x":416,"y":698,"w":30,"h":30},"astra_idle":{"x":0,"y":803,"w":112,"h":112},"astra_nova":{"x":113,"y":803,"w":112,"h":112},"astra_rage":{"x":226,"y":803,"w":112,"h":112},"astra_stop":{"x":339,"y":803,"w":112,"h":112},"starshot":{"x":452,"y":803,"w":16,"h":16},"planet":{"x":469,"y":803,"w":18,"h":18},"scor_tug":{"x":0,"y":916,"w":30,"h":30},"scor_dizzy":{"x":31,"y":916,"w":30,"h":30},"ecore_tug":{"x":62,"y":916,"w":30,"h":30},"ecore_dizzy":{"x":93,"y":916,"w":30,"h":30},"tar_idle":{"x":124,"y":916,"w":72,"h":60},"tar_rage":{"x":197,"y":916,"w":72,"h":60},"tar_open":{"x":270,"y":916,"w":72,"h":60},"tar_stun":{"x":343,"y":916,"w":72,"h":60},"corkshot":{"x":416,"y":916,"w":12,"h":14},"winewave":{"x":429,"y":916,"w":18,"h":14},"wcore_tug":{"x":448,"y":916,"w":30,"h":30},"wcore_dizzy":{"x":479,"y":916,"w":30,"h":30},"kn_idle":{"x":0,"y":977,"w":72,"h":104},"kn_raise":{"x":73,"y":977,"w":72,"h":104},"kn_slash":{"x":146,"y":977,"w":72,"h":104},"kn_kneel":{"x":219,"y":977,"w":72,"h":104},"kn_leap":{"x":292,"y":977,"w":72,"h":104},"helm":{"x":365,"y":977,"w":24,"h":26},"greatsword":{"x":390,"y":977,"w":14,"h":72},"halberd":{"x":405,"y":977,"w":12,"h":64},"acore_tug":{"x":418,"y":977,"w":30,"h":30},"acore_dizzy":{"x":449,"y":977,"w":30,"h":30}},"chars":{"chr_idle0":{"x":0,"y":0,"w":44,"h":68},"chr_idle1":{"x":45,"y":0,"w":44,"h":68},"chr_cast":{"x":90,"y":0,"w":44,"h":68},"chr_hurt":{"x":135,"y":0,"w":44,"h":68},"chr_sleep":{"x":180,"y":0,"w":44,"h":68},"vel_idle":{"x":225,"y":0,"w":40,"h":72},"vel_bow":{"x":266,"y":0,"w":40,"h":72},"portrait_chronoa":{"x":307,"y":0,"w":48,"h":48},"portrait_vel":{"x":356,"y":0,"w":48,"h":48},"mimic_open":{"x":0,"y":73,"w":128,"h":128},"mimic_charge":{"x":129,"y":73,"w":128,"h":128},"mimic_shut":{"x":258,"y":73,"w":128,"h":128},"mimic_crack":{"x":0,"y":202,"w":128,"h":128},"pocketwatch":{"x":129,"y":202,"w":26,"h":26},"sandorb":{"x":156,"y":202,"w":14,"h":14}},"enemies":{"puff0":{"x":0,"y":0,"w":32,"h":32},"puff1":{"x":33,"y":0,"w":32,"h":32},"puff2":{"x":66,"y":0,"w":32,"h":32},"puff3":{"x":99,"y":0,"w":32,"h":32},"puff_tug":{"x":132,"y":0,"w":32,"h":32},"puff_angry":{"x":165,"y":0,"w":32,"h":32},"dish0":{"x":198,"y":0,"w":36,"h":36},"dish1":{"x":235,"y":0,"w":36,"h":36},"dish2":{"x":272,"y":0,"w":36,"h":36},"dish_throw":{"x":309,"y":0,"w":36,"h":36},"dish_tug":{"x":346,"y":0,"w":36,"h":36},"armor0":{"x":383,"y":0,"w":28,"h":52},"armor1":{"x":412,"y":0,"w":28,"h":52},"armor_shell":{"x":441,"y":0,"w":28,"h":52},"helmet":{"x":470,"y":0,"w":12,"h":12},"firewisp0":{"x":483,"y":0,"w":16,"h":18},"firewisp1":{"x":0,"y":53,"w":16,"h":18},"firewisp2":{"x":17,"y":53,"w":16,"h":18},"bat0":{"x":34,"y":53,"w":20,"h":12},"bat1":{"x":55,"y":53,"w":20,"h":12},"bat_hang":{"x":76,"y":53,"w":12,"h":14},"rat0":{"x":89,"y":53,"w":22,"h":12},"rat1":{"x":112,"y":53,"w":22,"h":12},"garg_stone":{"x":135,"y":53,"w":30,"h":28},"garg_fly0":{"x":166,"y":53,"w":30,"h":28},"garg_fly1":{"x":197,"y":53,"w":30,"h":28},"garg_dive":{"x":228,"y":53,"w":30,"h":28},"puppet0":{"x":259,"y":53,"w":20,"h":34},"puppet1":{"x":280,"y":53,"w":20,"h":34},"puppet_throw":{"x":301,"y":53,"w":20,"h":34},"skel0":{"x":322,"y":53,"w":24,"h":42},"skel1":{"x":347,"y":53,"w":24,"h":42},"skel_throw":{"x":372,"y":53,"w":24,"h":42},"cbook0":{"x":397,"y":53,"w":22,"h":18},"cbook1":{"x":420,"y":53,"w":22,"h":18},"cbook_bite":{"x":443,"y":53,"w":22,"h":18},"sheet0":{"x":466,"y":53,"w":34,"h":34},"sheet1":{"x":0,"y":96,"w":34,"h":34},"sheet_angry":{"x":35,"y":96,"w":34,"h":34},"sheet_tug":{"x":70,"y":96,"w":34,"h":34},"skullwisp0":{"x":105,"y":96,"w":20,"h":22},"skullwisp1":{"x":126,"y":96,"w":20,"h":22},"crab0":{"x":147,"y":96,"w":24,"h":16},"crab1":{"x":172,"y":96,"w":24,"h":16},"crab_snap":{"x":197,"y":96,"w":24,"h":16},"dancer0":{"x":222,"y":96,"w":20,"h":34},"dancer1":{"x":243,"y":96,"w":20,"h":34},"dancer_throw":{"x":264,"y":96,"w":20,"h":34},"maskbat0":{"x":285,"y":96,"w":20,"h":12},"maskbat1":{"x":306,"y":96,"w":20,"h":12},"maskbat_hang":{"x":327,"y":96,"w":12,"h":14},"starwisp0":{"x":340,"y":96,"w":20,"h":22},"starwisp1":{"x":361,"y":96,"w":20,"h":22},"chart0":{"x":382,"y":96,"w":22,"h":18},"chart1":{"x":405,"y":96,"w":22,"h":18},"chart_bite":{"x":428,"y":96,"w":22,"h":18},"corkbat0":{"x":451,"y":96,"w":20,"h":12},"corkbat1":{"x":472,"y":96,"w":20,"h":12},"corkbat_hang":{"x":493,"y":96,"w":12,"h":14},"grapewisp0":{"x":0,"y":131,"w":20,"h":22},"grapewisp1":{"x":21,"y":131,"w":20,"h":22},"squire0":{"x":42,"y":131,"w":24,"h":42},"squire1":{"x":67,"y":131,"w":24,"h":42},"squire_throw":{"x":92,"y":131,"w":24,"h":42},"griffin_stone":{"x":117,"y":131,"w":30,"h":28},"griffin_fly0":{"x":148,"y":131,"w":30,"h":28},"griffin_fly1":{"x":179,"y":131,"w":30,"h":28},"griffin_dive":{"x":210,"y":131,"w":30,"h":28}},"gaiden":{"chr0":{"x":0,"y":0,"w":128,"h":80},"chr1":{"x":129,"y":0,"w":128,"h":80},"chr2":{"x":258,"y":0,"w":128,"h":80},"chr3":{"x":387,"y":0,"w":128,"h":80},"chr4":{"x":0,"y":81,"w":128,"h":80},"chr5":{"x":129,"y":81,"w":128,"h":80},"chr6":{"x":258,"y":81,"w":128,"h":80},"chr7":{"x":387,"y":81,"w":128,"h":80},"chr8":{"x":0,"y":162,"w":128,"h":80},"chr9":{"x":129,"y":162,"w":128,"h":80},"clk0":{"x":258,"y":162,"w":48,"h":48},"clk1":{"x":307,"y":162,"w":48,"h":48},"clk2":{"x":356,"y":162,"w":48,"h":48},"clk3":{"x":405,"y":162,"w":48,"h":48},"vel0":{"x":454,"y":162,"w":64,"h":80},"vel1":{"x":519,"y":162,"w":64,"h":80},"vel2":{"x":0,"y":243,"w":64,"h":80},"vel3":{"x":65,"y":243,"w":64,"h":80},"vel4":{"x":130,"y":243,"w":64,"h":80},"vel5":{"x":195,"y":243,"w":64,"h":80},"vel6":{"x":260,"y":243,"w":64,"h":80},"portrait_vel64":{"x":325,"y":243,"w":64,"h":64},"portrait_chronoa64":{"x":390,"y":243,"w":64,"h":64},"watch":{"x":455,"y":243,"w":16,"h":17},"face_chronoa":{"x":472,"y":243,"w":24,"h":24},"face_vel":{"x":497,"y":243,"w":24,"h":24}},"items":{"coin0":{"x":0,"y":0,"w":10,"h":10},"coin1":{"x":11,"y":0,"w":10,"h":10},"coin2":{"x":22,"y":0,"w":10,"h":10},"coin3":{"x":33,"y":0,"w":10,"h":10},"heart":{"x":44,"y":0,"w":11,"h":10},"heartbig":{"x":56,"y":0,"w":18,"h":16},"plate":{"x":75,"y":0,"w":14,"h":6},"book":{"x":90,"y":0,"w":12,"h":10},"candle":{"x":103,"y":0,"w":6,"h":12},"dustball":{"x":110,"y":0,"w":10,"h":8},"crystal":{"x":121,"y":0,"w":12,"h":12},"spark":{"x":134,"y":0,"w":10,"h":10},"key":{"x":145,"y":0,"w":14,"h":10},"fireball":{"x":160,"y":0,"w":12,"h":12},"bottle":{"x":173,"y":0,"w":8,"h":14},"chair":{"x":182,"y":0,"w":14,"h":16},"pan":{"x":197,"y":0,"w":16,"h":8},"gear":{"x":214,"y":0,"w":12,"h":12},"flowerpot":{"x":227,"y":0,"w":12,"h":12},"soap":{"x":240,"y":0,"w":12,"h":12},"seed":{"x":0,"y":17,"w":10,"h":10},"pot":{"x":11,"y":17,"w":16,"h":14},"barrel":{"x":28,"y":17,"w":16,"h":18},"shard":{"x":45,"y":17,"w":6,"h":6},"bubble":{"x":52,"y":17,"w":16,"h":16},"petal":{"x":69,"y":17,"w":12,"h":8},"orb_float":{"x":82,"y":17,"w":16,"h":16},"orb_turbo":{"x":99,"y":17,"w":16,"h":16},"orb_djump":{"x":116,"y":17,"w":16,"h":16},"orb_phase":{"x":133,"y":17,"w":16,"h":16},"orb_tank":{"x":150,"y":17,"w":16,"h":16},"bone":{"x":167,"y":17,"w":16,"h":8},"duck":{"x":184,"y":17,"w":14,"h":13},"note":{"x":199,"y":17,"w":12,"h":12},"orb_keyring":{"x":212,"y":17,"w":16,"h":16},"orb_cling":{"x":229,"y":17,"w":16,"h":16},"orb_lantern":{"x":0,"y":36,"w":16,"h":16},"cork":{"x":17,"y":36,"w":10,"h":12}},"kanata":{"frameWidth":106,"frameHeight":70,"anchorX":46,"anchorY":69,"targetHeight":68,"frames":[{"i":0,"sheet":"a","pose":"idle"},{"i":1,"sheet":"a","pose":"blink"},{"i":2,"sheet":"a","pose":"move1"},{"i":3,"sheet":"a","pose":"move2"},{"i":4,"sheet":"a","pose":"suck"},{"i":5,"sheet":"a","pose":"spit"},{"i":6,"sheet":"a","pose":"hurt"},{"i":7,"sheet":"a","pose":"down"},{"i":8,"sheet":"b","pose":"idle"},{"i":9,"sheet":"b","pose":"blink"},{"i":10,"sheet":"b","pose":"move1"},{"i":11,"sheet":"b","pose":"move2"},{"i":12,"sheet":"b","pose":"suck"},{"i":13,"sheet":"b","pose":"spit"},{"i":14,"sheet":"b","pose":"hurt"},{"i":15,"sheet":"b","pose":"down"}],"poses":{"idle":[0,8],"blink":[1,9],"move1":[2,10],"move2":[3,11],"suck":[4,12],"spit":[5,13],"hurt":[6,14],"down":[7,15]}},"props":{"window":{"x":0,"y":0,"w":40,"h":76},"window_wide":{"x":41,"y":0,"w":56,"h":84},"portrait_lord":{"x":98,"y":0,"w":28,"h":36},"portrait_lady":{"x":127,"y":0,"w":28,"h":36},"portrait_land":{"x":156,"y":0,"w":44,"h":32},"portrait_big":{"x":201,"y":0,"w":44,"h":56},"sconce":{"x":246,"y":0,"w":12,"h":22},"flame0":{"x":259,"y":0,"w":6,"h":8},"flame1":{"x":266,"y":0,"w":6,"h":8},"flame2":{"x":273,"y":0,"w":6,"h":8},"flame3":{"x":280,"y":0,"w":6,"h":8},"bflame0":{"x":287,"y":0,"w":8,"h":10},"bflame1":{"x":296,"y":0,"w":8,"h":10},"bflame2":{"x":305,"y":0,"w":8,"h":10},"bflame3":{"x":314,"y":0,"w":8,"h":10},"curtain":{"x":323,"y":0,"w":32,"h":72},"curtain_rod":{"x":356,"y":0,"w":32,"h":4},"dust0":{"x":389,"y":0,"w":20,"h":10},"dust1":{"x":410,"y":0,"w":20,"h":10},"dust2":{"x":431,"y":0,"w":20,"h":10},"cobweb":{"x":452,"y":0,"w":20,"h":20},"vase":{"x":473,"y":0,"w":14,"h":22},"table":{"x":0,"y":85,"w":80,"h":30},"chair":{"x":81,"y":85,"w":16,"h":30},"candelabra":{"x":98,"y":85,"w":24,"h":18},"bookshelf":{"x":123,"y":85,"w":40,"h":72},"clock":{"x":164,"y":85,"w":22,"h":64},"save":{"x":187,"y":85,"w":28,"h":40},"doorframe":{"x":216,"y":85,"w":20,"h":64},"door":{"x":237,"y":85,"w":10,"h":48},"chandelier_deco":{"x":248,"y":85,"w":48,"h":30},"rail":{"x":297,"y":85,"w":16,"h":24},"rug":{"x":314,"y":85,"w":96,"h":4},"winerack":{"x":411,"y":85,"w":40,"h":40},"pedestal":{"x":452,"y":85,"w":28,"h":34},"linenshelf":{"x":0,"y":158,"w":36,"h":52},"pipes":{"x":37,"y":158,"w":20,"h":80},"lamp_wall":{"x":58,"y":158,"w":12,"h":18},"sheetline":{"x":71,"y":158,"w":90,"h":40},"basket":{"x":162,"y":158,"w":24,"h":16},"washtub":{"x":187,"y":158,"w":32,"h":22},"boiler":{"x":220,"y":158,"w":40,"h":64},"stove":{"x":261,"y":158,"w":44,"h":34},"potshelf":{"x":306,"y":158,"w":40,"h":40},"hangpans":{"x":347,"y":158,"w":56,"h":30},"sack":{"x":404,"y":158,"w":22,"h":24},"barrel":{"x":427,"y":158,"w":26,"h":30},"crate":{"x":454,"y":158,"w":24,"h":22},"trunk":{"x":0,"y":239,"w":34,"h":22},"dollshelf":{"x":35,"y":239,"w":40,"h":48},"gear_big":{"x":76,"y":239,"w":50,"h":50},"gear_med":{"x":127,"y":239,"w":32,"h":32},"clockface":{"x":160,"y":239,"w":46,"h":46},"bell":{"x":207,"y":239,"w":40,"h":46},"round_window":{"x":248,"y":239,"w":36,"h":36},"glasspane":{"x":285,"y":239,"w":44,"h":72},"fern":{"x":330,"y":239,"w":30,"h":26},"rosebush":{"x":361,"y":239,"w":36,"h":26},"hedge":{"x":398,"y":239,"w":40,"h":36},"fountain":{"x":439,"y":239,"w":72,"h":52},"statue":{"x":0,"y":312,"w":24,"h":56},"vine_hang":{"x":25,"y":312,"w":20,"h":60},"gardenlamp":{"x":46,"y":312,"w":14,"h":60},"wardrobe":{"x":61,"y":312,"w":32,"h":66},"lever_up":{"x":94,"y":312,"w":18,"h":26},"lever_mid":{"x":113,"y":312,"w":18,"h":26},"lever_down":{"x":132,"y":312,"w":18,"h":26},"abil_pedestal":{"x":151,"y":312,"w":30,"h":30},"sheet":{"x":182,"y":312,"w":32,"h":72},"ivy":{"x":215,"y":312,"w":32,"h":72},"vine0":{"x":248,"y":312,"w":16,"h":16},"vine1":{"x":265,"y":312,"w":16,"h":16},"floatpad":{"x":282,"y":312,"w":26,"h":8},"thornspike":{"x":309,"y":312,"w":16,"h":44},"stainedglass":{"x":326,"y":312,"w":36,"h":70},"pew":{"x":363,"y":312,"w":44,"h":20},"altar":{"x":408,"y":312,"w":48,"h":30},"organpipes":{"x":0,"y":385,"w":64,"h":90},"coffin":{"x":65,"y":385,"w":40,"h":16},"skullpile":{"x":106,"y":385,"w":30,"h":22},"urn":{"x":137,"y":385,"w":14,"h":20},"liontap":{"x":152,"y":385,"w":28,"h":26},"bathstool":{"x":181,"y":385,"w":16,"h":12},"buckets":{"x":198,"y":385,"w":26,"h":18},"duckprop":{"x":225,"y":385,"w":16,"h":14},"warp_pad":{"x":242,"y":385,"w":48,"h":10},"spiritlamp":{"x":291,"y":385,"w":14,"h":30},"stagecurtain":{"x":306,"y":385,"w":64,"h":96},"masks":{"x":371,"y":385,"w":34,"h":22},"footlight":{"x":406,"y":385,"w":16,"h":10},"telescope":{"x":423,"y":385,"w":40,"h":56},"armillary":{"x":464,"y":385,"w":36,"h":46},"starchart":{"x":0,"y":482,"w":40,"h":30},"cask_big":{"x":41,"y":482,"w":40,"h":44},"caskstack":{"x":82,"y":482,"w":72,"h":60},"grapevine":{"x":155,"y":482,"w":40,"h":26},"vat":{"x":196,"y":482,"w":28,"h":34},"weaponrack":{"x":225,"y":482,"w":44,"h":50},"banner":{"x":270,"y":482,"w":26,"h":44},"knightstatue":{"x":297,"y":482,"w":28,"h":60},"forge":{"x":326,"y":482,"w":44,"h":40},"anvil":{"x":371,"y":482,"w":28,"h":18}},"tiles":{"brick0":{"x":0,"y":0,"w":16,"h":16},"brick1":{"x":17,"y":0,"w":16,"h":16},"top0":{"x":34,"y":0,"w":16,"h":16},"top1":{"x":51,"y":0,"w":16,"h":16},"secret":{"x":68,"y":0,"w":16,"h":16},"csecret":{"x":85,"y":0,"w":16,"h":16},"tbrick0":{"x":102,"y":0,"w":16,"h":16},"tbrick1":{"x":119,"y":0,"w":16,"h":16},"ttop0":{"x":136,"y":0,"w":16,"h":16},"ttop1":{"x":153,"y":0,"w":16,"h":16},"tsecret":{"x":170,"y":0,"w":16,"h":16},"gbrick0":{"x":187,"y":0,"w":16,"h":16},"gbrick1":{"x":204,"y":0,"w":16,"h":16},"gtop0":{"x":221,"y":0,"w":16,"h":16},"gtop1":{"x":238,"y":0,"w":16,"h":16},"gsecret":{"x":0,"y":17,"w":16,"h":16},"wbrick0":{"x":17,"y":17,"w":16,"h":16},"wbrick1":{"x":34,"y":17,"w":16,"h":16},"wtop0":{"x":51,"y":17,"w":16,"h":16},"wtop1":{"x":68,"y":17,"w":16,"h":16},"wsecret":{"x":85,"y":17,"w":16,"h":16},"kbrick0":{"x":102,"y":17,"w":16,"h":16},"kbrick1":{"x":119,"y":17,"w":16,"h":16},"ktop0":{"x":136,"y":17,"w":16,"h":16},"ktop1":{"x":153,"y":17,"w":16,"h":16},"ksecret":{"x":170,"y":17,"w":16,"h":16},"bbrick0":{"x":187,"y":17,"w":16,"h":16},"bbrick1":{"x":204,"y":17,"w":16,"h":16},"btop0":{"x":221,"y":17,"w":16,"h":16},"btop1":{"x":238,"y":17,"w":16,"h":16},"bsecret":{"x":0,"y":34,"w":16,"h":16},"rbrick0":{"x":17,"y":34,"w":16,"h":16},"rbrick1":{"x":34,"y":34,"w":16,"h":16},"rtop0":{"x":51,"y":34,"w":16,"h":16},"rtop1":{"x":68,"y":34,"w":16,"h":16},"rsecret":{"x":85,"y":34,"w":16,"h":16},"abrick0":{"x":102,"y":34,"w":16,"h":16},"abrick1":{"x":119,"y":34,"w":16,"h":16},"atop0":{"x":136,"y":34,"w":16,"h":16},"atop1":{"x":153,"y":34,"w":16,"h":16},"asecret":{"x":170,"y":34,"w":16,"h":16},"bars":{"x":187,"y":34,"w":16,"h":16},"grate":{"x":204,"y":34,"w":16,"h":16},"cbrick0":{"x":221,"y":34,"w":16,"h":16},"cbrick1":{"x":238,"y":34,"w":16,"h":16},"ctop0":{"x":0,"y":51,"w":16,"h":16},"ctop1":{"x":17,"y":51,"w":16,"h":16},"platL":{"x":34,"y":51,"w":16,"h":16},"platM":{"x":51,"y":51,"w":16,"h":16},"platR":{"x":68,"y":51,"w":16,"h":16},"shelf":{"x":85,"y":51,"w":16,"h":16}}};
 
 // =====================================================================
 //  Core: canvas, pixel font, hi-res Japanese text, assets, sound effects, input, layout
@@ -954,9 +964,10 @@ ROOM_DEFS.push(
 
   { id: 'ossuary', jp: '納骨堂の縦穴', en: 'OSSUARY SHAFT', area: 'crypt', theme: 'crypt', tiles: 'k', cx: 12, cy: 0, cw: 1, ch: 2, dark: 0.6,
     build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 1, 11, 14); R.open('B', 0, 8, 11); R.gate(8, 33, 11, 35, 'spirit_well'); R.solid(1, 15, 6, 16);
+      R.open('R', 0, 11, 14); R.gate(23, 11, 23, 14, 'ring_armory'); R.plat(18, 22, 15);   // v0.5: golden padlocked door to the hall of knights
       R.plat(10, 14, 18); R.plat(3, 8, 21); R.plat(12, 17, 25); R.plat(3, 8, 29); R.plat(17, 21, 12); },
     ents: [['skullwisp', 14, 8], ['skullwisp', 8, 24], ['bone', 5, 21], ['bone', 14, 25], ['coin', 18, 12], ['coin', 20, 12],
-      ['hint', 12, 33, { need: 'phase', text: '床の下から水の音… 青白い結界でふさがれている' }], ['dust', 18, 33, { drop: ['heart'] }]],
+      ['hint', 12, 33, { need: 'phase', text: '床の下から水の音… 青白い結界でふさがれている' }], ['hint', 20, 15, { need: 'keyring', text: '金色の錠前がいくつも… 向こうから、鎧の足音がする' }], ['dust', 18, 33, { drop: ['heart'] }]],
     decor: [['skullpile', 4, 15], ['skullpile', 20, 33], ['urn', 15, 33], ['coffin', 4, 33], ['sconce', 12, 10, { light: 1 }], ['sconce', 6, 26, { light: 1 }], ['spiritlamp', 13, 33, { light: 1 }]] },
 );
 
@@ -1001,12 +1012,12 @@ ROOM_DEFS.push(
 // =====================================================================
 //  v0.3 WARP ROOMS (ワープの間): one small room per area with a warp circle (see 07c_warp.js).
 // =====================================================================
-const warpRoom = (id, area, theme, tiles, cx, cy, side, decor) => ({ id, jp: 'ワープの間', en: 'WARP ROOM', area, theme, tiles, cx, cy, cw: 1, ch: 1, dark: 0.5, warp: true,
-  build(R) { R.box(); R.open(side, 0, 11, 14); R.plat(side === 'L' ? 15 : 3, side === 'L' ? 20 : 8, 11); },
+const warpRoom = (id, area, theme, tiles, cx, cy, side, decor, extra) => ({ id, jp: 'ワープの間', en: 'WARP ROOM', area, theme, tiles, cx, cy, cw: 1, ch: 1, dark: 0.5, warp: true,
+  build(R) { R.box(); R.open(side, 0, 11, 14); R.plat(side === 'L' ? 15 : 3, side === 'L' ? 20 : 8, 11); if (extra) extra(R); },
   ents: [['warp', 12, 15], ['coin', side === 'L' ? 17 : 5, 11], ['coin', side === 'L' ? 18 : 6, 11]],
   decor: [['spiritlamp', 6, 15, { light: 1 }], ['spiritlamp', 18, 15, { light: 1 }], ['cobweb', 1, 2, { top: 1 }], ['cobweb', 22.75, 2, { top: 1, flip: 1 }]].concat(decor || []) });
 ROOM_DEFS.push(
-  warpRoom('warp_east', 'east', 'cellar', 'c', 4, 2, 'R', [['winerack', 4, 15]]),
+  warpRoom('warp_east', 'east', 'cellar', 'c', 4, 2, 'R', [['winerack', 4, 15]], R => { R.open('L', 0, 11, 14); R.gate(0, 11, 0, 14, 'spirit_wine'); }),   // v0.5: way down to the vintage vaults
   warpRoom('warp_laundry', 'laundry', 'boiler', 't', 3, 4, 'R', [['pipes', 4, 15]]),
   warpRoom('warp_garden', 'garden', 'courtyard', 'g', -7, 1, 'R', [['fern', 4, 15]]),
   warpRoom('warp_clock', 'clock', 'gears', 'w', 5, -2, 'R', [['gear_med', 4, 12]]),
@@ -1014,6 +1025,8 @@ ROOM_DEFS.push(
   warpRoom('warp_bath', 'bath', 'bath', 'b', 11, 3, 'R', [['duckprop', 4, 15]]),
   warpRoom('warp_theater', 'theater', 'theater', 'w', 1, 0, 'R', [['masks', 4, 9]]),
   warpRoom('warp_stars', 'stars', 'observatory', 'k', 12, -2, 'L', [['starchart', 20, 8]]),
+  warpRoom('warp_wine', 'wine', 'casks', 'r', 0, 2, 'R', [['cask_big', 5, 15]]),            // v0.5
+  warpRoom('warp_armory', 'armory', 'armory', 'a', 17, -1, 'L', [['weaponrack', 19, 15]]),
 );
 
 // =====================================================================
@@ -1084,6 +1097,104 @@ ROOM_DEFS.push(
     ents: [['boss', 12, 15]],
     decor: [['telescope', 3, 15], ['telescope', 21, 15, { flip: 1 }], ['spiritlamp', 8, 15, { light: 1 }], ['spiritlamp', 16, 15, { light: 1 }]] },
 );
+
+// =====================================================================
+//  AREA 9 (v0.5): 古酒の大貯蔵庫 (OLD VINTAGE VAULTS) - below the foyer, west of the east-wing wine cellar.
+//  Way in: the warp room under the east wing (ワープの間) has a spirit barrier on its west side (needs 霊体化).
+//  Boss: 樽蜘蛛 バレルタラント (gives the 鍵束 KEY RING -> golden padlocked doors).
+// =====================================================================
+Object.assign(AREAS, { wine: { jp: '古酒の大貯蔵庫', short: '大貯蔵庫', en: 'OLD VINTAGE VAULTS', music: 'wine', col: '#7a1a3a' } });
+ROOM_DEFS.push(
+  { id: 'cellarstair', jp: '樽の降り口', en: 'CASK STAIRS', area: 'wine', theme: 'vintage', tiles: 'r', cx: 3, cy: 2, cw: 1, ch: 1, dark: 0.58,
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.open('B', 0, 16, 19); R.plat(3, 8, 11); R.plat(10, 14, 7); R.plat(17, 21, 11); },
+    ents: [['bats', 12, 4, { foe: { skin: 'corkbat' }, n: 2 }], ['coin', 11, 7], ['coin', 13, 7], ['bottle', 5, 11], ['cork', 19, 11], ['dust', 6, 15, { drop: ['coin', 'coin'] }],
+      ['hint', 17, 15, { text: '甘酸っぱい匂い… グリムが「くしゅん」とくしゃみをした' }]],
+    decor: [['caskstack', 5, 15], ['grapevine', 12, 2, { top: 1 }], ['sconce', 9, 9, { light: 1 }], ['sconce', 21, 8, { light: 1 }], ['cobweb', 1, 2, { top: 1 }]] },
+
+  { id: 'casks', jp: '大樽の回廊', en: 'GREAT CASK HALL', area: 'wine', theme: 'casks', tiles: 'r', cx: 1, cy: 2, cw: 2, ch: 1, dark: 0.55,
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.plat(5, 10, 11); R.plat(13, 18, 7); R.plat(23, 29, 11); R.plat(33, 37, 7); R.plat(40, 45, 11); },
+    ents: [['save', 26, 15], ['bats', 16, 4, { foe: { skin: 'corkbat' }, n: 2 }], ['skullwisp', 36, 5, { foe: { skin: 'grapewisp' } }], 
+      ['cork', 7, 11], ['cork', 42, 11], ['bottle', 20, 15], ['barrel', 44, 15], ['coin', 14, 7], ['coin', 16, 7], ['coin', 34, 7], ['coin', 36, 7],
+      ['dust', 3, 15, { drop: ['coin', 'coin'] }], ['dust', 38, 15, { drop: ['heart'] }], ['vase', 30, 15, { drop: ['coin', 'coin', 'coin'] }]],
+    decor: [['cask_big', 4, 15], ['cask_big', 12, 15], ['caskstack', 21, 15], ['winerack', 34, 15], ['cask_big', 41, 15], ['grapevine', 9, 2, { top: 1 }], ['grapevine', 30, 2, { top: 1 }],
+      ['sconce', 8, 8, { light: 1 }], ['sconce', 24, 8, { light: 1 }], ['sconce', 40, 8, { light: 1 }], ['cobweb', 46.75, 2, { top: 1, flip: 1 }]] },
+
+  { id: 'fermenting', jp: '発酵の大桶', en: 'FERMENTING VATS', area: 'wine', theme: 'vintage', tiles: 'r', cx: 1, cy: 3, cw: 3, ch: 1, dark: 0.6,
+    build(R) { R.box(); R.open('T', 2, 16, 19); R.open('L', 0, 11, 14);
+      R.plat(60, 64, 11); R.plat(66, 70, 8); R.plat(63, 67, 6); R.plat(6, 12, 11); R.plat(16, 22, 8); R.plat(28, 34, 11); R.plat(40, 46, 8); R.plat(50, 56, 11); },
+    ents: [['skullwisp', 20, 5, { foe: { skin: 'grapewisp' } }], ['skullwisp', 48, 5, { foe: { skin: 'grapewisp' } }], ['bats', 40, 4, { foe: { skin: 'corkbat' }, n: 2 }],
+      ['cork', 8, 11], ['cork', 52, 11], ['bottle', 31, 11], ['bottle', 44, 15], ['coin', 18, 8], ['coin', 20, 8], ['coin', 42, 8], ['coin', 44, 8],
+      ['dust', 24, 15, { drop: ['coin', 'coin'] }], ['dust', 66, 15, { drop: ['heart'] }], ['puff', 36, 9],
+      ['hint', 6, 15, { text: 'このお屋敷は、呪われた人形が見ている「夢」の中… 大桶の底まで夢がしみこんでいる' }]],
+    decor: [['vat', 10, 15], ['vat', 14, 15], ['vat', 36, 15], ['vat', 40, 15], ['caskstack', 58, 15], ['winerack', 26, 15], ['grapevine', 20, 2, { top: 1 }], ['grapevine', 46, 2, { top: 1 }],
+      ['sconce', 4, 8, { light: 1 }], ['sconce', 24, 7, { light: 1 }], ['sconce', 48, 7, { light: 1 }], ['sconce', 68, 10, { light: 1 }], ['cobweb', 1, 2, { top: 1 }]] },
+
+  { id: 'tasting', jp: '試飲の間', en: 'TASTING ROOM', area: 'wine', theme: 'casks', tiles: 'r', cx: 0, cy: 3, cw: 1, ch: 1, dark: 0.5,
+    vel: 'wine', velAt: [16, 15],
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.plat(3, 8, 11); R.plat(15, 20, 11); R.plat(9, 14, 7); },
+    ents: [['plate', 5, 11], ['plate', 17, 11], ['bottle', 11, 7], ['chair', 8, 15], ['coin', 10, 7], ['coin', 13, 7], ['skullwisp', 12, 4, { foe: { skin: 'grapewisp' } }]],
+    decor: [['table', 12, 15], ['chair', 9, 15], ['chair', 15, 15, { flip: 1 }], ['candelabra', 12, 13, { light: 1 }], ['winerack', 3, 15], ['winerack', 21, 15], ['grapevine', 12, 2, { top: 1 }]] },
+
+  { id: 'bottling', jp: '瓶詰めの縦穴', en: 'BOTTLING SHAFT', area: 'wine', theme: 'vintage', tiles: 'r', cx: -1, cy: 3, cw: 1, ch: 2, dark: 0.62,
+    build(R) { R.box(); R.open('R', 0, 11, 14); R.open('R', 1, 11, 14); R.plat(15, 22, 15);
+      R.plat(12, 17, 29); R.plat(4, 9, 25); R.plat(11, 16, 21); R.plat(4, 9, 18); R.plat(7, 12, 11); R.plat(2, 5, 7); },
+    ents: [['heartbig', 3.5, 6], ['bats', 12, 24, { foe: { skin: 'corkbat' }, n: 2 }], ['skullwisp', 8, 14, { foe: { skin: 'grapewisp' } }], ['cork', 14, 29], ['bottle', 6, 25],
+      ['coin', 8, 11], ['coin', 10, 11], ['coin', 13, 21], ['coin', 15, 21], ['dust', 18, 33, { drop: ['coin', 'heart'] }]],
+    decor: [['winerack', 4, 33], ['winerack', 20, 15], ['caskstack', 18, 33], ['sconce', 12, 9, { light: 1 }], ['sconce', 6, 22, { light: 1 }], ['sconce', 18, 27, { light: 1 }], ['cobweb', 1, 2, { top: 1 }]] },
+
+  { id: 'winethrone', jp: '大樽の玉座', en: 'THRONE OF THE GRAND CASK', area: 'wine', theme: 'casks', tiles: 'r', cx: 0, cy: 4, cw: 1, ch: 1, dark: 0.42, boss: 'tarant',
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.plat(2, 5, 11); R.plat(18, 21, 11); },
+    ents: [['boss', 14, 15], ['ability', 4, 15, { abil: 'keyring', after: 'tarant' }]],
+    decor: [['caskstack', 20, 15], ['cask_big', 3, 15], ['grapevine', 8, 2, { top: 1 }], ['grapevine', 17, 2, { top: 1 }], ['sconce', 6, 8, { light: 1 }], ['sconce', 18, 8, { light: 1 }]] },
+);
+
+// =====================================================================
+//  AREA 10 (v0.5): 騎士の武具庫 (HALL OF KNIGHTS) - east of the crypt. Way in: the ossuary shaft, behind a golden
+//  padlocked door (needs the 鍵束 KEY RING). Boss: 空っぽの騎士団長 アイアンホロウ (gives グリム吸着 GRIM GRIP = wall cling).
+// =====================================================================
+Object.assign(AREAS, { armory: { jp: '騎士の武具庫', short: '武具庫', en: 'HALL OF KNIGHTS', music: 'armory', col: '#5a6a8a' } });
+ROOM_DEFS.push(
+  { id: 'armoryhall', jp: '武具庫の大広間', en: 'ARMORY HALL', area: 'armory', theme: 'armory', tiles: 'a', cx: 13, cy: 0, cw: 2, ch: 1, dark: 0.5,
+    vel: 'armory', velAt: [38, 15],
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.open('T', 1, 8, 11);
+      R.plat(27, 31, 11); R.plat(35, 39, 8); R.plat(31, 35, 6); R.plat(4, 9, 11); R.plat(12, 17, 8); R.plat(41, 45, 11); },
+    ents: [['save', 21, 15], ['skeleton', 14, 15, { foe: { skin: 'squire' } }], ['skeleton', 43, 15, { foe: { skin: 'squire' } }], ['armor', 30, 15],
+      ['plate', 6, 11], ['pan', 43, 11], ['coin', 13, 8], ['coin', 15, 8], ['coin', 36, 8], ['coin', 38, 8], ['dust', 9, 15, { drop: ['coin', 'coin'] }], ['dust', 38, 15, { drop: ['heart'] }]],
+    decor: [['weaponrack', 6, 15], ['knightstatue', 18, 15], ['knightstatue', 26, 15], ['weaponrack', 44, 15], ['banner', 10, 2, { top: 1 }], ['banner', 22, 2, { top: 1 }], ['banner', 40, 2, { top: 1 }],
+      ['sconce', 4, 8, { light: 1 }], ['sconce', 16, 6, { light: 1 }], ['sconce', 46, 8, { light: 1 }]] },
+
+  { id: 'knightshall', jp: '騎士たちの回廊', en: 'GALLERY OF KNIGHTS', area: 'armory', theme: 'knights', tiles: 'a', cx: 13, cy: -1, cw: 3, ch: 1, dark: 0.52,
+    build(R) { R.box(); R.open('B', 1, 8, 11); R.open('R', 0, 11, 14);
+      R.plat(4, 10, 11); R.plat(13, 18, 7); R.plat(22, 27, 11); R.plat(38, 44, 11); R.plat(47, 52, 7); R.plat(56, 62, 11); R.plat(64, 68, 7); },
+    ents: [['gargoyle', 15, 7, { foe: { skin: 'griffin' } }], ['gargoyle', 50, 7, { foe: { skin: 'griffin' } }], ['skeleton', 24, 15, { foe: { skin: 'squire' } }], ['armor', 58, 15],
+      ['skeleton', 66, 15, { foe: { skin: 'squire' } }], ['pan', 6, 11], ['plate', 60, 11], ['coin', 14, 7], ['coin', 16, 7], ['coin', 48, 7], ['coin', 50, 7], ['coin', 65, 7], ['coin', 67, 7],
+      ['dust', 44, 15, { drop: ['coin', 'coin', 'coin'] }], ['curtain', 70, 15, { drop: ['coin', 'heart'] }],
+      ['hint', 46, 15, { text: '空っぽの鎧が、まだ誰かに仕えている… この屋敷を見ている「主」に？' }]],
+    decor: [['knightstatue', 8, 15], ['knightstatue', 20, 15], ['knightstatue', 44, 15], ['knightstatue', 54, 15], ['weaponrack', 30, 15], ['banner', 12, 2, { top: 1 }], ['banner', 36, 2, { top: 1 }],
+      ['banner', 60, 2, { top: 1 }], ['stainedglass', 26, 9], ['stainedglass', 50, 9], ['sconce', 4, 8, { light: 1 }], ['sconce', 32, 8, { light: 1 }], ['sconce', 68, 10, { light: 1 }]] },
+
+  { id: 'barracks', jp: '従者の詰め所', en: 'SQUIRES\' BARRACKS', area: 'armory', theme: 'armory', tiles: 'a', cx: 15, cy: 0, cw: 1, ch: 1, dark: 0.5,
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.open('B', 0, 8, 11); R.plat(2, 6, 11); R.plat(14, 19, 9); R.plat(17, 22, 5); },
+    ents: [['skeleton', 16, 15, { foe: { skin: 'squire' } }], ['pan', 4, 11], ['coin', 18, 5], ['coin', 20, 5], ['heart', 16, 9], ['chair', 20, 15]],
+    decor: [['trunk', 3, 15], ['table', 18, 15], ['weaponrack', 13, 15], ['banner', 6, 2, { top: 1 }], ['sconce', 10, 8, { light: 1 }]] },
+
+  { id: 'smithy', jp: '鍛冶場', en: 'THE SMITHY', area: 'armory', theme: 'armory', tiles: 'a', cx: 14, cy: 1, cw: 2, ch: 1, dark: 0.48,
+    build(R) { R.box(); R.open('T', 1, 8, 11); R.plat(28, 32, 11); R.plat(35, 39, 8); R.plat(31, 35, 6); R.plat(6, 12, 11); R.plat(16, 21, 8); R.plat(40, 45, 11); },
+    ents: [['skeleton', 12, 15, { foe: { skin: 'squire' } }], ['skeleton', 40, 15, { foe: { skin: 'squire' } }], ['pan', 8, 11], ['pot', 20, 15], ['pan', 42, 11],
+      ['coin', 17, 8], ['coin', 19, 8], ['dust', 4, 15, { drop: ['coin', 'coin'] }], ['dust', 44, 15, { drop: ['heart'] }], ['heartbig', 18.5, 6]],
+    decor: [['forge', 8, 15], ['anvil', 16, 15], ['forge', 26, 15], ['anvil', 36, 15], ['weaponrack', 44, 15], ['hangpans', 22, 2, { top: 1 }], ['sconce', 32, 9, { light: 1 }]] },
+
+  { id: 'watchtower', jp: '見張りの塔', en: 'WATCHTOWER', area: 'armory', theme: 'knights', tiles: 'a', cx: 16, cy: -2, cw: 1, ch: 2, dark: 0.55,
+    build(R) { R.box(); R.open('L', 1, 11, 14); R.open('R', 1, 11, 14); R.plat(1, 4, 7); R.plat(6, 10, 29); R.plat(14, 18, 25); },
+    ents: [['heartbig', 2.5, 6], ['coin', 7, 29], ['coin', 9, 29], ['coin', 15, 25], ['coin', 17, 25], ['gargoyle', 16, 25, { foe: { skin: 'griffin' } }],
+      ['hint', 4, 33, { need: 'cling', text: 'はるか上に何か光っている… 壁をのぼれたら届くのに' }]],
+    decor: [['banner', 12, 2, { top: 1 }], ['banner', 12, 20, { top: 1 }], ['window', 12, 13], ['sconce', 4, 27, { light: 1 }], ['sconce', 20, 27, { light: 1 }], ['knightstatue', 20, 33]] },
+
+  { id: 'tiltyard', jp: '騎士団長の馬上試合場', en: 'THE TILTYARD', area: 'armory', theme: 'knights', tiles: 'a', cx: 16, cy: 0, cw: 1, ch: 1, dark: 0.4, boss: 'knight',
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.plat(2, 5, 11); R.plat(18, 21, 11); },
+    ents: [['boss', 16, 15], ['ability', 4, 15, { abil: 'cling', after: 'knight' }]],
+    decor: [['banner', 6, 2, { top: 1 }], ['banner', 12, 2, { top: 1 }], ['banner', 18, 2, { top: 1 }], ['knightstatue', 2, 15], ['knightstatue', 22, 15], ['sconce', 9, 8, { light: 1 }], ['sconce', 15, 8, { light: 1 }]] },
+);
 // =====================================================================
 //  room index (all areas are loaded by now), tile codes, room grid builder (DSL)
 // =====================================================================
@@ -1148,6 +1259,8 @@ const ABIL_INFO = {
   djump: { jp: '二段ジャンプ', en: 'GHOST STEP', col: '#c8a0ff', text: '空中でもう一度 JUMP できるようになった！（ゴーストステップ）' },
   phase: { jp: '霊体化', en: 'PHASE', col: '#e0b8ff', text: '半分ゴーストの力が目覚めた！ 青白い「霊の結界」をすり抜けられるようになった' },
   tank:  { jp: '大容量タンク', en: 'BIG TANK', col: '#9affc8', text: '掃除機のタンクが大きくなった！ 物を 4 つまでためておける' },
+  keyring: { jp: '鍵束', en: 'KEY RING', col: '#ffd84a', text: '屋敷じゅうの錠前に合う「鍵束」を手に入れた！ 金色の錠前がかかった扉を開けられる' },
+  cling: { jp: 'グリム吸着', en: 'GRIM GRIP', col: '#a8d8ff', text: '相棒の掃除機グリムが壁に吸いつけるようになった！ 空中で壁に向かって押すと張りつき、JUMP で壁をけって登れる' },
 };
 const hasAbil = k => !!progress.abil[k];
 function saveGame(roomId) {
@@ -1263,6 +1376,8 @@ function renderRoomStatic() {
     const gs = t === T_GATE ? (gateAt[r * room.cols + col] || 'bars') : null;
     if (gs === 'hidden') continue;
     if (gs === 'spirit') { drawSpiritTile(c, x, y, col, r); continue; }
+    if (gs === 'ring') { drawRingTile(c, x, y, col, r); continue; }
+    if (gs === 'dark') { drawDarkTile(c, x, y, col, r); continue; }
     if (gs === 'bars') { const horiz = tileAt(col - 1, r) === T_GATE || tileAt(col + 1, r) === T_GATE; spr('tiles', horiz && !(tileAt(col, r - 1) === T_GATE || tileAt(col, r + 1) === T_GATE) ? 'grate' : 'bars', x, y, false, c); continue; }
     if (t === T_SOLID || t === T_SECRET || t === T_GATE) {
       const v = hash(col, r) & 1, top = r > 0 && !isSolidT(tileAt(col, r - 1)) && tileAt(col, r - 1) !== T_LOCK;
@@ -1311,10 +1426,10 @@ function loadRoom(id, entry) {
   const def = ROOM_BY_ID[id], G = buildRoomGrid(def);
   room = { def, id, cols: G.cols, rows: G.rows, grid: G.grid, gates: G.gates, W: G.cols * TS, H: G.rows * TS, canvas: room && room.canvas, openings: roomOpenings(def, G), t: 0 };
   // permanent changes
-  for (const gid in G.gates) if (progress.perm.has(id + ':gate:' + gid) || (isSpirit(gid) && hasAbil('phase'))) for (const i of G.gates[gid]) room.grid[i] = T_EMPTY;
+  for (const gid in G.gates) if (progress.perm.has(id + ':gate:' + gid) || (gateAbil(gid) && hasAbil(gateAbil(gid)))) for (const i of G.gates[gid]) room.grid[i] = T_EMPTY;
   room.gateStyle = {};
   for (const gid in G.gates) { const e = def.ents.find(e => (e[0] === 'heavy' || e[0] === 'vines') && e[3] && e[3].gate === gid);
-    room.gateStyle[gid] = e ? 'hidden' : gid === 'floor' ? 'floor' : isSpirit(gid) ? 'spirit' : 'bars'; }
+    room.gateStyle[gid] = e ? 'hidden' : gid === 'floor' ? 'floor' : gateKind(gid) || 'bars'; }
   if (progress.perm.has(id + ':secret')) for (let i = 0; i < room.grid.length; i++) if (room.grid[i] === T_SECRET) room.grid[i] = T_EMPTY;
   if (progress.hasKey && progress.perm.has(id + ':lock')) for (let i = 0; i < room.grid.length; i++) if (room.grid[i] === T_LOCK) room.grid[i] = T_EMPTY;
   renderRoomStatic();
@@ -1534,10 +1649,17 @@ function updatePlayer() {
   else if (P.tug) { updateTug(); }
   else {
     const sp = (vacHeld ? C.vacWalkSpeed : C.walkSpeed) * timeSlowAt(pcx(), P.y + P.h), acc = P.onGround ? C.accel : C.airAccel;
-    if (dir) { P.face = dir; P.vx += clamp(dir * sp - P.vx, -acc, acc); }
-    else { P.vx += clamp(-P.vx, -C.decel, C.decel); }
+    // v0.5 グリム吸着 (GRIM GRIP): in the air, pushing into a wall makes Grim suck onto it -> slow slide; JUMP kicks off (wall jump)
+    if (P.wallLock > 0) P.wallLock--;
+    const clingDir = hasAbil('cling') && !P.onGround && dir && !vacHeld && P.vy > -1.5 && boxHitsSolid(P.x + dir * 2, P.y + 6, P.w, P.h - 12) ? dir : 0;
+    if (clingDir) { P.cling = clingDir; P.clingT = 6; } else if (P.clingT > 0) P.clingT--; else P.cling = 0;
+    if (dir && !(P.wallLock > 0)) { P.face = dir; P.vx += clamp(dir * sp - P.vx, -acc, acc); }
+    else if (!dir) { P.vx += clamp(-P.vx, -C.decel, C.decel); }
     if (P.onGround && !P.onFloat && (inp.dropPressed || (held('down') && P.jumpBuf > 0)) && onPlatOnly()) { P.dropT = 12; P.jumpBuf = 0; P.onGround = false; P.coyote = 0; P.y += 2; P.vy = 1; }   // v0.4.3 drop through
     else if (P.jumpBuf > 0 && (P.onGround || P.coyote > 0)) { P.vy = -C.jumpVel; P.jumpBuf = 0; P.coyote = 0; P.onGround = false; sfx('jump'); }
+    else if (P.jumpBuf > 0 && P.cling && P.clingT > 0) { // wall jump
+      P.vy = -C.wallJumpVel; P.vx = -P.cling * C.wallJumpVx; P.face = -P.cling; P.wallLock = C.wallJumpLock; P.jumpBuf = 0; P.cling = 0; P.clingT = 0; P.hover = C.hoverFrames; stats.wallJumps = (stats.wallJumps || 0) + 1; sfx('jump');
+      for (let i = 0; i < 6; i++) parts.push({ x: pcx() - P.face * 8, y: P.y + P.h - 10 + rnd(-6, 6), vx: P.face * rnd(0.3, 1.2), vy: rnd(-0.6, 0.6), life: 16, col: '#c8f0ff', size: 2, glow: 1 }); }
     else if (inp.jumpPressed && !P.onGround && P.coyote <= 0 && hasAbil('djump') && !P.dj) { // ゴーストステップ: second jump in the air
       P.vy = -C.djumpVel; P.dj = true; P.djT = 18; P.jumpBuf = 0; stats.djumps++; sfx('djump');
       for (let i = 0; i < 10; i++) parts.push({ x: pcx() + rnd(-6, 6), y: P.y + P.h, vx: rnd(-1.5, 1.5), vy: rnd(0.5, 1.8), life: 20, col: i & 1 ? '#c8a0ff' : '#ffffff', size: 2, glow: 1 });
@@ -1546,6 +1668,7 @@ function updatePlayer() {
   if (P.djT > 0) P.djT--;
   if (!held('jump') && P.vy < -C.jumpCutVel && P.knock <= 0) P.vy = -C.jumpCutVel;
   P.vy += C.gravity;
+  if (P.cling && P.clingT === 6 && P.vy > C.clingFall) { P.vy = C.clingFall; if (frame % 5 === 0) parts.push({ x: pcx() + P.cling * 8, y: P.y + P.h - 8, vx: 0, vy: -0.3, life: 12, col: '#a8d8ff', size: 1, glow: 1 }); tip('cling', 'グリムが壁に吸いついた！ そのまま JUMP で壁をけって、さらに上へ'); }
   if (!P.onGround && P.vy > 0 && held('jump') && P.hover > 0 && P.knock <= 0 && !P.tug) {
     if (P.vy > C.hoverFall) P.vy = C.hoverFall; P.hover--; P.hovering = true;
     if (!P.wasHover) sfx('hover');
@@ -2004,7 +2127,7 @@ function checkLockedDoor() {
 // ---------------------------------------------------------------------
 //  enemy bullets (plates, candles, crystal shards, fire patches, floor waves)
 // ---------------------------------------------------------------------
-const PERSIST_BULLETS = new Set(['firepatch', 'wave', 'suds', 'thorn', 'hand', 'root', 'blast', 'geyser', 'puddle', 'sandorb', 'sandfall', 'string']);
+const PERSIST_BULLETS = new Set(['firepatch', 'wave', 'suds', 'thorn', 'hand', 'root', 'blast', 'geyser', 'puddle', 'sandorb', 'sandfall', 'string', 'halberd', 'gsword']);
 function updateEBullets() {
   for (const b of ebullets) {
     if (b.dead) continue;
@@ -2075,7 +2198,7 @@ function updateParts() {
 //  Positions: x = centre, y = bottom (feet), like every non-ghost entity.
 // =====================================================================
 const FOE_SIZE = { bat: [14, 10], rat: [18, 10], gargoyle: [26, 26], puppet: [16, 30], skeleton: [18, 40], cursedbook: [16, 14], skullwisp: [16, 18], crab: [20, 12] };
-const SKIN_JP = { dancer: '踊り子人形', maskbat: '仮面コウモリ', starwisp: '星くず火', chart: '呪いの星図' };
+const SKIN_JP = { dancer: '踊り子人形', maskbat: '仮面コウモリ', starwisp: '星くず火', chart: '呪いの星図', corkbat: 'コルクコウモリ', grapewisp: 'ぶどう火', squire: '見習い鎧', griffin: '石のグリフォン' };
 const FOE_JP = { bat: 'コウモリ', rat: 'ネズミ', gargoyle: 'ガーゴイル', puppet: 'あやつり人形', skeleton: '骸骨の給仕', cursedbook: '呪いの本', skullwisp: 'どくろ火', crab: 'おふろガニ' };
 const EDIBLE = { rat: 1, bat: 1, crab: 1 };  // tiny critters: the mimic vacuum eats them
 function makeFoe(kind, x, y, opt) {
@@ -2282,7 +2405,7 @@ function gainAbility(e) {
   e.has = true; progress.abil[e.abil] = true; stats.abilities.push(e.abil); sfx('get'); cam.shake = 4; hitStop = 10; P.hp = progress.maxHP;
   for (let i = 0; i < 30; i++) { const a = i / 30 * 6.28; parts.push({ x: e.x, y: e.y - 44, vx: Math.cos(a) * 2.5, vy: Math.sin(a) * 2.5, life: 34, col: ABIL_INFO[e.abil].col, size: 2, glow: 1 }); }
   abilityGet.t = 300; abilityGet.abil = e.abil; syncAbilities();
-  if (e.abil === 'phase') openSpiritGates();
+  openAbilGates(e.abil);
   tip('abil_' + e.abil, ABIL_INFO[e.abil].text, true);
 }
 const abilityGet = { t: 0, abil: null };
@@ -2369,18 +2492,37 @@ function renderWarpMenu() {
   if (sel) drawHiText(sel.id === room.id ? '（いまいる場所）' : AREAS[sel.area].jp + ' の ' + sel.jp + ' へワープ', VW / 2, 250, 8, sel.id === room.id ? '#a8a0d8' : '#fff4c0', '#1a0e28');
 }
 
-// ---- spirit barriers -----------------------------------------------------
+// ---- ability barriers (v0.3 spirit; v0.5 key-ring locks, darkness) -----------------
+// gate id prefix -> the power that removes it for good: spirit_* (霊体化), ring_* (鍵束), dark_* (ランタン)
+const GATE_ABIL = { spirit: 'phase', ring: 'keyring', dark: 'lantern' };
+const gateAbil = gid => { for (const p in GATE_ABIL) if (gid.startsWith(p)) return GATE_ABIL[p]; return null; };
+const gateKind = gid => { for (const p in GATE_ABIL) if (gid.startsWith(p)) return p; return null; };
 const isSpirit = gid => gid.startsWith('spirit');
-function openSpiritGates() { for (const gid in room.gates) if (isSpirit(gid)) openGate(room.id, gid); }
+const GATE_TIP = { spirit: '青白い霊の結界… 体が押し返される。霊体になれる力があれば通れそうだ',
+  ring: '金色の錠前がいくつもかかった扉… 鍵がたくさんあれば開けられそう',
+  dark: '真っ暗で一歩も進めない… 明かりがあれば通れそうだ' };
+function openAbilGates(abil) { for (const gid in room.gates) if (gateAbil(gid) === abil) openGate(room.id, gid); }
+function openSpiritGates() { openAbilGates('phase'); }
 function updateSpirit() {
   for (const gid in room.gates) {
-    if (!isSpirit(gid) || progress.perm.has(room.id + ':gate:' + gid)) continue;
+    const kind = gateKind(gid); if (!kind || progress.perm.has(room.id + ':gate:' + gid)) continue;
     const cells = room.gates[gid];
     if (frame % 4 === 0) { const i = cells[(Math.random() * cells.length) | 0], c = i % room.cols, r = (i / room.cols) | 0;
-      parts.push({ x: c * TS + rnd(0, 16), y: r * TS + rnd(0, 16), vx: rnd(-0.2, 0.2), vy: -rnd(0.2, 0.7), life: 26, col: (frame & 8) ? '#e0b8ff' : '#a8e8ff', size: 1, glow: 1 }); }
+      const col = kind === 'spirit' ? ((frame & 8) ? '#e0b8ff' : '#a8e8ff') : kind === 'ring' ? '#ffe080' : '#3a3050';
+      parts.push({ x: c * TS + rnd(0, 16), y: r * TS + rnd(0, 16), vx: rnd(-0.2, 0.2), vy: -rnd(0.2, 0.7), life: 26, col, size: 1, glow: kind !== 'dark' ? 1 : 0 }); }
     for (const i of cells) { const c = i % room.cols, r = (i / room.cols) | 0;
-      if (hitsKanata(c * TS - 6, r * TS - 6, c * TS + TS + 6, r * TS + TS + 6)) { tip('spirit', '青白い霊の結界… 体が押し返される。霊体になれる力があれば通れそうだ'); break; } }
+      if (hitsKanata(c * TS - 6, r * TS - 6, c * TS + TS + 6, r * TS + TS + 6)) { tip(kind === 'spirit' ? 'spirit' : 'gate_' + kind, GATE_TIP[kind]); break; } }
   }
+}
+// v0.5: key-ring lock (gold padlocked bars) and darkness (a wall of black fog that only a lantern pushes back)
+function drawRingTile(c, x, y, col, row) {
+  c.fillStyle = 'rgba(20,12,4,0.75)'; c.fillRect(x, y, TS, TS);
+  c.fillStyle = '#8a6a2a'; for (const bx of [2, 7, 12]) c.fillRect(x + bx, y, 3, TS); c.fillStyle = '#e8c860'; for (const bx of [2, 7, 12]) c.fillRect(x + bx, y, 1, TS);
+  if ((row + col) % 2 === 0) { c.fillStyle = '#ffd84a'; c.fillRect(x + 4, y + 6, 8, 7); c.fillStyle = '#7a5a10'; c.fillRect(x + 7, y + 8, 2, 3); c.strokeStyle = '#ffd84a'; c.lineWidth = 1; c.strokeRect(x + 5.5, y + 2.5, 5, 5); }
+}
+function drawDarkTile(c, x, y, col, row) {
+  c.fillStyle = 'rgba(2,1,6,0.94)'; c.fillRect(x, y, TS, TS);
+  c.fillStyle = 'rgba(40,30,70,0.5)'; for (let k = 0; k < 3; k++) c.fillRect(x + ((k * 5 + row * 7 + col * 3) % 15), y + ((k * 6 + col * 5) % 15), 1, 1);
 }
 // static look of a closed spirit barrier (drawn into the room canvas)
 function drawSpiritTile(c, x, y, col, row) {
@@ -3468,6 +3610,209 @@ BOSS_DEFS.orrery = { jp: '星喰いの天球儀 アストラ', en: 'ASTRA, THE S
 };
 
 // =====================================================================
+//  AREA BOSS (v0.5): 樽蜘蛛 バレルタラント BARRELTARANT, THE CASK SPIDER (古酒の大貯蔵庫 / throne of the grand cask)
+//    A giant wine cask on eight corkscrew legs, hanging from a thread in the vault ceiling. Not a friend character.
+//    corks  : gold marks -> corks rain straight down onto them (one leaves a CORK = ammo)
+//    spill  : it shakes, then sloshes a wine wave both ways along the floor (jump it; rage: a 2nd pair)
+//    drop   : a red mark under Kanata -> it slides over and drops on its thread (landing splash waves)
+//    plunge : (every 3rd) climbs to the ceiling, tracks Kanata, LOCKS (flashing) -> plunges, gets stuck in the
+//             floor and its cork pops: the WINE CORE comes out = weak point
+//    rage   : (50%) shorter warnings, more corks, double waves
+// =====================================================================
+const TAR_UP = 92;   // hanging height (body centre)
+BOSS_DEFS.tarant = { jp: '樽蜘蛛 バレルタラント', en: 'BARRELTARANT, THE CASK SPIDER', cfg: 'tarant', cols: ['#9a6a3e', '#b83a5a', '#ffd84a', '#ffffff'],
+  rageText: '樽がぐらぐら煮えたった！ バレルタラントが本気になった',
+  sayIntro: '……樽に、足が八本。……グリム、あれは吸っちゃダメ', sayCore: '……栓が抜けた！ 中のゴースト、吸っちゃえ',
+  make(b) { b.hy = TAR_UP; b.tx = b.x; b.face = -1; b.mood = 'idle'; b.markR = 20; },
+  hitBox(b) { return { x0: b.x - 30, x1: b.x + 30, y0: b.hy - 26, y1: b.hy + 26 }; },
+  aim(b) { return { x: b.x, y: b.hy }; },
+  update(b) {
+    const C = CONFIG.tarant, px = clamp(pcx(), 16, room.W - 16);
+    b.face = Math.sign(pcx() - b.x) || b.face;
+    b.mood = b.state === 'stuck' ? 'open' : b.rage ? 'rage' : 'idle';
+    switch (b.state) {
+      case 'idle': b.markR = 20; b.hy += (TAR_UP - b.hy) * 0.08;
+        if (b.t === 1) b.tx = pcx() < 192 ? rnd(250, 320) : rnd(64, 134);
+        b.x += clamp(b.tx - b.x, -1.3, 1.3);
+        if (b.t >= bossP('idle')) chooseAttack(b, ['corks', 'spill', 'drop'], 'plunge'); break;
+      case 'corks': {
+        const warn = bossP('corkWarn');
+        if (b.t === 1) { const n = bossP('corks'), xs = [px]; for (let k = 1; xs.length < n; k++) { xs.push(px + k * 72); if (xs.length < n) xs.push(px - k * 72); }
+          b.marks = xs.map(x => clamp(x, 20, room.W - 20)); b.markR = 20; sfx('warn'); tip('tcork', '金色の印に、コルクの雨が降ってくる！ 印と印のあいだへ'); }
+        if (b.t < warn && b.t % 10 === 0) sfx('tick');
+        if (b.t === warn) { let i = 0; for (const mx of b.marks) { const ammo = i++ === 0;
+            ebullets.push({ kind: 'corkshot', x: mx - 6, y: 2 * TS, w: 12, h: 14, vx: 0, vy: 2, g: 0.32, dmg: C.corkDamage, life: 200,
+              onLand: q => { sfx('tink'); for (let k = 0; k < 6; k++) parts.push({ x: q.x + 6, y: FLOOR_Y - 3, vx: rnd(-1.5, 1.5), vy: rnd(-2, -0.5), life: 16, col: '#e8c890', size: 2, grav: 1 }); if (ammo) spawnItem('cork', clamp(q.x + 6, 24, room.W - 24), FLOOR_Y); } }); }
+          sfx('whoosh'); }
+        if (b.t === warn + 34) b.marks = [];
+        if (b.t >= warn + 60) { b.state = 'idle'; b.t = 0; } break; }
+      case 'spill': {
+        const warn = bossP('spillWarn'), pairs = b.rage ? 2 : 1;
+        if (b.t === 1) { sfx('warn'); tip('tspill', '樽がゆれている… ワインの波が来る！ 波はジャンプでとびこえよう'); }
+        if (b.t < warn && b.t % 8 === 0) sfx('warn');
+        for (let k = 0; k < pairs; k++) if (b.t === warn + k * 46) { sfx('splash'); cam.shake = 4;
+          for (const d of [-1, 1]) ebullets.push({ kind: 'wave', spr: 'winewave', x: b.x + d * 20 - 9, y: FLOOR_Y - 14, w: 18, h: 14, vx: d * C.waveSpeed, vy: 0, dmg: C.waveDamage, life: 220 });
+          for (let i = 0; i < 14; i++) parts.push({ x: b.x + rnd(-20, 20), y: b.hy + 20, vx: rnd(-1, 1), vy: rnd(0.5, 3), life: 30, col: i & 1 ? '#b83a5a' : '#7a1a3a', size: 2, grav: 1 }); }
+        if (b.t >= warn + (pairs - 1) * 46 + 80) { b.state = 'idle'; b.t = 0; } break; }
+      case 'drop': {
+        const warn = bossP('dropWarn'), fall = 14;
+        if (b.t === 1) { b.marks = [clamp(px, 44, room.W - 44)]; b.markR = 50; sfx('warn'); tip('tdrop', '赤い印の上に、樽が落ちてくる！ 印から離れて、しぶきの波はジャンプ'); }
+        if (b.t < warn) { b.x += clamp(b.marks[0] - b.x, -2.4, 2.4); if (b.t % 8 === 0) sfx('warn'); break; }
+        if (b.t < warn + fall) { b.x = b.marks[0]; b.hy = TAR_UP + (FLOOR_Y - 28 - TAR_UP) * ((b.t - warn) / fall) ** 2; break; }
+        if (b.t === warn + fall) { b.hy = FLOOR_Y - 28; b.marks = []; sfx('boom'); cam.shake = 9; hitStop = 3;
+          if (overlapBox(b.x - 32, FLOOR_Y - 56, b.x + 32, FLOOR_Y)) hurtPlayer(C.dropDamage, b.x, 'drop');
+          for (const d of [-1, 1]) ebullets.push({ kind: 'wave', spr: 'winewave', x: b.x + d * 36 - 9, y: FLOOR_Y - 14, w: 18, h: 14, vx: d * C.waveSpeed, vy: 0, dmg: C.waveDamage, life: 200 }); }
+        if (b.t > warn + fall + 24) b.hy += (TAR_UP - b.hy) * 0.06;
+        if (b.t >= warn + fall + 70) { b.markR = 20; b.state = 'idle'; b.t = 0; } break; }
+      case 'plunge': {
+        const tr = C.plungeTrack, lk = bossP('plungeLock'), fall = 12;
+        if (b.t === 1) { b.markR = 36; sfx('warn'); tip('tplunge', 'バレルタラントが天井で狙っている！ 点滅したら落ちてくる… 真下から逃げて！'); }
+        if (b.t < tr) { b.hy += (56 - b.hy) * 0.1; b.x += clamp(px - b.x, -1.7, 1.7); }
+        if (b.t < tr + lk) { b.marks = [b.x]; if (b.t % 8 === 0) sfx('warn'); break; }
+        if (b.t < tr + lk + fall) { b.hy = 56 + (FLOOR_Y - 26 - 56) * ((b.t - tr - lk) / fall) ** 2; break; }
+        if (b.t === tr + lk + fall) { b.hy = FLOOR_Y - 26; b.marks = []; sfx('crash'); cam.shake = 12; hitStop = 4;
+          if (overlapBox(b.x - 32, FLOOR_Y - 54, b.x + 32, FLOOR_Y)) hurtPlayer(C.plungeDamage, b.x, 'plunge');
+          for (let i = 0; i < 20; i++) parts.push({ x: b.x + rnd(-30, 30), y: FLOOR_Y - 4, vx: rnd(-2.5, 2.5), vy: rnd(-3, -0.5), life: 30, col: i & 1 ? '#b83a5a' : '#e8c890', size: 2, grav: 1 }); }
+        if (b.t === tr + lk + fall + 20) { b.state = 'stuck'; b.t = 0; b.winLen = bossP('stun'); sfx('pop'); b.markR = 20;
+          b.coreSide = Math.sign(pcx() - b.x) || (b.x < 192 ? 1 : -1); if (b.x + b.coreSide * 46 < 30 || b.x + b.coreSide * 46 > room.W - 30) b.coreSide = -b.coreSide;
+          b.core = makeCore(b, b.x + b.coreSide * 46, FLOOR_Y - 30, () => ({ x: boss.x, y: boss.hy - 20 }), 'wcore');
+          tip('tcore', 'ポンッ！ 栓が抜けて、中のゴーストが飛び出した！ ワインのコアを VAC で吸い込め！', true); }
+        break; }
+      case 'stuck': coreBob(b, b.x + b.coreSide * 46, FLOOR_Y - 30); if (coreWindowOver(b)) { b.state = 'climb'; b.t = 0; } break;
+      case 'climb': b.hy += (TAR_UP - b.hy) * 0.05; if (b.t > 60) { b.state = 'idle'; b.t = 0; } break;
+    }
+  },
+  dying(b) { b.mood = 'stun'; b.marks = []; b.hy += (FLOOR_Y - 26 - b.hy) * 0.08; },
+  onDefeat(b) { bossReward(b, b.x); say('……樽、からっぽ。……グリム、酔ってない？', 220); },
+  draw(b, lights) {
+    const x = Math.round(b.x - cam.x), y = Math.round(b.hy - cam.y), top = 2 * TS - cam.y;
+    if (b.state === 'corks') for (const m of b.marks) drawFloorMark(m, Math.min(1, b.t / bossP('corkWarn')), 'rgba(255,210,90,0.9)');
+    if (b.state === 'drop' && b.marks.length) drawFloorMark(b.marks[0], Math.min(1, b.t / bossP('dropWarn')), 'rgba(255,60,60,0.85)');
+    if (b.state === 'plunge' && b.marks.length) { const lock = b.t >= CONFIG.tarant.plungeTrack; drawFloorMark(b.marks[0], lock ? 1 : 0.5, lock && (frame & 2) ? 'rgba(255,240,240,0.95)' : 'rgba(255,60,60,0.9)');
+      g.fillStyle = lock ? ((frame & 2) ? 'rgba(255,80,80,0.22)' : 'rgba(255,230,230,0.16)') : 'rgba(255,80,80,0.08)'; g.fillRect(x - 32, y, 64, Math.round(FLOOR_Y - cam.y) - y); }
+    if (b.state === 'dying' && b.t >= 90) return;
+    // the thread it hangs from
+    g.fillStyle = 'rgba(230,220,240,0.6)'; g.fillRect(x, Math.round(top), 1, Math.max(0, y - 26 - Math.round(top)));
+    // eight corkscrew legs (drawn under the body), splayed on the floor when it is down
+    const down = b.hy > FLOOR_Y - 60;
+    for (const s of [-1, 1]) for (let i = 0; i < 4; i++) {
+      const ph = frame * 0.12 + i * 1.3 + (s > 0 ? 0.6 : 0), hx = x + s * (14 + i * 5), hy = y + 2 + i * 3;
+      const kx = hx + s * (14 + i * 3), ky = hy - 12 + Math.sin(ph) * 3 + (down ? 4 : 0);
+      const fx = kx + s * (down ? 10 : 4), fy = down ? Math.round(FLOOR_Y - cam.y) - 1 : ky + 20 + Math.sin(ph + 1) * 3;
+      g.strokeStyle = '#3e2614'; g.lineWidth = 3; g.beginPath(); g.moveTo(hx, hy); g.lineTo(kx, ky); g.lineTo(fx, fy); g.stroke();
+      g.strokeStyle = '#c9a24a'; g.lineWidth = 1; g.beginPath(); g.moveTo(hx, hy); g.lineTo(kx, ky); g.lineTo(fx, fy); g.stroke();
+      g.fillStyle = '#9a6a3e'; for (let k = 0; k < 3; k++) { const t = (k + 0.5) / 3; g.fillRect(Math.round(kx + (fx - kx) * t), Math.round(ky + (fy - ky) * t), 2, 1); } }
+    const key = 'tar_' + (b.state === 'dying' ? 'stun' : b.mood), r = rectOf('boss', key), sx = x - (r.w >> 1), sy = y - (r.h >> 1) + (b.state === 'spill' ? Math.round(Math.sin(frame * 0.8) * 2) : 0);
+    spr('boss', key, sx + (b.state === 'spill' ? ((frame & 2) ? 1 : -1) : 0), sy);
+    if (b.flash > 0 && (frame & 2)) { g.globalAlpha = 0.7; sprWhite('boss', key, sx, sy); g.globalAlpha = 1; }
+    if ((b.state === 'drop' && b.t < bossP('dropWarn') || b.state === 'plunge' && b.t >= CONFIG.tarant.plungeTrack && b.t < CONFIG.tarant.plungeTrack + bossP('plungeLock')) && (frame & 4)) { g.globalAlpha = 0.4; sprWhite('boss', key, sx, sy, false, '#ff4040'); g.globalAlpha = 1; }
+    lights.push({ x: b.x, y: b.hy, r: 64, warm: 1 });
+    drawCore(b, lights, 'wcore');
+  },
+};
+
+// =====================================================================
+//  AREA BOSS (v0.5): 空っぽの騎士団長 アイアンホロウ IRON HOLLOW, THE EMPTY CAPTAIN (騎士の武具庫 / the tiltyard)
+//    A towering suit of plate armour with nobody inside, still drilling for a master. Not a friend character.
+//    halberds  : gold marks -> halberds drop from the rafters onto them (2 waves; the 2nd fills the gaps)
+//    slash     : sword raised (red zone in front) -> a big slash + a ground wave toward Kanata (jump it; rage: 2)
+//    leap      : red mark under Kanata -> he leaps onto it (landing + waves both ways)
+//    greatsword: (every 3rd) a gleam hunts Kanata, LOCKS (flashing) -> he hurls the greatsword down onto it.
+//                Disarmed, he kneels and his helmet rolls off: the HOLLOW CORE floats out of the neck = weak point
+//    rage      : (50%) shorter warnings, more halberds, the slash sends two waves, the leap doubles
+// =====================================================================
+BOSS_DEFS.knight = { jp: '空っぽの騎士団長 アイアンホロウ', en: 'IRON HOLLOW, THE EMPTY CAPTAIN', cfg: 'knight', cols: ['#d0d8e8', '#a8242e', '#c9a24a', '#ffffff'],
+  rageText: '鎧のすきまから青い炎が吹き出した！ 騎士団長が本気だ',
+  sayIntro: '……中身、からっぽ。……なのに、まだ誰かに仕えてる', sayCore: '……首のところから、ゴースト！ グリム、吸って',
+  make(b) { b.face = -1; b.jy = 0; b.tx = b.x; b.pose = 'idle'; b.markR = 22; b.gleam = null; },
+  hitBox(b) { return b.pose === 'kneel' ? { x0: b.x - 24, x1: b.x + 24, y0: FLOOR_Y - 76, y1: FLOOR_Y } : { x0: b.x - 22, x1: b.x + 22, y0: FLOOR_Y - 104 - b.jy, y1: FLOOR_Y - b.jy }; },
+  aim(b) { return { x: b.x, y: FLOOR_Y - (b.pose === 'kneel' ? 46 : 64) - b.jy }; },
+  update(b) {
+    const C = CONFIG.knight, px = clamp(pcx(), 16, room.W - 16);
+    if (b.state === 'idle' || b.state === 'halberds' || b.state === 'leap') b.face = Math.sign(pcx() - b.x) || b.face;
+    switch (b.state) {
+      case 'idle': b.pose = 'idle'; b.markR = 22;
+        if (b.t === 1) b.tx = pcx() < 192 ? rnd(250, 330) : rnd(54, 134);
+        b.x += clamp(b.tx - b.x, -1.1, 1.1);
+        if (b.t >= bossP('idle')) chooseAttack(b, ['halberds', 'slash', 'leap'], 'greatsword'); break;
+      case 'halberds': {
+        const warn = bossP('halbWarn'), T2 = warn + 28;
+        if (b.t === 1 || b.t === T2) { b.pose = 'raise'; const n = bossP('halberds'), xs = [];
+          if (b.t === 1) { xs.push(px); for (let k = 1; xs.length < n; k++) { xs.push(px + k * 96); if (xs.length < n) xs.push(px - k * 96); } }
+          else for (const m of b.first) { xs.push(m - 48); } 
+          b.marks = xs.map(x => clamp(x, 16, room.W - 16)); if (b.t === 1) b.first = b.marks.slice(0); b.mT = b.t; sfx('tick');
+          tip('khalb', '金色の印に、天井から槍斧が落ちてくる！ 印から離れて'); }
+        if (b.t < b.mT + warn && (b.t - b.mT) % 10 === 0) sfx('tick');
+        if (b.t === b.mT + warn) { for (const mx of b.marks) ebullets.push({ kind: 'halberd', x: mx - 6, y: 2 * TS, w: 12, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: C.halbDamage, life: 22, static: 1 });
+          b.marks = []; sfx('thud'); cam.shake = 3; b.pose = 'idle'; }
+        if (b.t >= T2 + warn + 30) { b.state = 'idle'; b.t = 0; } break; }
+      case 'slash': {
+        const warn = bossP('slashWarn'), n = b.rage ? 2 : 1;
+        if (b.t === 1) { b.face = Math.sign(pcx() - b.x) || b.face; b.pose = 'raise'; sfx('warn'); tip('kslash', '大剣をふりかぶった！ 前の赤いところから離れて、地をはう斬撃はジャンプ！'); }
+        if (b.t < warn && b.t % 8 === 0) sfx('warn');
+        for (let k = 0; k < n; k++) if (b.t === warn + k * 40) { b.pose = 'slash'; sfx('whoosh'); cam.shake = 5;
+          if (overlapBox(Math.min(b.x + b.face * 18, b.x + b.face * 76), FLOOR_Y - 84, Math.max(b.x + b.face * 18, b.x + b.face * 76), FLOOR_Y)) hurtPlayer(C.slashDamage, b.x, 'slash');
+          ebullets.push({ kind: 'wave', x: b.x + b.face * 40 - 8, y: FLOOR_Y - 14, w: 16, h: 14, vx: b.face * C.waveSpeed, vy: 0, dmg: C.waveDamage, life: 220 }); }
+        for (let k = 1; k < n; k++) if (b.t === warn + k * 40 - 22) b.pose = 'raise';
+        if (b.t >= warn + (n - 1) * 40 + 44) { b.state = 'idle'; b.t = 0; } break; }
+      case 'leap': {
+        const warn = bossP('leapWarn'), air = C.leapAir;
+        if (b.t === 1) { b.marks = [clamp(px, 40, room.W - 40)]; b.markR = 58; b.lx0 = b.x; b.leaps = b.rage ? 2 : 1; b.pose = 'raise'; sfx('warn');
+          tip('kleap', '騎士団長が跳ぶ！ 赤い印から離れて、着地の波はジャンプでかわせ'); }
+        if (b.t < warn) { if (b.t % 8 === 0) sfx('warn'); break; }
+        if (b.t === warn) { sfx('whoosh'); b.lx1 = b.marks[0]; b.pose = 'leap'; }
+        if (b.t < warn + air) { const k = (b.t - warn) / air; b.x = b.lx0 + (b.lx1 - b.lx0) * k; b.jy = Math.sin(k * Math.PI) * 100; break; }
+        if (b.t === warn + air) { b.jy = 0; b.x = b.lx1; b.marks = []; b.pose = 'idle'; sfx('boom'); cam.shake = 10; hitStop = 3;
+          if (overlapBox(b.x - 30, FLOOR_Y - 90, b.x + 30, FLOOR_Y)) hurtPlayer(C.leapDamage, b.x, 'leap');
+          for (const d of [-1, 1]) ebullets.push({ kind: 'wave', x: b.x + d * 36 - 8, y: FLOOR_Y - 14, w: 16, h: 14, vx: d * C.waveSpeed, vy: 0, dmg: C.waveDamage, life: 220 }); }
+        if (b.t === warn + air + 34 && --b.leaps > 0) { b.t = 1; b.lx0 = b.x; b.marks = [clamp(clamp(pcx(), 16, room.W - 16), 40, room.W - 40)]; b.pose = 'raise'; sfx('warn'); break; }
+        if (b.t >= warn + air + 34) { b.markR = 22; b.state = 'idle'; b.t = 0; } break; }
+      case 'greatsword': {
+        const tr = C.gleamTrack, lk = bossP('gleamLock');
+        if (b.t === 1) { b.gleam = { x: pcx() }; b.markR = 34; b.pose = 'raise'; sfx('warn'); tip('kgsword', '剣の光が追ってくる！ 点滅したら止まる… 光の下から逃げて！'); }
+        if (b.t < tr) b.gleam.x += clamp(pcx() - b.gleam.x, -1.6, 1.6);
+        if (b.t < tr + lk) { b.marks = [b.gleam.x]; if (b.t % 8 === 0) sfx('warn'); }
+        if (b.t === tr + lk) { b.marks = [b.gleam.x]; b.pose = 'slash'; const gx = b.gleam.x;
+          ebullets.push({ kind: 'gsword', x: gx - 15, y: 2 * TS - 40, w: 30, h: 72, vx: 0, vy: 5, g: 0.5, dmg: C.gswordDamage, life: 60,
+            onLand: q => { sfx('crash'); cam.shake = 10; hitStop = 3; boss.swordAt = q.x + 15; for (let i = 0; i < 16; i++) parts.push({ x: q.x + 15 + rnd(-16, 16), y: FLOOR_Y - 4, vx: rnd(-2.5, 2.5), vy: rnd(-3, -0.5), life: 26, col: i & 1 ? '#d0d8e8' : '#ffffff', size: 2, grav: 1 }); } });
+          sfx('whoosh'); }
+        if (b.t === tr + lk + 26) { b.marks = []; b.gleam = null; b.state = 'kneel'; b.t = 0; b.pose = 'kneel'; b.markR = 22; b.winLen = bossP('stun'); sfx('crash');
+          b.helm = { x: b.x, y: FLOOR_Y - 92, vx: (b.x < 192 ? 1 : -1) * 1.6, vy: -3 };
+          b.coreSide = Math.sign(pcx() - b.x) || 1; if (b.x + b.coreSide * 40 < 30 || b.x + b.coreSide * 40 > room.W - 30) b.coreSide = -b.coreSide;
+          b.core = makeCore(b, b.x + b.coreSide * 40, FLOOR_Y - 30, () => ({ x: boss.x, y: FLOOR_Y - 76 }), 'acore');
+          tip('kcore', '剣を失って騎士団長がひざをついた！ 首から出てきたコアを VAC で吸い込め！', true); }
+        break; }
+      case 'kneel': coreBob(b, b.x + b.coreSide * 40, FLOOR_Y - 30); if (coreWindowOver(b)) { b.state = 'rise'; b.t = 0; } break;
+      case 'rise': b.pose = b.t < 30 ? 'kneel' : 'idle'; if (b.t === 30) { b.helm = null; b.swordAt = null; } if (b.t > 50) { b.state = 'idle'; b.t = 0; } break;
+    }
+    if (b.helm) { const h = b.helm; h.vy += 0.3; h.x += h.vx; h.y += h.vy; if (h.y > FLOOR_Y - 12) { h.y = FLOOR_Y - 12; h.vy = -h.vy * 0.4; h.vx *= 0.7; if (Math.abs(h.vy) < 0.6) h.vy = 0; } }
+  },
+  dying(b) { b.pose = 'kneel'; b.marks = []; b.gleam = null; b.jy = 0; },
+  onDefeat(b) { bossReward(b, b.x); say('……おやすみなさい、騎士団長さん。……もう、だれにも仕えなくていいよ', 230); },
+  draw(b, lights) {
+    const C = CONFIG.knight, x = Math.round(b.x - cam.x), y = Math.round(FLOOR_Y - cam.y);
+    if (b.state === 'halberds') for (const m of b.marks) drawFloorMark(m, Math.min(1, (b.t - b.mT) / bossP('halbWarn')), 'rgba(255,210,90,0.9)');
+    if (b.state === 'leap' && b.marks.length) drawFloorMark(b.marks[0], Math.min(1, b.t / bossP('leapWarn')), 'rgba(255,60,60,0.85)');
+    if (b.state === 'slash' && b.pose === 'raise') { const x0 = x + b.face * 18, x1 = x + b.face * 76; g.fillStyle = (frame & 4) ? 'rgba(255,60,60,0.22)' : 'rgba(255,60,60,0.12)'; g.fillRect(Math.min(x0, x1), y - 84, Math.abs(x1 - x0), 84); }
+    if (b.state === 'slash' && b.pose === 'slash') { g.strokeStyle = 'rgba(255,255,255,0.85)'; g.lineWidth = 2; g.beginPath(); g.arc(x, y - 50, 60, b.face > 0 ? -1.2 : Math.PI - 0.4, b.face > 0 ? 0.4 : Math.PI + 1.2); g.stroke(); }
+    if (b.state === 'greatsword' && b.gleam) { const lock = b.t >= C.gleamTrack, gx = b.gleam.x - cam.x;
+      g.globalCompositeOperation = 'lighter'; g.fillStyle = lock ? ((frame & 2) ? 'rgba(255,120,120,0.30)' : 'rgba(220,240,255,0.30)') : 'rgba(200,230,255,0.14)';
+      g.fillRect(Math.round(gx - 16), Math.round(2 * TS - cam.y), 32, y - Math.round(2 * TS - cam.y)); g.globalCompositeOperation = 'source-over';
+      drawFloorMark(b.gleam.x, lock ? 1 : 0.5, 'rgba(255,60,60,0.9)'); lights.push({ x: b.gleam.x, y: FLOOR_Y - 20, r: 44, cool: 1 }); }
+    if (b.swordAt) spr('boss', 'greatsword', Math.round(b.swordAt - cam.x) - 7, y - 52);
+    if (b.helm) spr('boss', 'helm', Math.round(b.helm.x - cam.x) - 12, Math.round(b.helm.y - cam.y) - 13);
+    if (b.state === 'dying' && b.t >= 90) return;
+    const key = 'kn_' + b.pose, r = rectOf('boss', key), sx = x - (r.w >> 1), sy = y - r.h - Math.round(b.jy) + (b.pose === 'idle' ? Math.round(Math.sin(frame * 0.06) * 1) : 0);
+    spr('boss', key, sx, sy, b.face < 0);
+    if (b.flash > 0 && (frame & 2)) { g.globalAlpha = 0.7; sprWhite('boss', key, sx, sy, b.face < 0); g.globalAlpha = 1; }
+    if (b.rage && b.pose !== 'kneel' && frame % 3 === 0) parts.push({ x: b.x + rnd(-14, 14), y: FLOOR_Y - 96 - b.jy + rnd(0, 20), vx: rnd(-0.3, 0.3), vy: -rnd(0.4, 1), life: 18, col: '#6af0ff', size: 2, glow: 1 });
+    if ((b.state === 'leap' && b.t < bossP('leapWarn')) && (frame & 4)) { g.globalAlpha = 0.4; sprWhite('boss', key, sx, sy, b.face < 0, '#ff4040'); g.globalAlpha = 1; }
+    lights.push({ x: b.x, y: FLOOR_Y - 60 - b.jy, r: 64, cool: 1 });
+    drawCore(b, lights, 'acore');
+  },
+};
+
+// =====================================================================
 //  v0.4 STORY: portrait dialogue box, ヴェル VEL's one-line appearances, the true ending.
 //    ヴェル (主人付き秘書) is never fought. She appears in human form at key moments (new areas, after certain
 //    bosses, before Chronoa), says ONE short polite cryptic line, and fades away.
@@ -3484,6 +3829,8 @@ const VEL_LINES = {
   orrery:  '夜空の数を数えるのは、主のささやかなご趣味です。',
   clock:   '時計の針は、まだ止まっていませんよ。',
   chronoa: '……私の後ろには、立たないことをお勧めします。',
+  wine:    '古いものほど、主はお喜びになります。……人形も、お酒も。',
+  armory:  '中身がなくても、忠誠は残るものです。',
 };
 function storySay(who, text, frames) { const it = { who, text, t: frames || 260, T: frames || 260 }; if (STORY.box) STORY.queue.push(it); else STORY.box = it; }
 // Vel appears once per save for each key, near (x, feet y), says her line, and fades out
@@ -3791,6 +4138,49 @@ const MUSIC_SONGS = {
       A2: { base: 'A', p2: 'echo' } },
     order: ['A', 'B', 'A2'] },
 
+  // ---- v0.5 ----
+  wine: { name: 'VINTAGE TANGO', jp: '道中：古酒の大貯蔵庫', mood: 'tipsy A minor tango in the cask vaults; plucked stabs, a swaying bass, sour grace notes', bpm: 112,
+    lead: { duty: 0.25, vol: 0.06, gate: 0.8 }, p2v: { duty: 0.125, vol: 0.032 },
+    sections: {
+      A: { chords: ['Am', 'E7', 'Am', 'Dm', 'Am', 'F', 'B7,E7', 'Am'], p2: 'stab', bass: 'pop',
+        drums: ['k...s.s.k...s.s.'], fill: 'k...s.s.k.s.ssss',
+        mel: ['A5:3 B5:1 C6:2 E6 A6:4 G#6:2 E6', 'F6:6 E6:2 B5:8', 'C6:3 D6:1 E6:2 A6 C7:4 B6:2 A6', 'D6:6 F6:2 A5:8',
+              'E6:3 D6:1 C6:2 B5 A5:4 C6:2 E6', 'F6:6 C6:2 A5:8', 'D#6:2 F#6 A6 F#6 E6 G#6 B6 D7', 'C7:4 B6 A6:8'] },
+      B: { chords: ['F', 'G', 'C', 'Am', 'Dm', 'Am', 'B7', 'E7'], p2: 'harm3', bass: 'walk',
+        drums: ['k.h.s.h.k.h.s.hh'], fill: 'k.s.s.s.ssssxcx.',
+        mel: ['A6:4 C7:2 A6 F6:4 A6:2 C7', 'B6:6 G6:2 D6:8', 'E6:4 G6:2 C7 E7:4 D7:2 C7', 'A6:6 E6:2 C6:8',
+              'D6:4 F6:2 A6 D7:4 C7:2 A6', 'C7:6 B6:2 A6:8', 'D#6:2 F#6 A6 B6 D#7 B6 A6 F#6', 'G#6:8 E6:4 B5'] },
+      A2: { base: 'A', p2: 'echo' } },
+    order: ['A', 'B', 'A2'] },
+
+  armory: { name: 'HOLLOW OATH', jp: '道中：騎士の武具庫', mood: 'stately C minor march for empty armour; snare rolls, brass-like square lead, a proud bridge', bpm: 116,
+    lead: { duty: 0.5, vol: 0.058, gate: 0.82 }, p2v: { duty: 0.25, vol: 0.032 },
+    sections: {
+      A: { chords: ['Cm', 'Ab', 'Fm', 'G', 'Cm', 'Eb', 'G7', 'Cm'], p2: 'harm3', bass: 'march',
+        drums: ['k.s.k.s.k.s.kss.'], fill: 'k.s.k.s.ssssssss',
+        mel: ['C5:3 C5:1 G5:4 C6:6 Bb5:2', 'Ab5:4 G5:2 F5 Eb5:4 C5', 'F5:3 F5:1 Ab5:4 C6:6 Ab5:2', 'G5:12 r:4',
+              'Eb6:3 D6:1 C6:4 G5:6 C6:2', 'Bb5:4 G5:2 Eb5 Bb5:4 Eb6', 'D6:2 F6 G6 F6 D6 B5 G5 B5', 'C6:12 r:4'] },
+      B: { chords: ['Ab', 'Bb', 'Eb', 'Cm', 'Fm', 'G', 'Ab,Bb', 'G7'], p2: 'arp8', bass: 'oct8',
+        drums: ['k..sk.s.k..sk.ss'], fill: 'k.s.s.s.ssssxcx.',
+        mel: ['C6:4 Eb6:2 Ab6 C7:6 Ab6:2', 'D6:4 F6:2 Bb6 D7:6 Bb6:2', 'Eb7:4 D7:2 C7 Bb6:4 G6', 'C7:12 G6:4',
+              'Ab6:4 F6:2 C6 F6:4 Ab6', 'G6:4 D6:2 B5 D6:4 G6', 'C7:2 Bb6 Ab6 G6 F6 Eb6 D6 F6', 'B5:8 D6:4 G6'] },
+      A2: { base: 'A', p2: 'echo' } },
+    order: ['A', 'B', 'A2'] },
+
+  boss6: { name: 'UNCORKED', jp: 'ボス：樽蜘蛛／空っぽの騎士団長', mood: 'driving E minor boss theme; galloping bass, fanfare stabs, a defiant bridge', bpm: 156,
+    lead: { duty: 0.25, vol: 0.07, gate: 0.84 }, p2v: { duty: 0.125, vol: 0.036 },
+    sections: {
+      A: { chords: ['Em', 'Em', 'C', 'D', 'Em', 'Am', 'B7', 'Em'], p2: 'arp16', bass: 'gallop',
+        drums: ['k.hks.hkk.hks.hk'], fill: 'k.hks.hks.s.ssss',
+        mel: ['E5:2 G5 B5 E6 D#6:4 B5', 'G5:2 F#5 E5 B4 E5:8', 'C6:2 B5 A5 G5 E5:4 G5', 'F#5:6 D5:2 A5:8',
+              'B5:2 G5 E5 G5 B5:4 E6', 'C6:4 A5:2 E5 C6:4 E6', 'D#6:2 F#6 A6 F#6 D#6 B5 D#6 F#6', 'E6:12 r:4'] },
+      B: { chords: ['C', 'D', 'B', 'Em', 'Am', 'B', 'C,D', 'B7'], p2: 'harm3', bass: 'oct8',
+        drums: ['k.k.s.k.k.k.s.kk'], fill: 'k.s.s.s.ssssxcx.',
+        mel: ['E6:4 G6:2 E6 C6:4 E6', 'F#6:4 A6:2 F#6 D6:4 F#6', 'D#6:4 F#6:2 B6 D#7:4 B6', 'G6:6 F#6:2 E6:8',
+              'E6:4 C6:2 A5 E6:4 A6', 'F#6:4 D#6:2 B5 F#6:4 B6', 'C7:2 B6 A6 G6 A6 B6 C7 D7', 'D#7:8 B6:4 F#6'] },
+      A2: { base: 'A', p2: 'echo' } },
+    order: ['A', 'B', 'A2'] },
+
   chronoa: { name: 'NOT DONE YET', jp: 'ボス：時計塔管理人クロノア', mood: 'true final boss, C# minor; drowsy music-box intro feel over a relentless clockwork gallop, rewinding runs', bpm: 164,
     lead: { duty: 0.25, vol: 0.07, gate: 0.82 }, p2v: { duty: 0.125, vol: 0.034 },
     sections: {
@@ -3833,9 +4223,9 @@ const MUSIC_SONGS = {
       mel: ['F5:2 E5 D5 A4 F4:8', 'G4:4 E4 D4:8'] } },
     order: ['A'] },
 };
-const MUSIC_LIST = ['title', 'mansion', 'laundry', 'garden', 'clock', 'chapel', 'bath', 'boss', 'boss2', 'boss3', 'boss4', 'theater', 'stars', 'boss5', 'vault', 'afterglow', 'jingle_warning', 'jingle_save', 'jingle_clear', 'jingle_gameover'];
+const MUSIC_LIST = ['title', 'mansion', 'laundry', 'garden', 'clock', 'chapel', 'bath', 'boss', 'boss2', 'boss3', 'boss4', 'theater', 'stars', 'boss5', 'wine', 'armory', 'boss6', 'vault', 'afterglow', 'jingle_warning', 'jingle_save', 'jingle_clear', 'jingle_gameover'];
 const BOSS_THEMES = new Set(['boss', 'boss2', 'boss3']);
-const BOSS_MUSIC = { chronoa: 'chronoa', marionette: 'boss5', orrery: 'boss5', chandelier: 'boss', golem: 'boss2', rose: 'boss2', clock: 'boss3', organ: 'boss4', serpent: 'boss4' };
+const BOSS_MUSIC = { tarant: 'boss6', knight: 'boss6', chronoa: 'chronoa', marionette: 'boss5', orrery: 'boss5', chandelier: 'boss', golem: 'boss2', rose: 'boss2', clock: 'boss3', organ: 'boss4', serpent: 'boss4' };
 
 // ---------------------------------------------------------------------
 //  compiler: song -> events per 16th step  { ch: 'p1'|'p2'|'tri'|'noi', m: midi, len (steps), vol, duty, kind }
@@ -4289,7 +4679,7 @@ function foeSprite(e) {
   }
 }
 // v0.4 area skins: same behaviour, new look (dancer = puppet, maskbat = bat, starwisp = skullwisp, chart = cursedbook)
-const FOE_SKIN_BASE = { dancer: 'puppet', maskbat: 'bat', starwisp: 'skullwisp', chart: 'cbook' };
+const FOE_SKIN_BASE = { dancer: 'puppet', maskbat: 'bat', starwisp: 'skullwisp', chart: 'cbook', corkbat: 'bat', grapewisp: 'skullwisp', squire: 'skel', griffin: 'garg' };   // v0.5 +4
 function foeSkin(e, k) { const base = e.skin && FOE_SKIN_BASE[e.skin]; return base && k.startsWith(base) ? e.skin + k.slice(base.length) : k; }
 function drawFoe(e, x, y) {
   const k = foeSkin(e, foeSprite(e)), r = rectOf('enemies', k), fl = e.type === 'gargoyle' ? pcx() < e.x : e.face < 0;
@@ -4331,6 +4721,10 @@ function drawShot(s) {
 }
 function drawEBullet(b) {
   const x = b.x - cam.x, y = b.y - cam.y;
+  if (b.spr) { spr('boss', b.spr, x, y, b.vx < 0); return; }   // v0.5: generic sprite bullets (behaviour from kind)
+  if (b.kind === 'corkshot') { g.save(); g.translate(Math.round(x + 6), Math.round(y + 7)); g.rotate(b.life * 0.3); const r = rectOf('boss', 'corkshot'); g.drawImage(IMG.boss, r.x, r.y, r.w, r.h, -6, -7, r.w, r.h); g.restore(); return; }
+  if (b.kind === 'halberd') { const k = Math.min(1, (22 - b.life) / 4), yy = Math.round(y + (b.h - 64) * k); g.fillStyle = 'rgba(220,230,255,0.25)'; g.fillRect(Math.round(x + 2), Math.round(y), 8, yy - Math.round(y)); spr('boss', 'halberd', x, yy); return; }
+  if (b.kind === 'gsword') { spr('boss', 'greatsword', Math.round(x + 8), Math.round(y)); return; }
   if (b.kind === 'plate') { spr('items', 'plate', x, y); if (b.spin & 4) { g.fillStyle = '#ffffff'; g.fillRect(Math.round(x + 2), Math.round(y + 1), 3, 1); } }
   // v0.4 area bosses
   else if (b.kind === 'string') { const k = Math.min(1, (22 - b.life) / 4), h = Math.round(b.h * k); g.fillStyle = 'rgba(255,240,220,0.35)'; g.fillRect(Math.round(x + 1), Math.round(y), 8, h);
@@ -4525,18 +4919,19 @@ function renderMap() {
   const tsec = Math.floor(progress.time / 60); drawText('TIME ' + Math.floor(tsec / 60) + ':' + String(tsec % 60).padStart(2, '0'), 160, by, 'b', 1);
   drawText('BOSS ' + progress.bosses.size + '/' + BOSS_TOTAL, 240, by, 'r', 1);
   drawText('GHOST ' + progress.captures, 306, by, 'c', 1);
-  const abW = k => 26 + (hasAbil(k) ? ABIL_INFO[k].jp.length : 3) * 10;
-  let ax = 14; for (const k in ABIL_INFO) { drawAbilIcon(k, ax, by + 12, hasAbil(k)); ax += abW(k); }
-  // area legend
-  let lx = 14; for (const k in AREAS) { g.fillStyle = AREAS[k].col; g.fillRect(lx, by + 40, 8, 8); rectLine(lx, by + 40, 8, 8, '#a8b8e8'); lx += 46; }
+  // v0.5: powers in rows of 4, area legend in rows of 5 (15 areas)
+  const AB = Object.keys(ABIL_INFO), abX = i => 14 + (i % 4) * 92, abY = i => by + 11 + Math.floor(i / 4) * 12;
+  AB.forEach((k, i) => drawAbilIcon(k, abX(i), abY(i), hasAbil(k)));
+  const AR = Object.keys(AREAS), lgY0 = by + 14 + Math.ceil(AB.length / 4) * 12, lgX = i => 14 + (i % 5) * 72, lgY = i => lgY0 + Math.floor(i / 5) * 10;
+  AR.forEach((k, i) => { g.fillStyle = AREAS[k].col; g.fillRect(lgX(i), lgY(i), 7, 7); rectLine(lgX(i), lgY(i), 7, 7, '#a8b8e8'); });
   const EB = MAP_ENTRY_BTN; g.fillStyle = '#2a1e48'; g.fillRect(EB.x, EB.y, EB.w, EB.h); rectLine(EB.x, EB.y, EB.w, EB.h, '#c8a0ff');
   drawText('TAP / MAP: BACK', VW / 2, VH - 10, 'b', 1, 'c');
   blit();
   drawHiText('部屋の入口に戻る（VAC / ↓）', VW / 2, EB.y + 4, 8, '#f0e0ff', '#140a20', 'center');
   drawHiText((AREAS[room.def.area] || AREAS.east).jp + '　' + room.def.jp, VW / 2, 12, 10, '#fff4e0', '#1a0e28');
-  ax = 14; for (const k in ABIL_INFO) { drawHiText(hasAbil(k) ? ABIL_INFO[k].jp : '？？？', ax + 13, by + 11, 6.5, hasAbil(k) ? ABIL_INFO[k].col : '#5a5488', null, 'left'); ax += abW(k); }
-  lx = 14; for (const k in AREAS) { drawHiText(AREAS[k].short, lx + 11, by + 39, 6, '#c8c0f0', null, 'left'); lx += 46; }
-  drawHiText('■セーブ  B＝ボス  W＝ワープの間  ・光＝新しい力  黄色＝とびら' + (progress.hasKey ? '  舞踏会場の鍵あり' : ''), VW / 2, by + 54, 6.5, '#a8a0d8', null);
+  AB.forEach((k, i) => drawHiText(hasAbil(k) ? ABIL_INFO[k].jp : '？？？', abX(i) + 13, abY(i) - 1, 6.5, hasAbil(k) ? ABIL_INFO[k].col : '#5a5488', null, 'left'));
+  AR.forEach((k, i) => drawHiText(AREAS[k].short, lgX(i) + 10, lgY(i) - 1, 6, '#c8c0f0', null, 'left'));
+  drawHiText('■セーブ  B＝ボス  W＝ワープの間  ・光＝新しい力  黄色＝とびら' + (progress.hasKey ? '  舞踏会場の鍵あり' : ''), VW / 2, lgY0 + Math.ceil(AR.length / 5) * 10 + 2, 6.5, '#a8a0d8', null);
 }
 function renderPlayBase() { g.fillStyle = '#000'; g.fillRect(0, 0, VW, VH); g.drawImage(room.canvas, clamp(Math.round(cam.x), 0, room.W - VW), clamp(Math.round(cam.y), 0, room.H - VH), VW, VH, 0, 0, VW, VH); }
 const TITLE_MENU = [{ x: 108, y: 246, w: 76, h: 18 }, { x: 200, y: 246, w: 76, h: 18 }];

@@ -117,10 +117,17 @@ function updatePlayer() {
   else if (P.tug) { updateTug(); }
   else {
     const sp = (vacHeld ? C.vacWalkSpeed : C.walkSpeed) * timeSlowAt(pcx(), P.y + P.h), acc = P.onGround ? C.accel : C.airAccel;
-    if (dir) { P.face = dir; P.vx += clamp(dir * sp - P.vx, -acc, acc); }
-    else { P.vx += clamp(-P.vx, -C.decel, C.decel); }
+    // v0.5 グリム吸着 (GRIM GRIP): in the air, pushing into a wall makes Grim suck onto it -> slow slide; JUMP kicks off (wall jump)
+    if (P.wallLock > 0) P.wallLock--;
+    const clingDir = hasAbil('cling') && !P.onGround && dir && !vacHeld && P.vy > -1.5 && boxHitsSolid(P.x + dir * 2, P.y + 6, P.w, P.h - 12) ? dir : 0;
+    if (clingDir) { P.cling = clingDir; P.clingT = 6; } else if (P.clingT > 0) P.clingT--; else P.cling = 0;
+    if (dir && !(P.wallLock > 0)) { P.face = dir; P.vx += clamp(dir * sp - P.vx, -acc, acc); }
+    else if (!dir) { P.vx += clamp(-P.vx, -C.decel, C.decel); }
     if (P.onGround && !P.onFloat && (inp.dropPressed || (held('down') && P.jumpBuf > 0)) && onPlatOnly()) { P.dropT = 12; P.jumpBuf = 0; P.onGround = false; P.coyote = 0; P.y += 2; P.vy = 1; }   // v0.4.3 drop through
     else if (P.jumpBuf > 0 && (P.onGround || P.coyote > 0)) { P.vy = -C.jumpVel; P.jumpBuf = 0; P.coyote = 0; P.onGround = false; sfx('jump'); }
+    else if (P.jumpBuf > 0 && P.cling && P.clingT > 0) { // wall jump
+      P.vy = -C.wallJumpVel; P.vx = -P.cling * C.wallJumpVx; P.face = -P.cling; P.wallLock = C.wallJumpLock; P.jumpBuf = 0; P.cling = 0; P.clingT = 0; P.hover = C.hoverFrames; stats.wallJumps = (stats.wallJumps || 0) + 1; sfx('jump');
+      for (let i = 0; i < 6; i++) parts.push({ x: pcx() - P.face * 8, y: P.y + P.h - 10 + rnd(-6, 6), vx: P.face * rnd(0.3, 1.2), vy: rnd(-0.6, 0.6), life: 16, col: '#c8f0ff', size: 2, glow: 1 }); }
     else if (inp.jumpPressed && !P.onGround && P.coyote <= 0 && hasAbil('djump') && !P.dj) { // ゴーストステップ: second jump in the air
       P.vy = -C.djumpVel; P.dj = true; P.djT = 18; P.jumpBuf = 0; stats.djumps++; sfx('djump');
       for (let i = 0; i < 10; i++) parts.push({ x: pcx() + rnd(-6, 6), y: P.y + P.h, vx: rnd(-1.5, 1.5), vy: rnd(0.5, 1.8), life: 20, col: i & 1 ? '#c8a0ff' : '#ffffff', size: 2, glow: 1 });
@@ -129,6 +136,7 @@ function updatePlayer() {
   if (P.djT > 0) P.djT--;
   if (!held('jump') && P.vy < -C.jumpCutVel && P.knock <= 0) P.vy = -C.jumpCutVel;
   P.vy += C.gravity;
+  if (P.cling && P.clingT === 6 && P.vy > C.clingFall) { P.vy = C.clingFall; if (frame % 5 === 0) parts.push({ x: pcx() + P.cling * 8, y: P.y + P.h - 8, vx: 0, vy: -0.3, life: 12, col: '#a8d8ff', size: 1, glow: 1 }); tip('cling', 'グリムが壁に吸いついた！ そのまま JUMP で壁をけって、さらに上へ'); }
   if (!P.onGround && P.vy > 0 && held('jump') && P.hover > 0 && P.knock <= 0 && !P.tug) {
     if (P.vy > C.hoverFall) P.vy = C.hoverFall; P.hover--; P.hovering = true;
     if (!P.wasHover) sfx('hover');

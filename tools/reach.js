@@ -19,7 +19,7 @@ const CC = 24, CR = 18;
   const ents = []; for (const d of defs) for (const [t, x, y, o] of d.ents) ents.push({ room: d.id, t, o, c: gx(d, Math.floor(x)), r: gy(d, Math.round(y)) });
   const start = ents.find(e => e.t === 'start');
   const S = { abil: new Set(), key: false, open: new Set(), beat: new Set() };
-  const passT = i => { const t = base[i]; if (t === 0 || t === 2 || t === 3) return true; if (t === 4) return S.key; if (t === 5) { if (S.abil.has('phase')) for (const g in gatesAt) if (/:spirit/.test(g) && gatesAt[g].includes(i)) return true; for (const g of S.open) if (gatesAt[g] && gatesAt[g].includes(i)) return true; return false; } return false; };
+  const passT = i => { const t = base[i]; if (t === 0 || t === 2 || t === 3) return true; if (t === 4) return S.key; if (t === 5) { for (const [pre, ab] of [['spirit', 'phase'], ['ring', 'keyring'], ['dark', 'lantern']]) if (S.abil.has(ab)) for (const g in gatesAt) if (g.includes(':' + pre) && gatesAt[g].includes(i)) return true; for (const g of S.open) if (gatesAt[g] && gatesAt[g].includes(i)) return true; return false; } return false; };
   // movement model (tiles): body 1 wide x 3 tall (50px). From ground: climb budget K rows (jump 4, +4 with
   // double jump, +2 standing on a float platform) and an air budget HB of horizontal tiles (rise ~2.5 + hover
   // 70f x 1.7px ~ 7.4 tiles; double jump adds airtime). Falling one row lets you drift about one tile.
@@ -30,8 +30,10 @@ const CC = 24, CR = 18;
     const stand = (c, r) => r < H && (base[r * W + c] === 2 || !pass[r * W + c]);
     const best = new Int8Array(W * H).fill(-1), seen = new Uint8Array(W * H * KS * HS), q = [];
     par = new Int32Array(W * H).fill(-1); let cur = -1;
+    const CL = S.abil.has('cling');   // v0.5 グリム吸着: next to a wall the player can wall-jump upward indefinitely
+    const wallAdj = (c, r) => !Pp(c - 1, r - 2) || !Pp(c + 1, r - 2);
     const push = (c, r, k, h) => { if (!Pp(c, r - 1) || !Pp(c, r - 2) || !Pp(c, r - 3) || (r >= 4 && !Pp(c, r - 4))) return;   // v0.4.3: 50px body needs 4 clear rows
-      if (EDGES && cur >= 0) EDGES.push(cur, r * W + c); if (stand(c, r)) { k = K; h = HB; }
+      if (EDGES && cur >= 0) EDGES.push(cur, r * W + c); if (stand(c, r)) { k = K; h = HB; } else if (CL && wallAdj(c, r)) { k = Math.max(k, 3); h = HB; }
       const i = r * W + c, si = (i * KS + k) * HS + h; if (seen[si]) return; seen[si] = 1;
       if (best[i] < 0 && i !== cur) par[i] = cur; if (k > best[i]) best[i] = k; q.push(c, r, k, h); };
     push(start.c, start.r, K, HB);
@@ -96,6 +98,7 @@ const CC = 24, CR = 18;
     let bad = false; for (let k = 1; k <= 4 && r - k >= 0; k++) { const t = d.grid[(r - k) * d.cols + c]; if (t === 1 || t === 3 || t === 4) bad = true; } if (bad) lowLedges.push(d.id + '(' + c + ',' + r + ')'); }
   console.log('low-ceiling ledges:', lowLedges.length ? lowLedges.join(' ') : 'none');
   console.log('abilities:', [...S.abil].join(','), '| bosses:', [...S.beat].join(','));
+  if (process.env.DUMP) { const d = defs.find(z => z.id === process.env.DUMP); for (let r = 0; r < d.rows; r++) { let l = ''; for (let c = 0; c < d.cols; c++) { const i = gy(d, r) * W + gx(d, c); l += best[i] >= 0 ? 'o' : base[i] === 1 ? '#' : base[i] === 2 ? '=' : base[i] === 5 ? 'G' : '.'; } console.log(l); } }
   console.log('unreached cells:', missCells.length ? missCells.join(' ') : 'none');
   console.log('unreached pickups:', missEnts.length ? missEnts.join(' ') : 'none');
   // gating sanity: which areas are reachable with NO abilities?

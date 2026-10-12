@@ -1,0 +1,10 @@
+const { chromium } = require('playwright'); const SERVE = require('./serve.js');
+(async () => { const srv = await SERVE.start(require('path').resolve(__dirname, '..')); const b = await chromium.launch();
+  const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true }); const p = await ctx.newPage();
+  await p.goto(srv.url + 'index.html?room=watchtower&x=3&y=34&abil=' + (process.argv[2] || 'cling')); await p.waitForFunction(() => window.GAIDEN && GAIDEN.state === 'play');
+  await p.evaluate(() => { const G = GAIDEN, K = G._test.keys, I = G._test.inp; window.__cl = { minY: 1e9, held: 0, wj: 0 };
+    window.__bot = () => { const P = G.P, S = window.__cl; K.left = true; S.minY = Math.min(S.minY, P.y);
+      if (S.held > 0) { S.held--; K.jump = true; } else { K.jump = false; if (P.onGround || P.clingT > 0) { I.jumpPressed = true; K.jump = true; S.held = 14; } } }; window.__speed = 2; }); console.log("start", await p.evaluate(() => [GAIDEN.room.id, GAIDEN.room.rows, GAIDEN.P.x, GAIDEN.P.y]));
+  await p.waitForTimeout(6000);
+  console.log(JSON.stringify(await p.evaluate(() => ({ room: GAIDEN.room.id, minY: window.__cl.minY, y: GAIDEN.P.y, wj: GAIDEN.stats.wallJumps || 0 }))));
+  await b.close(); srv.close(); })();

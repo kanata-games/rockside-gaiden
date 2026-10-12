@@ -116,11 +116,11 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       ok('all rooms load (' + ids.length + ')', ids.length >= 30, areas);
       ok('3 new areas with 6-10 rooms each', ['laundry', 'garden', 'clock'].every(a => areas[a] >= 6 && areas[a] <= 10), areas);
       ok('v0.3 areas: crypt + bath with 6+ rooms each', areas.crypt >= 6 && areas.bath >= 6, areas);
-      const crit = await E(page, () => { let rats = 0, bats = 0; for (const d of GAIDEN.ROOM_DEFS) for (const e of d.ents || []) { if (e[0] === 'rat') rats++; if (e[0] === 'bats') bats++; } return { rats, bats, warps: GAIDEN.ROOM_DEFS.filter(d => d.warp).map(d => d.area) }; });
+      const crit = await E(page, () => { let rats = 0, bats = 0; for (const d of GAIDEN.ROOM_DEFS) for (const e of d.ents || []) { if (e[0] === 'rat') rats++; if (e[0] === 'bats' && !(e[3] && e[3].foe && e[3].foe.skin)) bats++; } return { rats, bats, warps: GAIDEN.ROOM_DEFS.filter(d => d.warp).map(d => d.area) }; });
       ok('fewer rats and bat swarms (<= 15 rats, <= 6 swarms)', crit.rats <= 15 && crit.bats <= 6, crit);
-      ok('a warp room in every area', ['east', 'laundry', 'garden', 'clock', 'crypt', 'bath'].every(a => crit.warps.includes(a)), crit.warps);
+      ok('a warp room in every area', ['east', 'laundry', 'garden', 'clock', 'crypt', 'bath', 'wine', 'armory'].every(a => crit.warps.includes(a)), crit.warps);
       ok('title has no PROTOTYPE', !(await E(page, () => document.documentElement.innerHTML.includes('PROTOTYPE'))));
-      ok('version 0.4.3', await E(page, () => (typeof GAME_VERSION !== 'undefined' && GAME_VERSION === '0.4.3') || GAIDEN.CONFIG.version === '0.4.3'));
+      ok('version 0.5.0', await E(page, () => (typeof GAME_VERSION !== 'undefined' && GAME_VERSION === '0.5.0') || GAIDEN.CONFIG.version === '0.5.0'));
       await ctx.close(); }
 
     // ---- world reachability / ability gating (static check over the stitched tile grid)
@@ -193,6 +193,26 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       ok('v0.4.3: wedged in mid-air while pushing for 3s -> back to the room entry', esc === 'stuck', { esc });
       await E(page, () => { GAIDEN.P.x = 300; GAIDEN.P.y = 100; GAIDEN.stats.lastEscape = null; }); await page.keyboard.press('Tab'); await sleep(300); await page.keyboard.press('KeyX'); await sleep(300);
       ok('v0.4.3: MAP screen offers 部屋の入口に戻る', await E(page, () => GAIDEN.state === 'play' && GAIDEN.stats.lastEscape === 'menu'));
+      await ctx.close(); }
+    // ---- v0.5: wine cellar behind a spirit barrier, armory behind a ring gate (鍵束), watchtower top needs グリム吸着
+    { const { ctx, page } = await open(browser, '?room=warp_east&x=3&y=15&abil=float,turbo,djump');
+      await waitFor(page, () => GAIDEN.state === 'play', 5000);
+      const g = await E(page, () => { const R = GAIDEN.room; let n5 = 0; for (const v of R.grid) if (v === 5) n5++; return n5; });
+      await E(page, () => { GAIDEN.loadRoom('ossuary', { start: true }); GAIDEN.placePlayer(10 * 16, 14 * 16, 1); }); await sleep(300);
+      const r0 = await E(page, () => { const R = GAIDEN.room; return R.grid[12 * R.cols + R.cols - 1]; });
+      await E(page, () => { GAIDEN.gainAbility({ abil: 'keyring', x: 100, y: 240 }); }); await sleep(300);
+      const r1 = await E(page, () => { const R = GAIDEN.room; return R.grid[12 * R.cols + R.cols - 1]; });
+      ok('v0.5: wine entrance is a spirit barrier; armory ring gate opens with 鍵束', g > 0 && r0 !== 0 && r1 === 0, { g, r0, r1 });
+      ok('v0.5: new areas have music, Vel lines, warp rooms and bosses', await E(page, () => GAIDEN.AREAS.wine.music === 'wine' && GAIDEN.AREAS.armory.music === 'armory' && !!GAIDEN.ROOM_BY_ID.tasting.vel && !!GAIDEN.ROOM_BY_ID.armoryhall.vel && !!GAIDEN.ROOM_BY_ID.warp_wine && !!GAIDEN.ROOM_BY_ID.warp_armory));
+      await ctx.close(); }
+    { const { ctx, page } = await open(browser, '?room=watchtower&x=3&y=34&abil=cling');
+      await waitFor(page, () => GAIDEN.state === 'play', 5000);
+      await E(page, () => { const G = GAIDEN, K = G._test.keys, I = G._test.inp; window.__cl = { minY: 1e9, held: 0 };
+        window.__bot = () => { const P = G.P, S = window.__cl; K.left = true; if (G.room.id === 'watchtower') S.minY = Math.min(S.minY, P.y);
+          if (S.held > 0) { S.held--; K.jump = true; } else { K.jump = false; if (P.onGround || P.clingT > 0) { I.jumpPressed = true; K.jump = true; S.held = 14; } } }; window.__speed = 2; });
+      await sleep(6000);
+      const cl = await E(page, () => ({ room: GAIDEN.room.id, minY: window.__cl.minY })); await E(page, () => { window.__bot = null; });
+      ok('v0.5: グリム吸着 wall-jumps climb the watchtower shaft', cl.room === 'watchtower' && cl.minY < 120, cl);
       await ctx.close(); }
 
     // ---- v0.3: room entry safety (no stunlock at the door)
@@ -291,7 +311,7 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       ok('clock hands: the marked stab actually comes down from the ceiling', await waitFor(page, () => GAIDEN.ebullets.some(q => q.kind === 'hand' && q.h > 150), 20000)); await ctx.close(); }
 
     // ---- bosses 2-4, played by the bot (god mode; balance runs without god mode: tools/bossrun.js)
-    for (const [kind, roomId, abil] of [['golem', 'washroom', 'float,turbo'], ['rose', 'rosebed', 'float,turbo,djump'], ['organ', 'choir', 'float,turbo,djump'], ['serpent', 'yubune', 'float,turbo,djump,phase'], ['marionette', 'stage', 'float,turbo,djump,phase'], ['orrery', 'dome', 'float,turbo,djump,phase'], ['clock', 'clockroom', 'float,turbo,djump,phase'], ['chronoa', 'clockheart', 'float,turbo,djump,phase,tank']]) {
+    for (const [kind, roomId, abil] of [['golem', 'washroom', 'float,turbo'], ['rose', 'rosebed', 'float,turbo,djump'], ['organ', 'choir', 'float,turbo,djump'], ['serpent', 'yubune', 'float,turbo,djump,phase'], ['marionette', 'stage', 'float,turbo,djump,phase'], ['orrery', 'dome', 'float,turbo,djump,phase'], ['tarant', 'winethrone', 'float,turbo,djump,phase'], ['knight', 'tiltyard', 'float,turbo,djump,phase,keyring'], ['clock', 'clockroom', 'float,turbo,djump,phase'], ['chronoa', 'clockheart', 'float,turbo,djump,phase,tank']]) {
       const { ctx, page } = await open(browser, `?room=${roomId}&x=2&y=16&god=1&abil=${abil}`);
       await waitFor(page, () => GAIDEN.state === 'play', 5000);
       await E(page, BOT); await E(page, () => { window.__speed = 8; });

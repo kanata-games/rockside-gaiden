@@ -8,7 +8,7 @@
 //  Positions: x = centre, y = bottom (feet), like every non-ghost entity.
 // =====================================================================
 const FOE_SIZE = { bat: [14, 10], rat: [18, 10], gargoyle: [26, 26], puppet: [16, 30], skeleton: [18, 40], cursedbook: [16, 14], skullwisp: [16, 18], crab: [20, 12] };
-const SKIN_JP = { dancer: '踊り子人形', maskbat: '仮面コウモリ', starwisp: '星くず火', chart: '呪いの星図' };
+const SKIN_JP = { dancer: '踊り子人形', maskbat: '仮面コウモリ', starwisp: '星くず火', chart: '呪いの星図', corkbat: 'コルクコウモリ', grapewisp: 'ぶどう火', squire: '見習い鎧', griffin: '石のグリフォン' };
 const FOE_JP = { bat: 'コウモリ', rat: 'ネズミ', gargoyle: 'ガーゴイル', puppet: 'あやつり人形', skeleton: '骸骨の給仕', cursedbook: '呪いの本', skullwisp: 'どくろ火', crab: 'おふろガニ' };
 const EDIBLE = { rat: 1, bat: 1, crab: 1 };  // tiny critters: the mimic vacuum eats them
 function makeFoe(kind, x, y, opt) {
@@ -215,7 +215,7 @@ function gainAbility(e) {
   e.has = true; progress.abil[e.abil] = true; stats.abilities.push(e.abil); sfx('get'); cam.shake = 4; hitStop = 10; P.hp = progress.maxHP;
   for (let i = 0; i < 30; i++) { const a = i / 30 * 6.28; parts.push({ x: e.x, y: e.y - 44, vx: Math.cos(a) * 2.5, vy: Math.sin(a) * 2.5, life: 34, col: ABIL_INFO[e.abil].col, size: 2, glow: 1 }); }
   abilityGet.t = 300; abilityGet.abil = e.abil; syncAbilities();
-  if (e.abil === 'phase') openSpiritGates();
+  openAbilGates(e.abil);
   tip('abil_' + e.abil, ABIL_INFO[e.abil].text, true);
 }
 const abilityGet = { t: 0, abil: null };

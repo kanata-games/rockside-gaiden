@@ -16,6 +16,8 @@ const VEL_LINES = {
   orrery:  '夜空の数を数えるのは、主のささやかなご趣味です。',
   clock:   '時計の針は、まだ止まっていませんよ。',
   chronoa: '……私の後ろには、立たないことをお勧めします。',
+  wine:    '古いものほど、主はお喜びになります。……人形も、お酒も。',
+  armory:  '中身がなくても、忠誠は残るものです。',
 };
 function storySay(who, text, frames) { const it = { who, text, t: frames || 260, T: frames || 260 }; if (STORY.box) STORY.queue.push(it); else STORY.box = it; }
 // Vel appears once per save for each key, near (x, feet y), says her line, and fades out

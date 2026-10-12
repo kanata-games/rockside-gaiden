@@ -1,5 +1,5 @@
 // Version label (title screen + footer). Bump on every release.
-const GAME_VERSION = '0.4.3';
+const GAME_VERSION = '0.5.0';
 // =====================================================================
 //  ROCKSIDE外伝 清掃員カナタ  -  haunted-mansion exploration + vacuum action (prototype)
 //  All gameplay tuning lives in CONFIG. Units: pixels and frames @60Hz.
@@ -46,6 +46,7 @@ const CONFIG = {
 
   // ---- abilities found in the mansion ----
   turboRange: 1.18,                  // ターボ吸引: cone length multiplier; also lifts heavy objects, levers and wardrobes
+  wallJumpVel: 6.4, wallJumpVx: 2.6, wallJumpLock: 8, clingFall: 0.9,   // v0.5 グリム吸着 wall cling / wall jump
   djumpVel: 6.3,                     // 二段ジャンプ (ゴーストステップ): second jump in the air
   float: { holdFrames: 16, life: 330, max: 2, w: 26, h: 8 },   // ふわり化: hold SPIT -> the oldest stored object floats as a platform
 
@@ -70,6 +71,7 @@ const CONFIG = {
     bone:      { dmg: 2, w: 16, h: 8, pierce: 1 },          // v0.3 crypt: skull wisps spit bones
     duck:      { dmg: 2, w: 14, h: 13, bounce: 3 },         // v0.3 bath: rubber ducks bounce around
     note:      { dmg: 2, w: 12, h: 12, pierce: 1 },          // v0.3 chapel: the organ's music notes
+    cork:      { dmg: 2, w: 10, h: 12, bounce: 1 },         // v0.5 vintage vaults: corks pop and bounce
   },
   bossMul: 2,
 
@@ -142,4 +144,12 @@ const CONFIG = {
     cometWarn: 46, cometWarnRage: 40, cometSpeed: 3.0, cometSpeedRage: 3.4, cometDamage: 1, orbitWarn: 40, orbitWarnRage: 34, planets: 2, planetsRage: 3,
     planetSpeed: 2.8, planetSpeedRage: 3.1, planetDamage: 1, novaWarn: 62, novaWarnRage: 54, shards: 6, shardsRage: 7, shardSpeed: 3.6, shardDamage: 2,
     stun: 150, stunRage: 130, coreCap: 30, specialEvery: 3 },
+  // ---- v0.5 expansion bosses: a little harder than the v0.4 pair (shorter idle, a bit more HP), every attack audited
+  // 樽蜘蛛 バレルタラント BARRELTARANT (old vintage vaults)
+  tarant: { hp: 210, idle: 42, idleRage: 32, corks: 4, corksRage: 5, corkWarn: 44, corkWarnRage: 38, corkDamage: 1, spillWarn: 42, spillWarnRage: 36, waveSpeed: 2.7, waveDamage: 1,
+    dropWarn: 44, dropWarnRage: 38, dropDamage: 2, plungeTrack: 56, plungeLock: 32, plungeLockRage: 28, plungeDamage: 2, stun: 150, stunRage: 130, coreCap: 30, specialEvery: 3 },
+  // 空っぽの騎士団長 アイアンホロウ IRON HOLLOW (hall of knights)
+  knight: { hp: 225, idle: 40, idleRage: 30, halberds: 3, halberdsRage: 4, halbWarn: 40, halbWarnRage: 34, halbDamage: 1, slashWarn: 40, slashWarnRage: 34, slashDamage: 2,
+    waveSpeed: 2.8, waveDamage: 1, leapWarn: 40, leapWarnRage: 36, leapAir: 40, leapDamage: 2, gleamTrack: 56, gleamLock: 30, gleamLockRage: 27, gswordDamage: 2,
+    stun: 145, stunRage: 125, coreCap: 30, specialEvery: 3 },
 };

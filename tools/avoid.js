@@ -19,6 +19,8 @@ const ATTACKS = {
   clock: ['clockroom', 'float,turbo,djump,phase', ['hands', 'gears', 'pendulum', 'midnight', 'chime']],
   marionette: ['stage', 'float,turbo,djump,phase', ['cut', 'dance', 'masks', 'spotlight']],
   orrery: ['dome', 'float,turbo,djump,phase', ['meteor', 'comet', 'orbit', 'supernova']],
+  tarant: ['winethrone', 'float,turbo,djump,phase', ['corks', 'spill', 'drop', 'plunge']],
+  knight: ['tiltyard', 'float,turbo,djump,phase,keyring', ['halberds', 'slash', 'leap', 'greatsword']],
   chronoa: ['clockheart', 'float,turbo,djump,phase,tank', ['hands', 'pendulum', 'rewind', 'slow', 'beam']],
 };
 module.exports.ATTACKS = ATTACKS;
@@ -76,7 +78,7 @@ async function one(browser, base, boss, atk, rage, opt) {
   await page.evaluate(() => { const G = GAIDEN; window.__ctl = { x: null }; window.__bot = () => { const K = G._test.keys; K.left = K.right = K.jump = K.vac = K.spit = false;
     if (window.__ctl.x === null) { if (G.P.x < 8 * 16) K.right = true; } else { G.P.x = window.__ctl.x - G.P.w / 2; G.P.vx = 0; }
     if (window.__hz && window.__hzOn) { window.__hz.push([]); const b = G.boss; window.__mk.push(b && b.marks ? b.marks.map(Math.round).join(',') : ''); } }; window.__speed = 4; });
-  await page.waitForFunction(() => GAIDEN.boss && GAIDEN.boss.state !== 'sleep' && GAIDEN.boss.state !== 'intro', null, { timeout: 20000 });
+  await page.waitForFunction(() => GAIDEN.boss && GAIDEN.boss.state !== 'sleep' && GAIDEN.boss.state !== 'intro', null, { timeout: 60000 });
   if (rage) await page.evaluate(() => { const b = GAIDEN.boss; b.hp = Math.floor(b.maxHp * 0.45); b.damage(0); });
   const arena = await page.evaluate(() => { const G = GAIDEN, R = G.room, row = 14; let L = 0, Rr = R.W; // walls at foot height
     const solid = c => { const t = R.grid[row * R.cols + c]; return t === 1 || t === 4 || t === 5; };

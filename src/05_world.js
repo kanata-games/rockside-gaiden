@@ -15,6 +15,8 @@ const ABIL_INFO = {
   djump: { jp: '二段ジャンプ', en: 'GHOST STEP', col: '#c8a0ff', text: '空中でもう一度 JUMP できるようになった！（ゴーストステップ）' },
   phase: { jp: '霊体化', en: 'PHASE', col: '#e0b8ff', text: '半分ゴーストの力が目覚めた！ 青白い「霊の結界」をすり抜けられるようになった' },
   tank:  { jp: '大容量タンク', en: 'BIG TANK', col: '#9affc8', text: '掃除機のタンクが大きくなった！ 物を 4 つまでためておける' },
+  keyring: { jp: '鍵束', en: 'KEY RING', col: '#ffd84a', text: '屋敷じゅうの錠前に合う「鍵束」を手に入れた！ 金色の錠前がかかった扉を開けられる' },
+  cling: { jp: 'グリム吸着', en: 'GRIM GRIP', col: '#a8d8ff', text: '相棒の掃除機グリムが壁に吸いつけるようになった！ 空中で壁に向かって押すと張りつき、JUMP で壁をけって登れる' },
 };
 const hasAbil = k => !!progress.abil[k];
 function saveGame(roomId) {
@@ -130,6 +132,8 @@ function renderRoomStatic() {
     const gs = t === T_GATE ? (gateAt[r * room.cols + col] || 'bars') : null;
     if (gs === 'hidden') continue;
     if (gs === 'spirit') { drawSpiritTile(c, x, y, col, r); continue; }
+    if (gs === 'ring') { drawRingTile(c, x, y, col, r); continue; }
+    if (gs === 'dark') { drawDarkTile(c, x, y, col, r); continue; }
     if (gs === 'bars') { const horiz = tileAt(col - 1, r) === T_GATE || tileAt(col + 1, r) === T_GATE; spr('tiles', horiz && !(tileAt(col, r - 1) === T_GATE || tileAt(col, r + 1) === T_GATE) ? 'grate' : 'bars', x, y, false, c); continue; }
     if (t === T_SOLID || t === T_SECRET || t === T_GATE) {
       const v = hash(col, r) & 1, top = r > 0 && !isSolidT(tileAt(col, r - 1)) && tileAt(col, r - 1) !== T_LOCK;
@@ -178,10 +182,10 @@ function loadRoom(id, entry) {
   const def = ROOM_BY_ID[id], G = buildRoomGrid(def);
   room = { def, id, cols: G.cols, rows: G.rows, grid: G.grid, gates: G.gates, W: G.cols * TS, H: G.rows * TS, canvas: room && room.canvas, openings: roomOpenings(def, G), t: 0 };
   // permanent changes
-  for (const gid in G.gates) if (progress.perm.has(id + ':gate:' + gid) || (isSpirit(gid) && hasAbil('phase'))) for (const i of G.gates[gid]) room.grid[i] = T_EMPTY;
+  for (const gid in G.gates) if (progress.perm.has(id + ':gate:' + gid) || (gateAbil(gid) && hasAbil(gateAbil(gid)))) for (const i of G.gates[gid]) room.grid[i] = T_EMPTY;
   room.gateStyle = {};
   for (const gid in G.gates) { const e = def.ents.find(e => (e[0] === 'heavy' || e[0] === 'vines') && e[3] && e[3].gate === gid);
-    room.gateStyle[gid] = e ? 'hidden' : gid === 'floor' ? 'floor' : isSpirit(gid) ? 'spirit' : 'bars'; }
+    room.gateStyle[gid] = e ? 'hidden' : gid === 'floor' ? 'floor' : gateKind(gid) || 'bars'; }
   if (progress.perm.has(id + ':secret')) for (let i = 0; i < room.grid.length; i++) if (room.grid[i] === T_SECRET) room.grid[i] = T_EMPTY;
   if (progress.hasKey && progress.perm.has(id + ':lock')) for (let i = 0; i < room.grid.length; i++) if (room.grid[i] === T_LOCK) room.grid[i] = T_EMPTY;
   renderRoomStatic();
