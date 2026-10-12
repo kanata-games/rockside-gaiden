@@ -306,6 +306,8 @@ function drawEBullet(b) {
   if (b.kind === 'ropecol') { const k = Math.min(1, (20 - b.life) / 3), yy = Math.round(y + (b.h - 16) * k); g.fillStyle = '#c8a870'; g.fillRect(Math.round(x + 10), Math.round(y), 3, yy - Math.round(y)); g.fillStyle = 'rgba(255,240,200,0.25)'; g.fillRect(Math.round(x + 2), Math.round(y), b.w - 4, yy - Math.round(y)); spr('boss', 'clapper', Math.round(x - 3), yy); return; }   // v0.5.1
   if (b.kind === 'bubcol') { const k = Math.min(1, (22 - b.life) / 4), h = Math.round(b.h * k), y0 = Math.round(y + b.h - h); g.fillStyle = 'rgba(140,220,255,0.22)'; g.fillRect(Math.round(x + 2), y0, b.w - 4, h);
     for (let i = 0; i < h; i += 14) spr('boss', 'bubble', Math.round(x + 4 + Math.sin((i + frame) * 0.3) * 3), y0 + i); return; }
+  if (b.kind === 'bolt') { g.globalCompositeOperation = 'lighter'; g.strokeStyle = (frame & 2) ? '#ffffff' : '#c8e0ff'; g.lineWidth = 3; g.beginPath(); let bx = x + 14; g.moveTo(bx, y);
+    for (let yy = y; yy < y + b.h; yy += 18) { bx = x + 14 + rnd(-9, 9); g.lineTo(bx, yy + 18); } g.stroke(); g.fillStyle = 'rgba(200,220,255,0.25)'; g.fillRect(Math.round(x), Math.round(y), b.w, b.h); g.globalCompositeOperation = 'source-over'; return; }   // v0.6
   if (b.kind === 'gsword') { spr('boss', 'greatsword', Math.round(x + 8), Math.round(y)); return; }
   if (b.kind === 'plate') { spr('items', 'plate', x, y); if (b.spin & 4) { g.fillStyle = '#ffffff'; g.fillRect(Math.round(x + 2), Math.round(y + 1), 3, 1); } }
   // v0.4 area bosses

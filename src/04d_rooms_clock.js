@@ -41,7 +41,7 @@ ROOM_DEFS.push(
       ['sconce', 46, 9, { light: 1 }]] },
 
   { id: 'belfry', jp: '鐘楼の踊り場', en: 'BELFRY LANDING', area: 'clock', theme: 'tower', tiles: 'w', cx: 6, cy: -4, cw: 1, ch: 1, dark: 0.42,
-    build(R) { R.box(); R.open('B', 0, 16, 19); R.open('R', 0, 11, 14); R.plat(3, 9, 11); },
+    build(R) { R.box(); R.open('B', 0, 16, 19); R.open('R', 0, 11, 14); R.open('T', 0, 9, 12); R.plat(3, 9, 11); R.plat(10, 13, 7); },   // v0.6: roof hatch up to the spires
     ents: [['save', 6, 15], ['gear', 10, 15], ['chair', 4, 11], ['bottle', 12, 15], ['book', 8, 11],
       ['hint', 11, 15, { text: 'チクタク…チクタク… この先から大きな時計の音がする' }]],
     decor: [['bell', 12, 2, { top: 1 }], ['round_window', 6, 7], ['round_window', 19, 7], ['sconce', 12, 10, { light: 1 }], ['gear_med', 20, 15]] },

@@ -23,6 +23,7 @@ const ATTACKS = {
   knight: ['tiltyard', 'float,turbo,djump,phase,keyring', ['halberds', 'slash', 'leap', 'greatsword']],
   bellboard: ['bellhall', 'float,turbo,djump,phase,keyring', ['peal', 'chime', 'rope', 'toll']],   // v0.5.1
   angler: ['abyss', 'float,turbo,djump,phase,keyring,lantern', ['bubbles', 'bite', 'dive', 'lure']],
+  galecock: ['weathertop', 'float,turbo,djump,phase,keyring,lantern,cling', ['feathers', 'gust', 'swoop', 'storm']],   // v0.6
   chronoa: ['clockheart', 'float,turbo,djump,phase,tank', ['hands', 'pendulum', 'rewind', 'slow', 'beam']],
 };
 module.exports.ATTACKS = ATTACKS;
@@ -108,7 +109,10 @@ async function one(browser, base, boss, atk, rage, opt) {
     // hugging the boss body (contact range) is not a sane place to wait for an attack
     if (Math.abs(x0 - rec.bx) < 44) { out.skipped = (out.skipped || 0) + 1; continue; }
     // volley starts: frame 0 + every frame where a new non-empty mark set appears
-    const starts2 = [0]; for (let f = 1; f < rec.mk.length; f++) if (rec.mk[f] && rec.mk[f] !== rec.mk[f - 1]) starts2.push(f);
+    const starts2 = [0]; for (let f = 1; f < rec.mk.length; f++) if (rec.mk[f] && rec.mk[f] !== rec.mk[f - 1]) {
+      // v0.6: a mark that is still sliding (tracking attacks re-aim every frame) is not a new volley; judge it once it holds still for 6 frames
+      let stable = true; for (let d = 1; d <= 6; d++) if (rec.mk[f + d] !== undefined && rec.mk[f + d] !== rec.mk[f]) { stable = false; break; }
+      if (stable) starts2.push(f); }
     for (const sf of [...new Set(starts2)]) {
       // invalid start: Kanata was parked inside a hazard (e.g. the boss walked/landed on her spot during the previous attack)
       const hb = [0, 1, 2, 3].some(d => (H[sf + d] || []).filter(r => sf === 0 || r[5] < 0 || r[5] >= sf).some(r => { const hw = info.C.playerW / 2 - info.C.hurtInsetX; return x0 - hw < r[2] && x0 + hw > r[0] && arena.groundY - (info.C.playerH - info.C.hurtInsetTop) < r[3] && arena.groundY > r[1]; }));

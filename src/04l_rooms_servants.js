@@ -19,7 +19,7 @@ ROOM_DEFS.push(
     decor: [['linenshelf', 4, 15], ['linenshelf', 44, 15], ['ironboard', 24, 15], ['sheetline', 16, 2, { top: 1 }], ['sheetline', 34, 2, { top: 1 }], ['sconce', 12, 9, { light: 1 }], ['sconce', 36, 9, { light: 1 }]] },
 
   { id: 'servstair', jp: '使用人階段', en: "SERVANTS' STAIR", area: 'servants', theme: 'servants', tiles: 'v', cx: -6, cy: 3, cw: 1, ch: 2, dark: 0.6,
-    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.open('L', 1, 11, 14); R.open('R', 1, 11, 14); R.open('B', 1, 9, 12); R.gate(9, 33, 12, 35, 'dark_lake');
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.open('L', 1, 11, 14); R.open('R', 1, 11, 14); R.open('B', 0, 9, 12); R.gate(9, 33, 12, 35, 'dark_lake');
       R.plat(14, 19, 29); R.plat(4, 9, 25); R.plat(13, 18, 21); R.plat(5, 10, 17); R.plat(1, 5, 15); R.plat(18, 22, 15); R.plat(9, 14, 10); },
     ents: [['bats', 12, 24, { foe: { skin: 'bellbat' }, n: 2 }], ['puppet', 12, 33, { foe: { skin: 'dustmaid' } }], ['coin', 15, 29], ['coin', 17, 29], ['coin', 10, 10], ['coin', 12, 10], ['pan', 6, 25],
       ['hint', 10, 33, { need: 'lantern', text: '床の穴から冷たい風… 真っ黒な霧がつまっていて、何も見えない' }]],

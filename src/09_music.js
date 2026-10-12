@@ -298,6 +298,63 @@ const MUSIC_SONGS = {
       A2: { base: 'A', p2: 'echo' } },
     order: ['A', 'B', 'A2'] },
 
+  // ---- v0.6 ----
+  spires: { name: 'WEATHERVANE WALTZ', jp: '道中：尖塔の屋根', mood: 'airy E minor roof-top run under the dream moon; wind-like arps, a soaring lead, quick hats', bpm: 132,
+    lead: { duty: 0.25, vol: 0.058, gate: 0.8 }, p2v: { duty: 0.125, vol: 0.03 },
+    sections: {
+      A: { chords: ['Em', 'C', 'D', 'Bm', 'Em', 'Am', 'B7', 'Em'], p2: 'arp16', bass: 'pop',
+        drums: ['k.h.h.h.s.h.h.hh'], fill: 'k.h.h.h.s.s.ssss',
+        mel: ['E5:2 G5 B5 E6 D6:4 B5', 'C6:4 E6:2 G6 E6:8', 'D6:2 F#6 A6 F#6 D6:8', 'B5:6 F#5:2 B5:8',
+              'E6:2 D6 B5 G5 E5:4 G5', 'A5:4 C6:2 E6 A6:8', 'F#6:2 D#6 B5 D#6 F#6 A6 B6 D#7', 'E7:12 r:4'] },
+      B: { chords: ['C', 'D', 'G', 'Em', 'Am', 'B7', 'C,D', 'B7'], p2: 'harm3', bass: 'walk',
+        drums: ['k.h.s.h.k.h.s.hh'], fill: 'k.s.s.s.ssssxcx.',
+        mel: ['G6:4 E6:2 C6 G5:8', 'A6:4 F#6:2 D6 A5:8', 'B6:4 G6:2 D6 B5:8', 'E6:6 G6:2 B6:8',
+              'C7:4 A6:2 E6 C6:8', 'B6:4 F#6:2 D#6 B5:8', 'E6:2 G6 C7 G6 F#6 A6 D7 A6', 'B6:12 r:4'] },
+      A2: { base: 'A', p2: 'echo' } },
+    order: ['A', 'B', 'A2'] },
+
+  painted: { name: 'WET PAINT', jp: '道中：絵の中の世界', mood: 'whimsical F major in a painting; plucky stabs, a sliding chromatic lead, a dreamy bridge', bpm: 118,
+    lead: { duty: 0.125, vol: 0.06, gate: 0.75 }, p2v: { duty: 0.25, vol: 0.03 },
+    sections: {
+      A: { chords: ['F', 'Dm', 'Bb', 'C', 'F', 'Am', 'Gm,C7', 'F'], p2: 'stab', bass: 'pop',
+        drums: ['k..hs..hk..hs.h.'], fill: 'k..hs..hk.s.ssss',
+        mel: ['F5:2 A5 C6 A5 F5:4 C6', 'D6:4 F6:2 D6 A5:8', 'Bb5:2 D6 F6 D6 Bb6:8', 'C6:2 E6 G6 E6 C6:8',
+              'A5:2 C6 F6 C6 A6:4 F6', 'E6:4 C6:2 A5 E6:8', 'D6:2 G6 Bb6 G6 E6 G6 C7 E7', 'F6:12 r:4'] },
+      B: { chords: ['Bb', 'C', 'Am', 'Dm', 'Gm', 'C', 'F,Dm', 'C7'], p2: 'arp8', bass: 'walk',
+        drums: ['k.h.s.h.k.h.s.hh'], fill: 'k.s.s.s.ssssxcx.',
+        mel: ['D6:6 F6:2 Bb6:8', 'E6:6 G6:2 C7:8', 'C7:4 A6:2 E6 C6:8', 'D6:4 F6 A6 D7',
+              'Bb6:4 G6:2 D6 Bb5:8', 'C6:4 E6:2 G6 C7:8', 'A6:2 G6 F6 E6 D6 C6 D6 E6', 'G6:12 r:4'] },
+      A2: { base: 'A', p2: 'echo' } },
+    order: ['A', 'B', 'A2'] },
+
+  nursery: { name: 'WIND-UP LULLABY', jp: '道中：おもちゃ箱の子供部屋', mood: 'music-box G major lullaby that keeps slightly overwinding; toy-drum snares, chiming arps', bpm: 108,
+    lead: { duty: 0.125, vol: 0.055, gate: 0.7 }, p2v: { duty: 0.125, vol: 0.028 },
+    sections: {
+      A: { chords: ['G', 'Em', 'C', 'D', 'G', 'Bm', 'C,D', 'G'], p2: 'arp16', bass: 'pop',
+        drums: ['k...s...k...s.s.'], fill: 'k...s...k.s.ssss',
+        mel: ['B5:2 D6 G6 D6 B5:4 G5', 'E6:4 G6:2 E6 B5:8', 'C6:2 E6 G6 E6 C7:8', 'A6:4 F#6:2 D6 A5:8',
+              'G6:2 B6 D7 B6 G6:4 D6', 'F#6:4 D6:2 B5 F#6:8', 'E6:2 G6 C7 G6 F#6 A6 D7 A6', 'G6:12 r:4'] },
+      B: { chords: ['C', 'D', 'Bm', 'Em', 'Am', 'D', 'G,Em', 'D7'], p2: 'harm3', bass: 'walk',
+        drums: ['k...s...k...s.ss'], fill: 'k.s.s.s.ssssxcx.',
+        mel: ['E6:6 G6:2 C7:8', 'F#6:6 A6:2 D7:8', 'D7:4 B6:2 F#6 D6:8', 'E6:4 G6 B6 E7',
+              'C7:4 A6:2 E6 C6:8', 'D6:4 F#6:2 A6 D7:8', 'B6:2 A6 G6 F#6 E6 D6 E6 F#6', 'A6:12 r:4'] },
+      A2: { base: 'A', p2: 'echo' } },
+    order: ['A', 'B', 'A2'] },
+
+  boss8: { name: 'HIGHER STILL', jp: 'ボス：風見鶏／絵の具ゴーレム／びっくり箱', mood: 'bright, fierce A minor boss theme for the last three domains; double-time drums, soaring fanfares, a tense bridge toward the final seal', bpm: 162,
+    lead: { duty: 0.25, vol: 0.07, gate: 0.84 }, p2v: { duty: 0.125, vol: 0.036 },
+    sections: {
+      A: { chords: ['Am', 'Am', 'F', 'G', 'Am', 'Dm', 'E7', 'Am'], p2: 'arp16', bass: 'gallop',
+        drums: ['k.hks.hkk.hks.hk'], fill: 'k.hks.hks.s.ssss',
+        mel: ['A5:2 C6 E6 A6 G#6:4 E6', 'C6:2 B5 A5 E5 A5:8', 'F6:2 E6 D6 C6 A5:4 C6', 'B5:6 G5:2 D6:8',
+              'E6:2 C6 A5 C6 E6:4 A6', 'F6:4 D6:2 A5 F6:4 A6', 'G#6:2 B6 D7 B6 G#6 E6 G#6 B6', 'A6:12 r:4'] },
+      B: { chords: ['F', 'G', 'E', 'Am', 'Dm', 'E', 'F,G', 'E7'], p2: 'harm3', bass: 'oct8',
+        drums: ['k.k.s.k.k.k.s.kk'], fill: 'k.s.s.s.ssssxcx.',
+        mel: ['A6:4 C7:2 A6 F6:4 A6', 'B6:4 D7:2 B6 G6:4 B6', 'G#6:4 B6:2 E7 G#7:4 E7', 'C7:6 B6:2 A6:8',
+              'A6:4 F6:2 D6 A6:4 D7', 'B6:4 G#6:2 E6 B6:4 E7', 'F7:2 E7 D7 C7 D7 E7 F7 G7', 'G#7:8 E7:4 B6'] },
+      A2: { base: 'A', p2: 'echo' } },
+    order: ['A', 'B', 'A2'] },
+
   chronoa: { name: 'NOT DONE YET', jp: 'ボス：時計塔管理人クロノア', mood: 'true final boss, C# minor; drowsy music-box intro feel over a relentless clockwork gallop, rewinding runs', bpm: 164,
     lead: { duty: 0.25, vol: 0.07, gate: 0.82 }, p2v: { duty: 0.125, vol: 0.034 },
     sections: {
@@ -340,9 +397,9 @@ const MUSIC_SONGS = {
       mel: ['F5:2 E5 D5 A4 F4:8', 'G4:4 E4 D4:8'] } },
     order: ['A'] },
 };
-const MUSIC_LIST = ['title', 'mansion', 'laundry', 'garden', 'clock', 'chapel', 'bath', 'boss', 'boss2', 'boss3', 'boss4', 'theater', 'stars', 'boss5', 'wine', 'armory', 'boss6', 'servants', 'lake', 'boss7', 'vault', 'afterglow', 'jingle_warning', 'jingle_save', 'jingle_clear', 'jingle_gameover'];
+const MUSIC_LIST = ['title', 'mansion', 'laundry', 'garden', 'clock', 'chapel', 'bath', 'boss', 'boss2', 'boss3', 'boss4', 'theater', 'stars', 'boss5', 'wine', 'armory', 'boss6', 'servants', 'lake', 'boss7', 'spires', 'painted', 'nursery', 'boss8', 'vault', 'afterglow', 'jingle_warning', 'jingle_save', 'jingle_clear', 'jingle_gameover'];
 const BOSS_THEMES = new Set(['boss', 'boss2', 'boss3']);
-const BOSS_MUSIC = { tarant: 'boss6', knight: 'boss6', bellboard: 'boss7', angler: 'boss7', chronoa: 'chronoa', marionette: 'boss5', orrery: 'boss5', chandelier: 'boss', golem: 'boss2', rose: 'boss2', clock: 'boss3', organ: 'boss4', serpent: 'boss4' };
+const BOSS_MUSIC = { tarant: 'boss6', knight: 'boss6', bellboard: 'boss7', angler: 'boss7', galecock: 'boss8', paintgolem: 'boss8', boxjack: 'boss8', chronoa: 'chronoa', marionette: 'boss5', orrery: 'boss5', chandelier: 'boss', golem: 'boss2', rose: 'boss2', clock: 'boss3', organ: 'boss4', serpent: 'boss4' };
 
 // ---------------------------------------------------------------------
 //  compiler: song -> events per 16th step  { ch: 'p1'|'p2'|'tri'|'noi', m: midi, len (steps), vol, duty, kind }

@@ -156,6 +156,10 @@ const CONFIG = {
   // 呼び鈴盤 リンガリング RINGALING (servants' quarters)
   bellboard: { hp: 180, idle: 40, idleRage: 30, bells: 4, bellsRage: 5, bellWarn: 42, bellWarnRage: 36, bellDamage: 1, chimeWarn: 40, chimeWarnRage: 34, waveSpeed: 2.8, waveDamage: 1,
     ropeWarn: 42, ropeWarnRage: 36, ropeDamage: 2, tollTrack: 56, tollLock: 30, tollLockRage: 27, tollDamage: 2, stun: 145, stunRage: 125, coreCap: 30, specialEvery: 3 },
+  // ---- v0.6
+  // 風見鶏 ゲイルコック GALECOCK (rooftop spires)
+  galecock: { hp: 200, idle: 38, idleRage: 28, feathers: 4, feathersRage: 5, featherWarn: 40, featherWarnRage: 34, featherDamage: 1, gustWarn: 40, gustWarnRage: 34, waveSpeed: 2.9, waveDamage: 1,
+    swoopWarn: 46, swoopWarnRage: 40, swoopAir: 36, swoopDamage: 2, cloudTrack: 56, cloudLock: 38, cloudLockRage: 34, boltDamage: 2, stun: 140, stunRage: 120, coreCap: 30, specialEvery: 3 },
   // 灯り鮟鱇 ランタンアングラー LANTERN ANGLER (underground lake)
   angler: { hp: 230, idle: 40, idleRage: 30, bubbles: 3, bubblesRage: 4, bubWarn: 40, bubWarnRage: 34, bubDamage: 1, biteWarn: 40, biteWarnRage: 34, biteDamage: 2, biteDist: 96,
     waveSpeed: 2.8, waveDamage: 1, diveWarn: 48, diveWarnRage: 42, diveDamage: 2, lureTrack: 56, lureLock: 40, lureLockRage: 36, snapDamage: 2, stun: 140, stunRage: 120, coreCap: 30, specialEvery: 3 },
