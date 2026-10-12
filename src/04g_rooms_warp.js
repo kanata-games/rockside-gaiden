@@ -19,5 +19,7 @@ ROOM_DEFS.push(
   warpRoom('warp_servants', 'servants', 'servants', 'v', -7, 4, 'R', [['broom', 4, 15]]),   // v0.5.1
   warpRoom('warp_lake', 'lake', 'lake', 'l', -7, 6, 'R', [['glowmoss', 4, 15]]),
   warpRoom('warp_spires', 'spires', 'roof', 'x', 11, -6, 'L', [['chimney', 20, 15]]),   // v0.6
+  warpRoom('warp_paint', 'painted', 'canvas', 'p', -4, -2, 'R', [['easel', 4, 15]]),
+  warpRoom('warp_toys', 'nursery', 'nursery', 'o', 3, 6, 'R', [['toychest', 4, 15]]),
   warpRoom('warp_armory', 'armory', 'armory', 'a', 17, -1, 'L', [['weaponrack', 19, 15]]),
 );

@@ -20,7 +20,7 @@ ROOM_DEFS.push(
     decor: [['stagecurtain', 4, 15], ['masks', 15, 11], ['dollshelf', 10, 15], ['footlight', 14, 15, { light: 1 }], ['sconce', 20, 9, { light: 1 }], ['cobweb', 22.75, 2, { top: 1, flip: 1 }]] },
 
   { id: 'audience', jp: '観客席', en: 'AUDITORIUM', area: 'theater', theme: 'theater', tiles: 'w', cx: 1, cy: -1, cw: 3, ch: 1, dark: 0.5,
-    build(R) { R.box(); R.open('B', 1, 8, 11); R.open('R', 0, 11, 14);
+    build(R) { R.box(); R.open('B', 1, 8, 11); R.open('R', 0, 11, 14); R.open('T', 0, 8, 11); R.gate(8, 0, 11, 1, 'ring_paint'); R.plat(8, 11, 6);   // v0.6: padlocked gilt frame up into the painting
       R.plat(4, 12, 12); R.plat(14, 22, 10); R.plat(38, 46, 12); R.plat(50, 58, 10); R.plat(60, 68, 12); R.plat(26, 30, 7); R.plat(43, 48, 6); },
     ents: [['puppet', 10, 15, { foe: { skin: 'dancer' } }], ['puppet', 44, 15, { foe: { skin: 'dancer' } }], ['puppet', 62, 15, { foe: { skin: 'dancer' } }],
       ['bats', 54, 4, { foe: { skin: 'maskbat' }, n: 3 }], ['chair', 6, 12], ['chair', 18, 10], ['chair', 52, 10], ['plate', 40, 12], ['book', 64, 12],

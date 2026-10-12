@@ -23,6 +23,8 @@ const ATTACKS = {
   knight: ['tiltyard', 'float,turbo,djump,phase,keyring', ['halberds', 'slash', 'leap', 'greatsword']],
   bellboard: ['bellhall', 'float,turbo,djump,phase,keyring', ['peal', 'chime', 'rope', 'toll']],   // v0.5.1
   angler: ['abyss', 'float,turbo,djump,phase,keyring,lantern', ['bubbles', 'bite', 'dive', 'lure']],
+  paintgolem: ['paintthrone', 'float,turbo,djump,phase,keyring,lantern,cling', ['splat', 'brush', 'drip', 'leap']],
+  boxjack: ['jackroom', 'float,turbo,djump,phase,keyring,lantern,cling', ['blocks', 'hop', 'roll', 'crank']],
   galecock: ['weathertop', 'float,turbo,djump,phase,keyring,lantern,cling', ['feathers', 'gust', 'swoop', 'storm']],   // v0.6
   chronoa: ['clockheart', 'float,turbo,djump,phase,tank', ['hands', 'pendulum', 'rewind', 'slow', 'beam']],
 };

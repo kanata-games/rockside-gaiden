@@ -160,6 +160,12 @@ const CONFIG = {
   // 風見鶏 ゲイルコック GALECOCK (rooftop spires)
   galecock: { hp: 200, idle: 38, idleRage: 28, feathers: 4, feathersRage: 5, featherWarn: 40, featherWarnRage: 34, featherDamage: 1, gustWarn: 40, gustWarnRage: 34, waveSpeed: 2.9, waveDamage: 1,
     swoopWarn: 46, swoopWarnRage: 40, swoopAir: 36, swoopDamage: 2, cloudTrack: 56, cloudLock: 38, cloudLockRage: 34, boltDamage: 2, stun: 140, stunRage: 120, coreCap: 30, specialEvery: 3 },
+  // 絵の具ゴーレム パレットン PALETTON (painted world)
+  paintgolem: { hp: 240, idle: 38, idleRage: 28, blobs: 4, blobsRage: 5, splatWarn: 40, splatWarnRage: 34, blobDamage: 1, brushWarn: 40, brushWarnRage: 34, waveSpeed: 2.9, waveDamage: 1,
+    dripWarn: 42, dripWarnRage: 36, dripDamage: 2, shadowTrack: 56, shadowLock: 38, shadowLockRage: 34, crashDamage: 2, stun: 140, stunRage: 120, coreCap: 30, specialEvery: 3 },
+  // びっくり箱 ボックスジャック BOXJACK (toy nursery)
+  boxjack: { hp: 220, idle: 38, idleRage: 28, blocks: 4, blocksRage: 5, blockWarn: 40, blockWarnRage: 34, blockDamage: 1, hopWarn: 46, hopWarnRage: 40, hopAir: 36, hopDamage: 2,
+    rollWarn: 40, rollWarnRage: 34, waveSpeed: 2.9, waveDamage: 1, headTrack: 56, headLock: 38, headLockRage: 34, popDamage: 2, stun: 140, stunRage: 120, coreCap: 30, specialEvery: 3 },
   // 灯り鮟鱇 ランタンアングラー LANTERN ANGLER (underground lake)
   angler: { hp: 230, idle: 40, idleRage: 30, bubbles: 3, bubblesRage: 4, bubWarn: 40, bubWarnRage: 34, bubDamage: 1, biteWarn: 40, biteWarnRage: 34, biteDamage: 2, biteDist: 96,
     waveSpeed: 2.8, waveDamage: 1, diveWarn: 48, diveWarnRage: 42, diveDamage: 2, lureTrack: 56, lureLock: 40, lureLockRage: 36, snapDamage: 2, stun: 140, stunRage: 120, coreCap: 30, specialEvery: 3 },

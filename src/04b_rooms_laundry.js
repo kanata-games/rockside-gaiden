@@ -43,7 +43,7 @@ ROOM_DEFS.push(
 
   { id: 'kitchen', jp: '亡霊の厨房', en: 'PHANTOM KITCHEN', area: 'laundry', theme: 'kitchen', tiles: 't', cx: 5, cy: 4, cw: 3, ch: 1, dark: 0.46,
     build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.solid(10, 13, 17, 14); R.plat(20, 27, 11); R.solid(30, 13, 36, 14); R.plat(38, 44, 10);
-      R.plat(46, 52, 7); R.solid(55, 13, 62, 14); R.plat(64, 70, 11); },
+      R.plat(46, 52, 7); R.solid(55, 13, 62, 14); R.plat(64, 70, 11); R.open('B', 2, 2, 5); R.gate(50, 15, 53, 17, 'dark_nursery'); },   // v0.6: blacked-out stairs down to the nursery
     ents: [['skeleton', 24, 15], ['skeleton', 58, 13], ['rat', 40, 15], ['dish', 34, 6], ['puff', 50, 4],
       ['plate', 11, 13], ['plate', 13, 13], ['plate', 16, 13], ['plate', 32, 13], ['plate', 35, 13], ['pan', 22, 11], ['pan', 42, 10], ['pan', 57, 13],
       ['pot', 6, 15], ['pot', 48, 15], ['chair', 28, 15], ['chair', 52, 15], ['bottle', 45, 7], ['bottle', 61, 13], ['candle', 50, 7],

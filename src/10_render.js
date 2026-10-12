@@ -258,7 +258,8 @@ function foeSprite(e) {
   }
 }
 // v0.4 area skins: same behaviour, new look (dancer = puppet, maskbat = bat, starwisp = skullwisp, chart = cursedbook)
-const FOE_SKIN_BASE = { dancer: 'puppet', maskbat: 'bat', starwisp: 'skullwisp', chart: 'cbook', corkbat: 'bat', grapewisp: 'skullwisp', squire: 'skel', griffin: 'garg', dustmaid: 'puppet', bellbat: 'bat', lakewisp: 'skullwisp', blindcrab: 'crab' };   // v0.5 +4
+const FOE_SKIN_BASE = { dancer: 'puppet', maskbat: 'bat', starwisp: 'skullwisp', chart: 'cbook', corkbat: 'bat', grapewisp: 'skullwisp', squire: 'skel', griffin: 'garg', dustmaid: 'puppet', bellbat: 'bat', lakewisp: 'skullwisp', blindcrab: 'crab',
+  crow: 'bat', vanegarg: 'garg', inkbat: 'bat', brushdancer: 'puppet', tinsoldier: 'skel', toymouse: 'rat' };   // v0.6   // v0.5 +4
 function foeSkin(e, k) { const base = e.skin && FOE_SKIN_BASE[e.skin]; return base && k.startsWith(base) ? e.skin + k.slice(base.length) : k; }
 function drawFoe(e, x, y) {
   const k = foeSkin(e, foeSprite(e)), r = rectOf('enemies', k), fl = e.type === 'gargoyle' ? pcx() < e.x : e.face < 0;
@@ -308,6 +309,9 @@ function drawEBullet(b) {
     for (let i = 0; i < h; i += 14) spr('boss', 'bubble', Math.round(x + 4 + Math.sin((i + frame) * 0.3) * 3), y0 + i); return; }
   if (b.kind === 'bolt') { g.globalCompositeOperation = 'lighter'; g.strokeStyle = (frame & 2) ? '#ffffff' : '#c8e0ff'; g.lineWidth = 3; g.beginPath(); let bx = x + 14; g.moveTo(bx, y);
     for (let yy = y; yy < y + b.h; yy += 18) { bx = x + 14 + rnd(-9, 9); g.lineTo(bx, yy + 18); } g.stroke(); g.fillStyle = 'rgba(200,220,255,0.25)'; g.fillRect(Math.round(x), Math.round(y), b.w, b.h); g.globalCompositeOperation = 'source-over'; return; }   // v0.6
+  if (b.kind === 'paintcol') { const k = Math.min(1, (22 - b.life) / 4), h = Math.round(b.h * k); g.fillStyle = ['#e84a4a', '#3a8ae8', '#f0c030'][Math.floor(b.x / 40) % 3]; g.fillRect(Math.round(x + 4), Math.round(y), b.w - 8, h); g.fillStyle = 'rgba(255,255,255,0.35)'; g.fillRect(Math.round(x + 8), Math.round(y), 3, h); return; }   // v0.6
+  if (b.kind === 'jackcol') { const k = Math.min(1, (14 - b.life) / 3), yy = Math.round(y + (b.h - 20) * k); g.strokeStyle = '#c8c8d0'; g.lineWidth = 2; g.beginPath();
+    for (let q = Math.round(y); q < yy; q += 4) { g.moveTo(x + 8, q); g.lineTo(x + 20, q + 2); } g.stroke(); spr('boss', 'jackhead', Math.round(x + 2), yy); return; }
   if (b.kind === 'gsword') { spr('boss', 'greatsword', Math.round(x + 8), Math.round(y)); return; }
   if (b.kind === 'plate') { spr('items', 'plate', x, y); if (b.spin & 4) { g.fillStyle = '#ffffff'; g.fillRect(Math.round(x + 2), Math.round(y + 1), 3, 1); } }
   // v0.4 area bosses

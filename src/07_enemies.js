@@ -184,7 +184,7 @@ function checkLockedDoor() {
 // ---------------------------------------------------------------------
 //  enemy bullets (plates, candles, crystal shards, fire patches, floor waves)
 // ---------------------------------------------------------------------
-const PERSIST_BULLETS = new Set(['firepatch', 'wave', 'suds', 'thorn', 'hand', 'root', 'blast', 'geyser', 'puddle', 'sandorb', 'sandfall', 'string', 'halberd', 'gsword', 'ropecol', 'bubcol', 'bolt']);
+const PERSIST_BULLETS = new Set(['firepatch', 'wave', 'suds', 'thorn', 'hand', 'root', 'blast', 'geyser', 'puddle', 'sandorb', 'sandfall', 'string', 'halberd', 'gsword', 'ropecol', 'bubcol', 'bolt', 'paintcol', 'jackcol']);
 function updateEBullets() {
   for (const b of ebullets) {
     if (b.dead) continue;

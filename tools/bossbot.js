@@ -35,6 +35,8 @@ window.__bot = function () {
   if (kind === 'knight' && b.state === 'slash' && b.pose === 'raise') danger.push([b.x + b.face * 47, 40]);
   if (kind === 'tarant' && (b.state === 'drop' || b.state === 'plunge') && b.hy > 120) danger.push([b.x, 38]);
   if (kind === 'bellboard' && b.state === 'toll' && b.hy > 110) danger.push([b.x, 56]);   // v0.5.1
+  if (kind === 'boxjack' && b.state === 'hop' && b.jy > 20) danger.push([b.x, 40]);
+  if (kind === 'paintgolem' && b.state === 'leap' && b.shadow) danger.push([b.shadow.x, 46]);
   if (kind === 'galecock' && b.state === 'swoop' && b.jy > 20) danger.push([b.x, 40]);   // v0.6
   if (kind === 'galecock' && b.pose !== 'fall' && b.state !== 'fallen') danger.push([b.x, 34]);
   if (kind === 'angler' && b.state === 'bite') { const end = (b.bx1 !== undefined && b.t >= CONFIG.angler.biteWarn ? b.bx1 : Math.max(76, Math.min(G.room.W - 76, b.x + b.face * CONFIG.angler.biteDist))) + b.face * 52; danger.push([(b.x + end) / 2, Math.abs(end - b.x) / 2 + 12]); }
@@ -52,7 +54,7 @@ window.__bot = function () {
     if ((q.kind === 'wave' || q.kind === 'suds' || q.kind === 'rgear' || q.kind === 'root' || q.kind === 'planet' || (q.kind === 'comet' && !q.high)) && toward && dx < (q.kind === 'comet' ? 52 : 40) && dx > 8 && P.onGround) { jump = true; holdJump = true; S.waveDir = Math.sign(q.vx) || 1; S.waveT = 40; }
     if (q.kind === 'bubble' && P.tank.length >= 3 && dx < 50 && Math.abs(q.y - P.y - 20) < 40) danger.push([qx, 50]);
     if (q.kind === 'firepatch' || q.kind === 'puddle') danger.push([qx, q.kind === 'puddle' ? 30 : 24]);
-    if (q.kind === 'blast' || q.kind === 'geyser' || q.kind === 'hand' || q.kind === 'thorn' || q.kind === 'sandfall' || q.kind === 'string' || q.kind === 'halberd' || q.kind === 'ropecol' || q.kind === 'bubcol' || q.kind === 'bolt') danger.push([qx, q.w / 2 + 10]);
+    if (q.kind === 'blast' || q.kind === 'geyser' || q.kind === 'hand' || q.kind === 'thorn' || q.kind === 'sandfall' || q.kind === 'string' || q.kind === 'halberd' || q.kind === 'ropecol' || q.kind === 'bubcol' || q.kind === 'bolt' || q.kind === 'paintcol' || q.kind === 'jackcol') danger.push([qx, q.w / 2 + 10]);
     if (q.kind === 'hotwater' && q.tx !== undefined) danger.push([q.tx + 6, 28]);
     if (q.kind === 'seedpod' && q.tx !== undefined) danger.push([q.tx, 22]);
     if ((q.kind === 'shard' || q.kind === 'candle' || q.kind === 'dropbottle' || q.kind === 'sock' || q.kind === 'drop' || q.kind === 'sandbag' || q.kind === 'maskshot' || q.kind === 'corkshot' || q.kind === 'gsword' || q.kind === 'bellshot' || q.kind === 'feather') && q.vy > 0 && q.y < P.y + P.h) danger.push([qx, 18]);

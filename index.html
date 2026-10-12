@@ -226,6 +226,12 @@ const CONFIG = {
   // 風見鶏 ゲイルコック GALECOCK (rooftop spires)
   galecock: { hp: 200, idle: 38, idleRage: 28, feathers: 4, feathersRage: 5, featherWarn: 40, featherWarnRage: 34, featherDamage: 1, gustWarn: 40, gustWarnRage: 34, waveSpeed: 2.9, waveDamage: 1,
     swoopWarn: 46, swoopWarnRage: 40, swoopAir: 36, swoopDamage: 2, cloudTrack: 56, cloudLock: 38, cloudLockRage: 34, boltDamage: 2, stun: 140, stunRage: 120, coreCap: 30, specialEvery: 3 },
+  // 絵の具ゴーレム パレットン PALETTON (painted world)
+  paintgolem: { hp: 240, idle: 38, idleRage: 28, blobs: 4, blobsRage: 5, splatWarn: 40, splatWarnRage: 34, blobDamage: 1, brushWarn: 40, brushWarnRage: 34, waveSpeed: 2.9, waveDamage: 1,
+    dripWarn: 42, dripWarnRage: 36, dripDamage: 2, shadowTrack: 56, shadowLock: 38, shadowLockRage: 34, crashDamage: 2, stun: 140, stunRage: 120, coreCap: 30, specialEvery: 3 },
+  // びっくり箱 ボックスジャック BOXJACK (toy nursery)
+  boxjack: { hp: 220, idle: 38, idleRage: 28, blocks: 4, blocksRage: 5, blockWarn: 40, blockWarnRage: 34, blockDamage: 1, hopWarn: 46, hopWarnRage: 40, hopAir: 36, hopDamage: 2,
+    rollWarn: 40, rollWarnRage: 34, waveSpeed: 2.9, waveDamage: 1, headTrack: 56, headLock: 38, headLockRage: 34, popDamage: 2, stun: 140, stunRage: 120, coreCap: 30, specialEvery: 3 },
   // 灯り鮟鱇 ランタンアングラー LANTERN ANGLER (underground lake)
   angler: { hp: 230, idle: 40, idleRage: 30, bubbles: 3, bubblesRage: 4, bubWarn: 40, bubWarnRage: 34, bubDamage: 1, biteWarn: 40, biteWarnRage: 34, biteDamage: 2, biteDist: 96,
     waveSpeed: 2.8, waveDamage: 1, diveWarn: 48, diveWarnRage: 42, diveDamage: 2, lureTrack: 56, lureLock: 40, lureLockRage: 36, snapDamage: 2, stun: 140, stunRage: 120, coreCap: 30, specialEvery: 3 },
@@ -777,7 +783,7 @@ ROOM_DEFS.push(
 
   { id: 'kitchen', jp: '亡霊の厨房', en: 'PHANTOM KITCHEN', area: 'laundry', theme: 'kitchen', tiles: 't', cx: 5, cy: 4, cw: 3, ch: 1, dark: 0.46,
     build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.solid(10, 13, 17, 14); R.plat(20, 27, 11); R.solid(30, 13, 36, 14); R.plat(38, 44, 10);
-      R.plat(46, 52, 7); R.solid(55, 13, 62, 14); R.plat(64, 70, 11); },
+      R.plat(46, 52, 7); R.solid(55, 13, 62, 14); R.plat(64, 70, 11); R.open('B', 2, 2, 5); R.gate(50, 15, 53, 17, 'dark_nursery'); },   // v0.6: blacked-out stairs down to the nursery
     ents: [['skeleton', 24, 15], ['skeleton', 58, 13], ['rat', 40, 15], ['dish', 34, 6], ['puff', 50, 4],
       ['plate', 11, 13], ['plate', 13, 13], ['plate', 16, 13], ['plate', 32, 13], ['plate', 35, 13], ['pan', 22, 11], ['pan', 42, 10], ['pan', 57, 13],
       ['pot', 6, 15], ['pot', 48, 15], ['chair', 28, 15], ['chair', 52, 15], ['bottle', 45, 7], ['bottle', 61, 13], ['candle', 50, 7],
@@ -1040,6 +1046,8 @@ ROOM_DEFS.push(
   warpRoom('warp_servants', 'servants', 'servants', 'v', -7, 4, 'R', [['broom', 4, 15]]),   // v0.5.1
   warpRoom('warp_lake', 'lake', 'lake', 'l', -7, 6, 'R', [['glowmoss', 4, 15]]),
   warpRoom('warp_spires', 'spires', 'roof', 'x', 11, -6, 'L', [['chimney', 20, 15]]),   // v0.6
+  warpRoom('warp_paint', 'painted', 'canvas', 'p', -4, -2, 'R', [['easel', 4, 15]]),
+  warpRoom('warp_toys', 'nursery', 'nursery', 'o', 3, 6, 'R', [['toychest', 4, 15]]),
   warpRoom('warp_armory', 'armory', 'armory', 'a', 17, -1, 'L', [['weaponrack', 19, 15]]),
 );
 
@@ -1064,7 +1072,7 @@ ROOM_DEFS.push(
     decor: [['stagecurtain', 4, 15], ['masks', 15, 11], ['dollshelf', 10, 15], ['footlight', 14, 15, { light: 1 }], ['sconce', 20, 9, { light: 1 }], ['cobweb', 22.75, 2, { top: 1, flip: 1 }]] },
 
   { id: 'audience', jp: '観客席', en: 'AUDITORIUM', area: 'theater', theme: 'theater', tiles: 'w', cx: 1, cy: -1, cw: 3, ch: 1, dark: 0.5,
-    build(R) { R.box(); R.open('B', 1, 8, 11); R.open('R', 0, 11, 14);
+    build(R) { R.box(); R.open('B', 1, 8, 11); R.open('R', 0, 11, 14); R.open('T', 0, 8, 11); R.gate(8, 0, 11, 1, 'ring_paint'); R.plat(8, 11, 6);   // v0.6: padlocked gilt frame up into the painting
       R.plat(4, 12, 12); R.plat(14, 22, 10); R.plat(38, 46, 12); R.plat(50, 58, 10); R.plat(60, 68, 12); R.plat(26, 30, 7); R.plat(43, 48, 6); },
     ents: [['puppet', 10, 15, { foe: { skin: 'dancer' } }], ['puppet', 44, 15, { foe: { skin: 'dancer' } }], ['puppet', 62, 15, { foe: { skin: 'dancer' } }],
       ['bats', 54, 4, { foe: { skin: 'maskbat' }, n: 3 }], ['chair', 6, 12], ['chair', 18, 10], ['chair', 52, 10], ['plate', 40, 12], ['book', 64, 12],
@@ -1346,6 +1354,91 @@ ROOM_DEFS.push(
     build(R) { R.box(); R.open('L', 0, 11, 14); R.plat(2, 5, 11); R.plat(18, 21, 11); },
     ents: [['boss', 14, 15]],
     decor: [['moon', 6, 6], ['ridge', 4, 15], ['ridge', 18, 15]] },
+);
+// =====================================================================
+//  AREA 14 (v0.6): 絵の中の世界 (THE PAINTED WORLD) - a padlocked gilt frame in the auditorium ceiling opens
+//  into a domain painted inside a painting: canvas floors, oil-paint seas, a sky of frames.
+//  Way in: 鍵束 (the frame's padlock).  Boss: 絵の具ゴーレム パレットン (a big heart + its seal).
+// =====================================================================
+Object.assign(AREAS, { painted: { jp: '絵の中の世界', short: '絵画', en: 'THE PAINTED WORLD', music: 'painted', col: '#e86a8a' } });
+ROOM_DEFS.push(
+  { id: 'canvasgate', jp: '額縁の入口', en: 'THROUGH THE FRAME', area: 'painted', theme: 'canvas', tiles: 'p', cx: 1, cy: -3, cw: 1, ch: 2, dark: 0.25,
+    build(R) { R.box(); R.open('B', 0, 8, 11); R.open('L', 1, 11, 14); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14);
+      R.plat(13, 18, 29); R.plat(4, 9, 25); R.plat(13, 18, 21); R.plat(4, 9, 17); R.plat(1, 4, 15); R.plat(19, 22, 15); },
+    ents: [['save', 16, 33], ['bats', 12, 8, { foe: { skin: 'inkbat' }, n: 2 }], ['coin', 5, 25], ['coin', 7, 25], ['coin', 14, 21], ['coin', 16, 21],
+      ['hint', 4, 33, { text: '額縁をくぐったら、絵の中だった… ここも主の夢のつづき。絵の具のにおい' }]],
+    decor: [['frame_empty', 12, 12], ['easel', 4, 33], ['splash', 18, 33], ['paintpot', 21, 33]] },
+
+  { id: 'oilsea', jp: '油彩の海', en: 'SEA OF OILS', area: 'painted', theme: 'oils', tiles: 'p', cx: -1, cy: -2, cw: 2, ch: 1, dark: 0.3,
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.solid(14, 13, 18, 14); R.solid(30, 13, 34, 14); R.plat(4, 9, 11); R.plat(20, 27, 9); R.plat(38, 44, 11); },
+    ents: [['bats', 24, 4, { foe: { skin: 'inkbat' }, n: 2 }], ['puppet', 36, 15, { foe: { skin: 'brushdancer' } }], ['coin', 22, 9], ['coin', 25, 9], ['bottle', 40, 11], ['dust', 10, 15, { drop: ['coin', 'heart'] }]],
+    decor: [['splash', 8, 15], ['splash', 26, 15], ['frame_empty', 22, 6], ['paintpot', 44, 15]] },
+
+  { id: 'sketchroom', jp: '下書きの間', en: 'THE SKETCHBOOK', area: 'painted', theme: 'canvas', tiles: 'p', cx: -3, cy: -2, cw: 2, ch: 1, dark: 0.25,
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.plat(6, 12, 11); R.plat(16, 22, 7); R.plat(26, 32, 11); R.plat(36, 42, 8); },
+    ents: [['puppet', 14, 15, { foe: { skin: 'brushdancer' } }], ['puppet', 34, 15, { foe: { skin: 'brushdancer' } }], ['coin', 17, 7], ['coin', 19, 7], ['coin', 21, 7], ['heart', 38, 8], ['book', 28, 11],
+      ['hint', 24, 15, { text: '鉛筆の線だけの部屋… 描きかけのまま、主の気が変わったらしい' }]],
+    decor: [['easel', 10, 15], ['easel', 40, 15], ['frame_empty', 24, 6]] },
+
+  { id: 'skyline', jp: '額縁の空', en: 'SKY OF FRAMES', area: 'painted', theme: 'oils', tiles: 'p', cx: -3, cy: -3, cw: 4, ch: 1, dark: 0.2,
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.plat(84, 90, 11); R.plat(74, 80, 8); R.plat(62, 68, 11); R.plat(50, 56, 7); R.plat(38, 44, 11);
+      R.plat(26, 32, 8); R.plat(14, 20, 11); R.plat(4, 10, 8); R.solid(22, 13, 24, 14); R.solid(46, 13, 48, 14); R.solid(70, 13, 72, 14); },
+    ents: [['save', 86, 11], ['bats', 60, 4, { foe: { skin: 'inkbat' }, n: 2 }], ['bats', 30, 4, { foe: { skin: 'inkbat' }, n: 2 }], ['puppet', 54, 15, { foe: { skin: 'brushdancer' } }], ['puppet', 18, 15, { foe: { skin: 'brushdancer' } }],
+      ['coin', 51, 7], ['coin', 53, 7], ['coin', 55, 7], ['coin', 27, 8], ['coin', 29, 8], ['plate', 76, 8], ['gear', 6, 8], ['dust', 40, 15, { drop: ['heart'] }]],
+    decor: [['frame_empty', 12, 5], ['frame_empty', 36, 4], ['frame_empty', 60, 5], ['frame_empty', 82, 4], ['splash', 30, 15], ['splash', 66, 15], ['paintpot', 92, 15]] },
+
+  { id: 'stilllife', jp: '静物画の部屋', en: 'STILL LIFE', area: 'painted', theme: 'canvas', tiles: 'p', cx: 2, cy: -3, cw: 2, ch: 1, dark: 0.3,
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.plat(8, 14, 11); R.plat(18, 24, 7); R.plat(30, 36, 10); R.plat(40, 45, 6); },
+    ents: [['heartbig', 42.5, 4], ['bats', 26, 4, { foe: { skin: 'inkbat' }, n: 2 }], ['puppet', 32, 15, { foe: { skin: 'brushdancer' } }], ['coin', 19, 7], ['coin', 21, 7], ['coin', 23, 7], ['bottle', 10, 11]],
+    decor: [['easel', 6, 15], ['paintpot', 20, 15], ['splash', 36, 15], ['frame_empty', 30, 5]] },
+
+  { id: 'paintthrone', jp: 'パレットの玉座', en: 'THE PALETTE THRONE', area: 'painted', theme: 'canvas', tiles: 'p', cx: -4, cy: -3, cw: 1, ch: 1, dark: 0.25, boss: 'paintgolem',
+    build(R) { R.box(); R.open('R', 0, 11, 14); R.plat(2, 5, 11); R.plat(18, 21, 11); },
+    ents: [['boss', 10, 15]],
+    decor: [['frame_empty', 2, 5], ['frame_empty', 16, 5], ['splash', 4, 15]] },
+);
+// =====================================================================
+//  AREA 15 (v0.6): おもちゃ箱の子供部屋 (THE TOY NURSERY) - under the phantom kitchen, the nursery where the master's
+//  dolls were once played with. The lights are out: カンテラ (from the bell board) is needed to go down.
+//  Boss: びっくり箱 ボックスジャック (a big heart + its seal).
+// =====================================================================
+Object.assign(AREAS, { nursery: { jp: 'おもちゃ箱の子供部屋', short: '子供部屋', en: 'THE TOY NURSERY', music: 'nursery', col: '#e8a04a' } });
+ROOM_DEFS.push(
+  { id: 'toystair', jp: '子供部屋への階段', en: 'NURSERY STAIRWELL', area: 'nursery', theme: 'nursery', tiles: 'o', cx: 7, cy: 5, cw: 1, ch: 2, dark: 0.45,
+    build(R) { R.box(); R.open('T', 0, 2, 5); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.open('L', 1, 11, 14); R.open('R', 1, 11, 14);
+      R.plat(1, 7, 6); R.plat(9, 14, 10); R.plat(1, 4, 15); R.plat(19, 22, 15); R.plat(9, 14, 19); R.plat(2, 7, 23); R.plat(14, 19, 27); R.plat(6, 11, 30); },
+    ents: [['save', 12, 33], ['rat', 6, 33, { foe: { skin: 'toymouse' } }], ['coin', 10, 10], ['coin', 12, 10], ['coin', 15, 27], ['coin', 17, 27]],
+    decor: [['blocks', 18, 33], ['toydrum', 4, 33], ['cobweb', 22.75, 2, { top: 1, flip: 1 }]] },
+
+  { id: 'dollhouse', jp: 'ドールハウス', en: 'THE DOLLHOUSE', area: 'nursery', theme: 'nursery', tiles: 'o', cx: 5, cy: 5, cw: 2, ch: 1, dark: 0.4,
+    build(R) { R.box(); R.open('R', 0, 11, 14); R.plat(6, 12, 11); R.plat(16, 22, 7); R.plat(28, 34, 10); R.plat(38, 44, 7); R.solid(24, 13, 26, 14); },
+    ents: [['heartbig', 40.5, 5], ['skeleton', 32, 15, { foe: { skin: 'tinsoldier' } }], ['rat', 12, 15, { foe: { skin: 'toymouse' } }], ['coin', 17, 7], ['coin', 19, 7], ['coin', 21, 7], ['bottle', 8, 11],
+      ['hint', 20, 15, { text: '小さな家に、小さな椅子… 人形たちはここで遊ばれていたのかな' }]],
+    decor: [['toychest', 4, 15], ['rockinghorse', 36, 15], ['blocks', 46, 15]] },
+
+  { id: 'playroom', jp: 'あそび部屋', en: 'THE PLAYROOM', area: 'nursery', theme: 'nursery', tiles: 'o', cx: 8, cy: 5, cw: 3, ch: 1, dark: 0.4,
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.plat(6, 12, 11); R.plat(16, 22, 8); R.plat(28, 34, 11); R.plat(40, 46, 8); R.plat(52, 58, 11); R.plat(62, 68, 7); R.solid(36, 13, 38, 14); },
+    ents: [['skeleton', 24, 15, { foe: { skin: 'tinsoldier' } }], ['skeleton', 56, 15, { foe: { skin: 'tinsoldier' } }], ['rat', 44, 15, { foe: { skin: 'toymouse' } }], ['rat', 14, 15, { foe: { skin: 'toymouse' } }],
+      ['coin', 17, 8], ['coin', 19, 8], ['coin', 21, 8], ['coin', 63, 7], ['coin', 65, 7], ['plate', 30, 11], ['gear', 54, 11], ['dust', 48, 15, { drop: ['coin', 'heart'] }], ['dust', 68, 15, { drop: ['coin', 'coin'] }]],
+    decor: [['rockinghorse', 10, 15], ['toychest', 40, 15], ['blocks', 60, 15], ['toydrum', 30, 15]] },
+
+  { id: 'blockcastle', jp: '積み木の城', en: 'BUILDING-BLOCK CASTLE', area: 'nursery', theme: 'toybox', tiles: 'o', cx: 4, cy: 6, cw: 3, ch: 1, dark: 0.45,
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.solid(14, 12, 17, 14); R.solid(30, 10, 33, 14); R.solid(46, 12, 49, 14);
+      R.plat(6, 11, 10); R.plat(20, 26, 8); R.plat(36, 42, 7); R.plat(52, 58, 9); R.plat(62, 68, 11); },
+    ents: [['skeleton', 24, 15, { foe: { skin: 'tinsoldier' } }], ['skeleton', 54, 15, { foe: { skin: 'tinsoldier' } }], ['bats', 40, 3, { n: 2 }], ['coin', 31, 9], ['coin', 32, 9], ['coin', 37, 7], ['coin', 39, 7], ['coin', 41, 7], ['heart', 64, 11]],
+    decor: [['blocks', 8, 15], ['blocks', 40, 15], ['toychest', 60, 15]] },
+
+  { id: 'trainline', jp: 'おもちゃの線路', en: 'TOY RAILWAY', area: 'nursery', theme: 'toybox', tiles: 'o', cx: 8, cy: 6, cw: 3, ch: 1, dark: 0.45,
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.plat(6, 12, 11); R.plat(18, 24, 8); R.plat(30, 36, 11); R.plat(42, 48, 8); R.plat(54, 60, 11); R.solid(26, 13, 28, 14); R.solid(50, 13, 52, 14); },
+    ents: [['save', 64, 15], ['rat', 20, 15, { foe: { skin: 'toymouse' } }], ['rat', 40, 15, { foe: { skin: 'toymouse' } }], ['skeleton', 46, 15, { foe: { skin: 'tinsoldier' } }],
+      ['coin', 19, 8], ['coin', 21, 8], ['coin', 23, 8], ['coin', 43, 8], ['coin', 45, 8], ['bottle', 32, 11], ['dust', 12, 15, { drop: ['heart'] }],
+      ['hint', 66, 15, { text: 'ぜんまいを巻く音… この先の箱、ぜったい何か飛び出してくる' }]],
+    decor: [['toydrum', 8, 15], ['rockinghorse', 34, 15], ['toychest', 58, 15]] },
+
+  { id: 'jackroom', jp: 'びっくり箱の部屋', en: 'THE JACK-IN-THE-BOX', area: 'nursery', theme: 'nursery', tiles: 'o', cx: 11, cy: 6, cw: 1, ch: 1, dark: 0.35, boss: 'boxjack',
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.plat(2, 5, 11); R.plat(18, 21, 11); },
+    ents: [['boss', 15, 15]],
+    decor: [['toychest', 2, 15], ['blocks', 19, 15]] },
 );
 // =====================================================================
 //  room index (all areas are loaded by now), tile codes, room grid builder (DSL)
@@ -2280,7 +2373,7 @@ function checkLockedDoor() {
 // ---------------------------------------------------------------------
 //  enemy bullets (plates, candles, crystal shards, fire patches, floor waves)
 // ---------------------------------------------------------------------
-const PERSIST_BULLETS = new Set(['firepatch', 'wave', 'suds', 'thorn', 'hand', 'root', 'blast', 'geyser', 'puddle', 'sandorb', 'sandfall', 'string', 'halberd', 'gsword', 'ropecol', 'bubcol', 'bolt']);
+const PERSIST_BULLETS = new Set(['firepatch', 'wave', 'suds', 'thorn', 'hand', 'root', 'blast', 'geyser', 'puddle', 'sandorb', 'sandfall', 'string', 'halberd', 'gsword', 'ropecol', 'bubcol', 'bolt', 'paintcol', 'jackcol']);
 function updateEBullets() {
   for (const b of ebullets) {
     if (b.dead) continue;
@@ -2351,7 +2444,8 @@ function updateParts() {
 //  Positions: x = centre, y = bottom (feet), like every non-ghost entity.
 // =====================================================================
 const FOE_SIZE = { bat: [14, 10], rat: [18, 10], gargoyle: [26, 26], puppet: [16, 30], skeleton: [18, 40], cursedbook: [16, 14], skullwisp: [16, 18], crab: [20, 12] };
-const SKIN_JP = { dancer: '踊り子人形', maskbat: '仮面コウモリ', starwisp: '星くず火', chart: '呪いの星図', corkbat: 'コルクコウモリ', grapewisp: 'ぶどう火', squire: '見習い鎧', griffin: '石のグリフォン', dustmaid: 'はたき女中', bellbat: '呼び鈴コウモリ', lakewisp: 'ちょうちん魚', blindcrab: 'めくらガニ' };
+const SKIN_JP = { dancer: '踊り子人形', maskbat: '仮面コウモリ', starwisp: '星くず火', chart: '呪いの星図', corkbat: 'コルクコウモリ', grapewisp: 'ぶどう火', squire: '見習い鎧', griffin: '石のグリフォン', dustmaid: 'はたき女中', bellbat: '呼び鈴コウモリ', lakewisp: 'ちょうちん魚', blindcrab: 'めくらガニ',
+  crow: '屋根ガラス', vanegarg: '風見ガーゴイル', inkbat: 'インクコウモリ', brushdancer: '絵筆の踊り子', tinsoldier: 'ブリキの兵隊', toymouse: 'ぜんまいネズミ' };   // v0.6
 const FOE_JP = { bat: 'コウモリ', rat: 'ネズミ', gargoyle: 'ガーゴイル', puppet: 'あやつり人形', skeleton: '骸骨の給仕', cursedbook: '呪いの本', skullwisp: 'どくろ火', crab: 'おふろガニ' };
 const EDIBLE = { rat: 1, bat: 1, crab: 1 };  // tiny critters: the mimic vacuum eats them
 function makeFoe(kind, x, y, opt) {
@@ -4263,6 +4357,191 @@ BOSS_DEFS.galecock = { jp: '風見鶏 ゲイルコック', en: 'GALECOCK, THE WE
 };
 
 // =====================================================================
+//  AREA BOSS (v0.6): 絵の具ゴーレム パレットン PALETTON, THE PAINT GOLEM (絵の中の世界 / the palette throne)
+//    A hulking golem of wet oil paint the master never finished. Not a friend character.
+//    splat : gold marks -> paint blobs rain onto them (two waves; the 2nd fills the gaps)
+//    brush : a paint stroke rolls toward Kanata along the floor, then a second one rolls back from the far wall (jump each)
+//    drip  : red columns (one under Kanata, one beside) -> thick paint pours straight down there
+//    leap  : (every 3rd) it jumps out of the picture; its shadow follows Kanata, LOCKS (flashing) -> it crashes down,
+//            splatters and melts into a puddle: the PALETTE CORE is left bare = weak point
+//    rage  : (50%) shorter warnings, more blobs
+// =====================================================================
+BOSS_DEFS.paintgolem = { jp: '絵の具ゴーレム パレットン', en: 'PALETTON, THE PAINT GOLEM', cfg: 'paintgolem', cols: ['#e84a4a', '#f0c030', '#3a8ae8', '#4ac86a'],
+  rageText: '絵の具が煮えたった！ パレットンが本気になった',
+  sayIntro: '……描きかけのまま、ずっと待ってたんだね。……グリム、汚れても平気？', sayCore: '……溶けた！ パレットのコアが見えた、今だよ',
+  make(b) { b.face = -1; b.jy = 0; b.tx = b.x; b.pose = 'idle'; b.markR = 22; b.shadow = null; },
+  hitBox(b) { return b.pose === 'melt' ? { x0: b.x - 36, x1: b.x + 36, y0: FLOOR_Y - 46, y1: FLOOR_Y } : { x0: b.x - 26, x1: b.x + 26, y0: FLOOR_Y - 88 - b.jy, y1: FLOOR_Y - b.jy }; },
+  aim(b) { return { x: b.x, y: b.pose === 'melt' ? FLOOR_Y - 20 : FLOOR_Y - 66 - b.jy }; },
+  update(b) {
+    const C = CONFIG.paintgolem, px = clamp(pcx(), 16, room.W - 16);
+    if (b.state === 'idle') b.face = Math.sign(pcx() - b.x) || b.face;
+    switch (b.state) {
+      case 'idle': b.pose = b.rage ? 'rage' : 'idle'; b.markR = 22;
+        if (b.t === 1) b.tx = pcx() < 192 ? rnd(250, 320) : rnd(64, 134);
+        b.x += clamp(b.tx - b.x, -0.9, 0.9);
+        if (b.t >= bossP('idle')) chooseAttack(b, ['splat', 'brush', 'drip'], 'leap'); break;
+      case 'splat': {
+        const warn = bossP('splatWarn'), T2 = warn + 26;
+        if (b.t === 1 || b.t === T2) { const n = bossP('blobs'), xs = []; b.pose = 'raise';
+          if (b.t === 1) { xs.push(px); for (let k = 1; xs.length < n; k++) { xs.push(px + k * 84); if (xs.length < n) xs.push(px - k * 84); } }
+          else for (const m of b.first) xs.push(m - 42);
+          b.marks = xs.map(x => clamp(x, 16, room.W - 16)); if (b.t === 1) b.first = b.marks.slice(0); b.mT = b.t; sfx('warn');
+          tip('psplat', '金色の印に、絵の具が降ってくる！ 二回目は印のすきま'); }
+        if (b.t < b.mT + warn && (b.t - b.mT) % 10 === 0) sfx('tick');
+        if (b.t === b.mT + warn) { b.pose = 'splat'; b.marks.forEach((mx, i) => ebullets.push({ kind: 'blob', spr: 'paintblob' + (i % 4), x: mx - 6, y: 2 * TS, w: 12, h: 12, vx: 0, vy: 2.5, g: 0.34, dmg: C.blobDamage, life: 200,
+              onLand: q => { sfx('splash'); for (let k = 0; k < 6; k++) parts.push({ x: q.x + 6, y: FLOOR_Y - 3, vx: rnd(-1.8, 1.8), vy: rnd(-2.2, -0.6), life: 16, col: BOSS_DEFS.paintgolem.cols[i % 4], size: 2, grav: 1 }); } }));
+          sfx('whoosh'); }
+        if (b.t === b.mT + warn + 30) b.marks = [];
+        if (b.t >= T2 + warn + 40) { b.marks = []; b.pose = 'idle'; b.state = 'idle'; b.t = 0; } break; }
+      case 'brush': {
+        const warn = bossP('brushWarn');
+        if (b.t === 1) { b.pose = 'raise'; b.bd = Math.sign(pcx() - b.x) || 1; sfx('warn'); tip('pbrush', '絵の具の波が床を走ってくる！ ジャンプでとびこえよう… 壁から戻ってくるのにも注意'); }
+        if (b.t < warn && b.t % 8 === 0) sfx('tick');
+        if (b.t === warn) { b.pose = 'splat'; sfx('splash'); cam.shake = 3;
+          ebullets.push({ kind: 'wave', spr: 'paintwave', x: b.x + b.bd * 30 - 10, y: FLOOR_Y - 16, w: 20, h: 16, vx: b.bd * C.waveSpeed, vy: 0, dmg: C.waveDamage, life: 220 }); }
+        if (b.t === warn + 70) { sfx('splash'); const sx = b.bd > 0 ? room.W - 40 : 20;
+          ebullets.push({ kind: 'wave', spr: 'paintwave', x: sx, y: FLOOR_Y - 16, w: 20, h: 16, vx: -b.bd * C.waveSpeed, vy: 0, dmg: C.waveDamage, life: 220 }); }
+        if (b.t >= warn + 150) { b.pose = 'idle'; b.state = 'idle'; b.t = 0; } break; }
+      case 'drip': {
+        const warn = bossP('dripWarn');
+        if (b.t === 1) { const off = (px < room.W / 2 ? 1 : -1) * rnd(90, 130); b.marks = [px, clamp(px + off, 24, room.W - 24)]; b.markR = 22; b.pose = 'raise'; sfx('warn');
+          tip('pdrip', '赤い印の上から、絵の具がどっと流れ落ちる！ 印の外へ'); }
+        if (b.t < warn) { if (b.t % 8 === 0) sfx('warn'); break; }
+        if (b.t === warn) { b.pose = 'splat'; sfx('splash'); cam.shake = 4; for (const mx of b.marks) ebullets.push({ kind: 'paintcol', x: mx - 14, y: 2 * TS, w: 28, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: C.dripDamage, life: 22, static: 1 }); }
+        if (b.t === warn + 22) b.marks = [];
+        if (b.t >= warn + 50) { b.pose = 'idle'; b.state = 'idle'; b.t = 0; } break; }
+      case 'leap': {
+        const up = 30, tr = C.shadowTrack, lk = bossP('shadowLock');
+        if (b.t === 1) { b.pose = 'raise'; sfx('warn'); tip('pleap', 'パレットンが絵の外へ跳んだ！ 影が追ってくる… 点滅したら止まる、影から逃げて！'); }
+        if (b.t <= up) { b.jy = (b.t / up) * 320; break; }
+        if (b.t === up + 1) { b.shadow = { x: pcx() }; b.markR = 40; }
+        if (b.t < up + tr) b.shadow.x += clamp(pcx() - b.shadow.x, -1.6, 1.6);
+        if (b.t < up + tr + lk) { b.marks = [b.shadow.x]; b.x = b.shadow.x; if (b.t % 8 === 0) sfx('warn'); break; }
+        const f = b.t - (up + tr + lk);
+        if (f < 12) { b.jy = 320 * (1 - (f + 1) / 12); break; }
+        if (f === 12) { b.jy = 0; b.marks = []; sfx('crash'); cam.shake = 10; hitStop = 3; b.pose = 'melt';
+          if (overlapBox(b.x - 40, FLOOR_Y - 90, b.x + 40, FLOOR_Y)) hurtPlayer(C.crashDamage, b.x, 'crash');
+          for (let k = 0; k < 16; k++) parts.push({ x: b.x + rnd(-30, 30), y: FLOOR_Y - 6, vx: rnd(-3, 3), vy: rnd(-3.5, -1), life: 22, col: BOSS_DEFS.paintgolem.cols[k % 4], size: 3, grav: 1 }); }
+        if (f === 30) { b.shadow = null; b.state = 'melted'; b.t = 0; b.markR = 22; b.winLen = bossP('stun');
+          b.coreSide = Math.sign(pcx() - b.x) || 1; if (b.x + b.coreSide * 50 < 30 || b.x + b.coreSide * 50 > room.W - 30) b.coreSide = -b.coreSide;
+          b.core = makeCore(b, b.x + b.coreSide * 50, FLOOR_Y - 30, () => ({ x: boss.x, y: FLOOR_Y - 20 }), 'pcore');
+          tip('pcore', 'パレットンが溶けて、パレットのコアが出た！ VAC で吸い込め！', true); }
+        break; }
+      case 'melted': b.pose = 'melt'; coreBob(b, b.x + b.coreSide * 50, FLOOR_Y - 30); if (coreWindowOver(b)) { b.state = 'reform'; b.t = 0; } break;
+      case 'reform': b.pose = b.t < 30 ? 'melt' : 'idle'; if (b.t > 50) { b.state = 'idle'; b.t = 0; } break;
+    }
+  },
+  dying(b) { b.pose = 'melt'; b.marks = []; b.shadow = null; b.jy = 0; },
+  onDefeat(b) { bossReward(b, b.x); say('……描きかけでも、きれいな色だったよ。……おやすみ', 220); },
+  draw(b, lights) {
+    const C = CONFIG.paintgolem, x = Math.round(b.x - cam.x), y = Math.round(FLOOR_Y - cam.y), top = Math.round(2 * TS - cam.y);
+    if (b.state === 'splat') for (const m of b.marks) drawFloorMark(m, Math.min(1, (b.t - b.mT) / bossP('splatWarn')), 'rgba(255,210,90,0.9)');
+    if (b.state === 'drip') for (const m of b.marks) { const k = Math.min(1, b.t / bossP('dripWarn')); g.fillStyle = 'rgba(255,80,80,' + (0.08 + 0.12 * k) + ')'; g.fillRect(Math.round(m - cam.x) - 14, top, 28, y - top); drawFloorMark(m, k, 'rgba(255,60,60,0.85)'); }
+    if (b.state === 'leap' && b.shadow) { const lock = b.t >= 30 + C.shadowTrack, sx = Math.round(b.shadow.x - cam.x);
+      g.fillStyle = lock && (frame & 2) ? 'rgba(255,60,60,0.45)' : 'rgba(0,0,0,0.35)'; g.beginPath(); g.ellipse(sx, y - 2, 36, 6, 0, 0, 7); g.fill(); drawFloorMark(b.shadow.x, lock ? 1 : 0.5, 'rgba(255,60,60,0.9)'); }
+    if (b.state === 'dying' && b.t >= 90) return;
+    const key = 'pg_' + b.pose, r = rectOf('boss', key), sx = x - (r.w >> 1), sy = y - r.h - Math.round(b.jy);
+    if (sy + r.h > 0) { spr('boss', key, sx, sy, b.face < 0);
+      if (b.flash > 0 && (frame & 2)) { g.globalAlpha = 0.7; sprWhite('boss', key, sx, sy, b.face < 0); g.globalAlpha = 1; } }
+    if (b.rage && frame % 5 === 0 && b.jy < 10) parts.push({ x: b.x + rnd(-24, 24), y: FLOOR_Y - rnd(10, 80), vx: 0, vy: 0.8, life: 18, col: BOSS_DEFS.paintgolem.cols[frame % 4], size: 2 });
+    lights.push({ x: b.x, y: FLOOR_Y - 50 - b.jy, r: 50, warm: 1 });
+    drawCore(b, lights, 'pcore');
+  },
+};
+
+// =====================================================================
+//  AREA BOSS (v0.6): びっくり箱 ボックスジャック BOXJACK (おもちゃ箱の子供部屋 / the jack-in-the-box room)
+//    The nursery's jack-in-the-box, wound far too tight for far too long. Not a friend character.
+//    blocks: gold marks -> toy blocks tumble onto them (two waves; the 2nd fills the gaps)
+//    hop   : red mark under Kanata -> the whole box hops over and lands on it
+//    roll  : the lid pops and wind-up blocks roll out both ways along the floor (jump them; rage: a 3rd pair)
+//    crank : (every 3rd) the crank turns: the jester's head floats after Kanata on its spring, LOCKS (flashing) ->
+//            POP! it slams down there, the spring overstretches and the head flops dizzy: the WIND-UP CORE = weak point
+//    rage  : (50%) shorter warnings, more blocks
+// =====================================================================
+BOSS_DEFS.boxjack = { jp: 'びっくり箱 ボックスジャック', en: 'BOXJACK, THE JACK-IN-THE-BOX', cfg: 'boxjack', cols: ['#c83a3a', '#ffd84a', '#3a8ae8', '#f0e0d0'],
+  rageText: 'ぜんまいが巻ききれた！ ボックスジャックが本気になった',
+  sayIntro: '……ずっと、開けてもらうのを待ってたの？ ……グリム、びっくりしないでね', sayCore: '……ばねが伸びきった！ 今だよ、グリム',
+  make(b) { b.face = -1; b.jy = 0; b.tx = b.x; b.pose = 'closed'; b.markR = 22; b.head = null; },
+  hitBox(b) { return { x0: b.x - 24, x1: b.x + 24, y0: FLOOR_Y - (b.pose === 'closed' || b.pose === 'dizzy' ? 50 : 100) - b.jy, y1: FLOOR_Y - b.jy }; },
+  aim(b) { return { x: b.x, y: FLOOR_Y - 60 - b.jy }; },
+  update(b) {
+    const C = CONFIG.boxjack, px = clamp(pcx(), 16, room.W - 16);
+    if (b.state === 'idle') b.face = Math.sign(pcx() - b.x) || b.face;
+    switch (b.state) {
+      case 'idle': b.pose = b.rage ? 'rage' : 'closed'; b.markR = 22;
+        if (b.t === 1) b.tx = pcx() < 192 ? rnd(250, 320) : rnd(64, 134);
+        b.x += clamp(b.tx - b.x, -1, 1); b.jy = (b.t % 24 < 6) ? 3 : 0;
+        if (b.t >= bossP('idle')) { b.jy = 0; chooseAttack(b, ['blocks', 'hop', 'roll'], 'crank'); } break;
+      case 'blocks': {
+        const warn = bossP('blockWarn'), T2 = warn + 26;
+        if (b.t === 1 || b.t === T2) { const n = bossP('blocks'), xs = []; b.pose = 'open';
+          if (b.t === 1) { xs.push(px); for (let k = 1; xs.length < n; k++) { xs.push(px + k * 84); if (xs.length < n) xs.push(px - k * 84); } }
+          else for (const m of b.first) xs.push(m - 42);
+          b.marks = xs.map(x => clamp(x, 16, room.W - 16)); if (b.t === 1) b.first = b.marks.slice(0); b.mT = b.t; sfx('warn');
+          tip('jblocks', '金色の印に、積み木が降ってくる！ 二回目は印のすきま'); }
+        if (b.t < b.mT + warn && (b.t - b.mT) % 10 === 0) sfx('tick');
+        if (b.t === b.mT + warn) { b.marks.forEach((mx, i) => ebullets.push({ kind: 'blob', spr: 'toyblock' + (i % 4), x: mx - 6, y: 2 * TS, w: 12, h: 12, vx: 0, vy: 2.5, g: 0.34, dmg: C.blockDamage, life: 200,
+              onLand: q => { sfx('tink'); for (let k = 0; k < 4; k++) parts.push({ x: q.x + 6, y: FLOOR_Y - 3, vx: rnd(-1.5, 1.5), vy: rnd(-2, -0.5), life: 14, col: '#f4f0e4', size: 2, grav: 1 }); } }));
+          sfx('whoosh'); }
+        if (b.t === b.mT + warn + 30) b.marks = [];
+        if (b.t >= T2 + warn + 40) { b.marks = []; b.pose = 'closed'; b.state = 'idle'; b.t = 0; } break; }
+      case 'hop': {
+        const warn = bossP('hopWarn'), air = C.hopAir;
+        if (b.t === 1) { b.marks = [clamp(px, 40, room.W - 40)]; b.markR = 50; b.sx0 = b.x; b.pose = 'closed'; sfx('warn'); tip('jhop', 'ボックスジャックが跳んでくる！ 赤い印から離れて'); }
+        if (b.t < warn) { if (b.t % 8 === 0) sfx('warn'); b.jy = (b.t % 10 < 3) ? 4 : 0; break; }
+        if (b.t === warn) { sfx('jump'); b.sx1 = b.marks[0]; }
+        if (b.t < warn + air) { const k = (b.t - warn) / air; b.x = b.sx0 + (b.sx1 - b.sx0) * k; b.jy = Math.sin(k * Math.PI) * 110; break; }
+        if (b.t === warn + air) { b.jy = 0; b.x = b.sx1; b.marks = []; sfx('boom'); cam.shake = 8; hitStop = 3;
+          if (overlapBox(b.x - 30, FLOOR_Y - 60, b.x + 30, FLOOR_Y)) hurtPlayer(C.hopDamage, b.x, 'hop'); }
+        if (b.t >= warn + air + 40) { b.markR = 22; b.state = 'idle'; b.t = 0; } break; }
+      case 'roll': {
+        const warn = bossP('rollWarn'), n = b.rage ? 3 : 2;
+        if (b.t === 1) { b.pose = 'open'; sfx('warn'); tip('jroll', 'ふたが開いた！ ぜんまい積み木が転がってくる… ジャンプでとびこえよう'); }
+        if (b.t < warn && b.t % 8 === 0) sfx('tick');
+        for (let k = 0; k < n; k++) if (b.t === warn + k * 54) { sfx('jump');
+          for (const d of [-1, 1]) ebullets.push({ kind: 'wave', spr: 'toyblock' + ((k + (d > 0 ? 1 : 0)) % 4), x: b.x + d * 28 - 6, y: FLOOR_Y - 12, w: 12, h: 12, vx: d * C.waveSpeed, vy: 0, dmg: C.waveDamage, life: 220 }); }
+        if (b.t >= warn + (n - 1) * 54 + 80) { b.pose = 'closed'; b.state = 'idle'; b.t = 0; } break; }
+      case 'crank': {
+        const tr = C.headTrack, lk = bossP('headLock');
+        if (b.t === 1) { b.head = { x: pcx() }; b.pose = 'open'; b.markR = 30; sfx('warn'); tip('jcrank', 'ぜんまいが巻かれていく… 頭が追ってくる！ 点滅したら止まる、その下から逃げて！'); }
+        if (b.t < tr) b.head.x += clamp(pcx() - b.head.x, -1.6, 1.6);
+        if (b.t % 6 === 0 && b.t < tr + lk) sfx('tick');
+        if (b.t < tr + lk) { b.marks = [b.head.x]; break; }
+        if (b.t === tr + lk) { sfx('crash'); cam.shake = 9; hitStop = 3;
+          ebullets.push({ kind: 'jackcol', x: b.head.x - 14, y: 2 * TS, w: 28, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: C.popDamage, life: 14, static: 1 }); }
+        if (b.t === tr + lk + 14) b.marks = [];
+        if (b.t === tr + lk + 24) { b.head = null; b.state = 'sprung'; b.t = 0; b.pose = 'dizzy'; b.markR = 22; b.winLen = bossP('stun');
+          b.coreSide = Math.sign(pcx() - b.x) || 1; if (b.x + b.coreSide * 48 < 30 || b.x + b.coreSide * 48 > room.W - 30) b.coreSide = -b.coreSide;
+          b.core = makeCore(b, b.x + b.coreSide * 48, FLOOR_Y - 30, () => ({ x: boss.x, y: FLOOR_Y - 50 }), 'jcore');
+          tip('jcore', 'ばねが伸びきった！ 飛び出たぜんまいのコアを VAC で吸い込め！', true); }
+        break; }
+      case 'sprung': b.pose = 'dizzy'; coreBob(b, b.x + b.coreSide * 48, FLOOR_Y - 30); if (coreWindowOver(b)) { b.state = 'rewind'; b.t = 0; } break;
+      case 'rewind': b.pose = b.t < 30 ? 'dizzy' : 'closed'; if (b.t > 50) { b.state = 'idle'; b.t = 0; } break;
+    }
+  },
+  dying(b) { b.pose = 'dizzy'; b.marks = []; b.head = null; b.jy = 0; },
+  onDefeat(b) { bossReward(b, b.x); say('……びっくりした。……でも、ちゃんと遊んでもらえたね', 220); },
+  draw(b, lights) {
+    const C = CONFIG.boxjack, x = Math.round(b.x - cam.x), y = Math.round(FLOOR_Y - cam.y), top = Math.round(2 * TS - cam.y);
+    if (b.state === 'blocks') for (const m of b.marks) drawFloorMark(m, Math.min(1, (b.t - b.mT) / bossP('blockWarn')), 'rgba(255,210,90,0.9)');
+    if (b.state === 'hop' && b.marks.length) drawFloorMark(b.marks[0], Math.min(1, b.t / bossP('hopWarn')), 'rgba(255,60,60,0.85)');
+    if (b.state === 'crank' && b.head) { const lock = b.t >= C.headTrack, hx = Math.round(b.head.x - cam.x);
+      g.fillStyle = lock ? ((frame & 2) ? 'rgba(255,120,120,0.22)' : 'rgba(255,240,200,0.2)') : 'rgba(255,240,200,0.08)'; g.fillRect(hx - 14, top, 28, y - top);
+      g.strokeStyle = '#c8c8d0'; g.lineWidth = 2; g.beginPath(); g.moveTo(x, y - 60); g.quadraticCurveTo((x + hx) / 2, top - 10, hx, top + 14); g.stroke();
+      spr('boss', 'jackhead', hx - 12, top + 4); drawFloorMark(b.head.x, lock ? 1 : 0.5, 'rgba(255,60,60,0.9)'); }
+    if (b.state === 'dying' && b.t >= 90) return;
+    const key = 'jb_' + b.pose, r = rectOf('boss', key), sx = x - (r.w >> 1), sy = y - r.h - Math.round(b.jy);
+    if (b.jy > 4) { g.fillStyle = 'rgba(0,0,0,0.25)'; g.fillRect(x - 24, y - 3, 48, 3); }
+    spr('boss', key, sx, sy, b.face < 0);
+    if (b.flash > 0 && (frame & 2)) { g.globalAlpha = 0.7; sprWhite('boss', key, sx, sy, b.face < 0); g.globalAlpha = 1; }
+    if (b.state === 'hop' && b.t < bossP('hopWarn') && (frame & 4)) { g.globalAlpha = 0.4; sprWhite('boss', key, sx, sy, b.face < 0, '#ff4040'); g.globalAlpha = 1; }
+    lights.push({ x: b.x, y: FLOOR_Y - 60 - b.jy, r: 56, warm: 1 });
+    drawCore(b, lights, 'jcore');
+  },
+};
+
+// =====================================================================
 //  v0.4 STORY: portrait dialogue box, ヴェル VEL's one-line appearances, the true ending.
 //    ヴェル (主人付き秘書) is never fought. She appears in human form at key moments (new areas, after certain
 //    bosses, before Chronoa), says ONE short polite cryptic line, and fades away.
@@ -5229,7 +5508,8 @@ function foeSprite(e) {
   }
 }
 // v0.4 area skins: same behaviour, new look (dancer = puppet, maskbat = bat, starwisp = skullwisp, chart = cursedbook)
-const FOE_SKIN_BASE = { dancer: 'puppet', maskbat: 'bat', starwisp: 'skullwisp', chart: 'cbook', corkbat: 'bat', grapewisp: 'skullwisp', squire: 'skel', griffin: 'garg', dustmaid: 'puppet', bellbat: 'bat', lakewisp: 'skullwisp', blindcrab: 'crab' };   // v0.5 +4
+const FOE_SKIN_BASE = { dancer: 'puppet', maskbat: 'bat', starwisp: 'skullwisp', chart: 'cbook', corkbat: 'bat', grapewisp: 'skullwisp', squire: 'skel', griffin: 'garg', dustmaid: 'puppet', bellbat: 'bat', lakewisp: 'skullwisp', blindcrab: 'crab',
+  crow: 'bat', vanegarg: 'garg', inkbat: 'bat', brushdancer: 'puppet', tinsoldier: 'skel', toymouse: 'rat' };   // v0.6   // v0.5 +4
 function foeSkin(e, k) { const base = e.skin && FOE_SKIN_BASE[e.skin]; return base && k.startsWith(base) ? e.skin + k.slice(base.length) : k; }
 function drawFoe(e, x, y) {
   const k = foeSkin(e, foeSprite(e)), r = rectOf('enemies', k), fl = e.type === 'gargoyle' ? pcx() < e.x : e.face < 0;
@@ -5279,6 +5559,9 @@ function drawEBullet(b) {
     for (let i = 0; i < h; i += 14) spr('boss', 'bubble', Math.round(x + 4 + Math.sin((i + frame) * 0.3) * 3), y0 + i); return; }
   if (b.kind === 'bolt') { g.globalCompositeOperation = 'lighter'; g.strokeStyle = (frame & 2) ? '#ffffff' : '#c8e0ff'; g.lineWidth = 3; g.beginPath(); let bx = x + 14; g.moveTo(bx, y);
     for (let yy = y; yy < y + b.h; yy += 18) { bx = x + 14 + rnd(-9, 9); g.lineTo(bx, yy + 18); } g.stroke(); g.fillStyle = 'rgba(200,220,255,0.25)'; g.fillRect(Math.round(x), Math.round(y), b.w, b.h); g.globalCompositeOperation = 'source-over'; return; }   // v0.6
+  if (b.kind === 'paintcol') { const k = Math.min(1, (22 - b.life) / 4), h = Math.round(b.h * k); g.fillStyle = ['#e84a4a', '#3a8ae8', '#f0c030'][Math.floor(b.x / 40) % 3]; g.fillRect(Math.round(x + 4), Math.round(y), b.w - 8, h); g.fillStyle = 'rgba(255,255,255,0.35)'; g.fillRect(Math.round(x + 8), Math.round(y), 3, h); return; }   // v0.6
+  if (b.kind === 'jackcol') { const k = Math.min(1, (14 - b.life) / 3), yy = Math.round(y + (b.h - 20) * k); g.strokeStyle = '#c8c8d0'; g.lineWidth = 2; g.beginPath();
+    for (let q = Math.round(y); q < yy; q += 4) { g.moveTo(x + 8, q); g.lineTo(x + 20, q + 2); } g.stroke(); spr('boss', 'jackhead', Math.round(x + 2), yy); return; }
   if (b.kind === 'gsword') { spr('boss', 'greatsword', Math.round(x + 8), Math.round(y)); return; }
   if (b.kind === 'plate') { spr('items', 'plate', x, y); if (b.spin & 4) { g.fillStyle = '#ffffff'; g.fillRect(Math.round(x + 2), Math.round(y + 1), 3, 1); } }
   // v0.4 area bosses
