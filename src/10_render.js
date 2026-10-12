@@ -40,8 +40,11 @@ function update() {
   else if (state === 'title') updateTitle();
   else if (state === 'play') updatePlay();
   else if (state === 'warp') updateWarpMenu();
+  else if (state === 'shop') updateShop();
+  else if (state === 'map' && inp.spitPressed) drinkTea();   // v0.7
   else if (state === 'map') { if (inp.vacPressed || inp.dropPressed) { setState('play'); returnToEntry('menu'); sfx('cursor'); } else if (inp.mapPressed || inp.startPressed || inp.jumpPressed) { setState('play'); sfx('cursor'); } }
-  else if (state === 'clear') { clearT++; if (clearT > 240 && (inp.startPressed || inp.jumpPressed)) { setState('title'); sfx('start'); } }
+  else if (state === 'clear') { clearT++; if (clearT > 240 && (inp.startPressed || inp.jumpPressed)) { setState('thanks'); sfx('start'); } }   // v0.7: -> THANK YOU screen
+  else if (state === 'thanks') { clearT++; if (stateT > 90 && (inp.startPressed || inp.jumpPressed)) { setState('title'); sfx('start'); } }
   musicTick();
   for (const k in inp) inp[k] = false;
 }
@@ -234,6 +237,7 @@ function drawEnt(e) {
       if (!e.has) { const oy = y - 44 + Math.sin(e.t * 0.06) * 3; g.globalCompositeOperation = 'lighter'; g.fillStyle = 'rgba(255,255,255,0.18)'; g.beginPath(); g.arc(x, oy, 14 + Math.sin(frame * 0.1) * 2, 0, 7); g.fill(); g.globalCompositeOperation = 'source-over';
         spr('items', 'orb_' + e.abil, Math.round(x - 8), Math.round(oy - 8)); } break; }
     case 'bat': case 'rat': case 'gargoyle': case 'puppet': case 'skeleton': case 'cursedbook': case 'skullwisp': case 'crab': drawFoe(e, x, y); break;
+    case 'shopkeeper': { spr('props', 'shopcounter', Math.round(x - 30), Math.round(y - 26)); spr('props', (frame >> 5) & 1 ? 'shopcat1' : 'shopcat0', Math.round(x - 18), Math.round(y - 62 + Math.sin(frame * 0.05) * 2)); break; }   // v0.7
     case 'warp': { sprBC('props', 'warp_pad', x, y + 3); g.globalCompositeOperation = 'lighter'; const a = 0.18 + 0.1 * Math.sin(frame * 0.08);
       const gr = g.createLinearGradient(0, y - 60, 0, y); gr.addColorStop(0, 'rgba(160,120,255,0)'); gr.addColorStop(1, 'rgba(160,200,255,' + a + ')'); g.fillStyle = gr; g.fillRect(Math.round(x - 20), Math.round(y - 60), 40, 60); g.globalCompositeOperation = 'source-over'; break; }
     case 'armor': {
@@ -374,7 +378,8 @@ function drawHeart(x, y, fill) { // 7x6 pixel heart, fill 0 / 1 (half) / 2
   }
 }
 // map cells -> screen: (cx - WORLD.x0) * cw. win = { x0, y0, cols, rows } clips to a window of cells (mini-map)
-function roomSeen(rd) { for (let y = 0; y < rd.ch; y++) for (let x = 0; x < rd.cw; x++) if (progress.visited.has((rd.cx + x) + ',' + (rd.cy + y))) return true; return false; }
+function roomSeen(rd) { if (progress.shop && progress.shop.maps.includes(rd.area)) return true; return roomVisited(rd); }   // v0.7: bought maps
+function roomVisited(rd) { for (let y = 0; y < rd.ch; y++) for (let x = 0; x < rd.cw; x++) if (progress.visited.has((rd.cx + x) + ',' + (rd.cy + y))) return true; return false; }
 const OPENINGS_CACHE = {};
 function cachedOpenings(rd) { return OPENINGS_CACHE[rd.id] || (OPENINGS_CACHE[rd.id] = roomOpenings(rd, buildRoomGrid(rd))); }
 function drawMapGrid(ox, oy, cw, chh, mini, win) {
@@ -388,6 +393,7 @@ function drawMapGrid(ox, oy, cw, chh, mini, win) {
     const ac = AREAS[rd.area].col;
     g.fillStyle = cur ? ((frame >> 4) & 1 ? '#5a84e8' : '#3a64c8') : rd.boss ? (progress.bosses.has(rd.boss) ? '#3a2a3a' : '#7a2238') : rd.secret ? '#7a6418' : ac; g.fillRect(x0, y0, w, h);
     rectLine(x0, y0, w, h, cur ? '#e0f0ff' : '#a8b8e8');
+    if (!roomVisited(rd)) { g.fillStyle = 'rgba(6,4,16,0.55)'; g.fillRect(x0, y0, w, h); }   // v0.7: known from a bought map, not visited yet
     if (!mini) {
       if (rd.ents.some(e => e[0] === 'save')) { g.fillStyle = '#8ad0ff'; g.fillRect(x0 + 2, y0 + 2, 3, 3); }
       if (rd.boss && SEAL_HOURS[rd.boss]) { const hs = String(SEAL_HOURS[rd.boss]); drawText(hs, x0 + w - 2 - hs.length * 5, y0 + 2, progress.bosses.has(rd.boss) ? 'y' : 'r', 1); }   // v0.6.1: seal hour
@@ -496,7 +502,7 @@ function renderPlay() {
   if (abilityGet.t > 0) { const a = Math.min(1, abilityGet.t / 20, (300 - abilityGet.t) / 15), I = ABIL_INFO[abilityGet.abil]; drawHiText('NEW POWER', VW / 2, 96, 8, '#ffffff', '#140a20', 'center', a); drawHiText(I.jp, VW / 2, 110, 18, I.col, '#140a20', 'center', a); }
   if (P.dead && P.deadT > 40) drawHiText('やられちゃった…', VW / 2, VH / 2 - 10, 16, '#ffd0e0', '#200818', 'center', Math.min(1, (P.deadT - 40) / 20));
 }
-const MAP_ENTRY_BTN = { x: VW / 2 - 78, y: VH - 30, w: 156, h: 16 };   // v0.4.3 escape hatch
+const MAP_ENTRY_BTN = { x: VW / 2 - 144, y: VH - 30, w: 140, h: 16 };   // v0.4.3 escape hatch
 function mapLayout() { const cw = Math.min(20, Math.floor(368 / WORLD.cols)); return { cw, chh: Math.min(14, Math.round(cw * 0.75), Math.floor(144 / WORLD.rows)) }; }   // v0.6: the taller 15-area map still leaves room for the legend
 function renderMap() {
   renderPlayBase();
@@ -518,12 +524,31 @@ function renderMap() {
   const EB = MAP_ENTRY_BTN; g.fillStyle = '#2a1e48'; g.fillRect(EB.x, EB.y, EB.w, EB.h); rectLine(EB.x, EB.y, EB.w, EB.h, '#c8a0ff');
   drawText('TAP / MAP: BACK', VW / 2, VH - 10, 'b', 1, 'c');
   drawSealDial(VW - 20, 17, 13);   // v0.6.1: the seal dial
+  { const T = MAP_TEA_BTN, n = shopState().tea; g.fillStyle = n ? '#1e3a30' : '#1a1826'; g.fillRect(T.x, T.y, T.w, T.h); rectLine(T.x, T.y, T.w, T.h, n ? '#8affc8' : '#4a4a60'); }   // v0.7
   blit();
-  drawHiText('部屋の入口に戻る（VAC / ↓）', VW / 2, EB.y + 4, 8, '#f0e0ff', '#140a20', 'center');
+  drawHiText('部屋の入口に戻る（VAC / ↓）', EB.x + EB.w / 2, EB.y + 4, 7.5, '#f0e0ff', '#140a20', 'center');
+  { const T = MAP_TEA_BTN, n = shopState().tea; drawHiText('ハーブティー ×' + n + '（SPIT）', T.x + T.w / 2, T.y + 4, 7.5, n ? '#c8ffe0' : '#6a6a80', '#140a20', 'center'); }
   drawHiText((AREAS[room.def.area] || AREAS.east).jp + '　' + room.def.jp, VW / 2, 12, 10, '#fff4e0', '#1a0e28');
   AB.forEach((k, i) => drawHiText(hasAbil(k) ? ABIL_INFO[k].jp : '？？？', abX(i) + 13, abY(i) - 1, 6.5, hasAbil(k) ? ABIL_INFO[k].col : '#5a5488', null, 'left'));
   AR.forEach((k, i) => drawHiText(AREAS[k].short, lgX(i) + 10, lgY(i) - 1, 6, '#c8c0f0', null, 'left'));
   drawHiText('■セーブ  数字＝封印の時刻  B＝ボス  W＝ワープの間  ・光＝新しい力  黄色＝とびら' + (progress.hasKey ? '  舞踏会場の鍵あり' : ''), VW / 2, lgY0 + Math.ceil(AR.length / 5) * 10 + 2, 6.5, '#a8a0d8', null);
+}
+// v0.7: a clean, screenshot-friendly THANK YOU FOR PLAYING! card after the clear screen
+function renderThanks() {
+  const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, '#120a2a'); gr.addColorStop(1, '#2a1648'); g.fillStyle = gr; g.fillRect(0, 0, VW, VH);
+  for (let i = 0; i < 40; i++) { const x = (i * 97) % VW, y = (i * 53) % 150, tw = (frame + i * 13) % 90 < 45; g.fillStyle = tw ? '#c8c0ff' : '#6a5aa8'; g.fillRect(x, y, 1, 1); }
+  g.fillStyle = 'rgba(255,240,200,0.10)'; g.beginPath(); g.ellipse(VW / 2, 236, 90, 14, 0, 0, 7); g.fill();
+  const f = heroFrame(((stateT / 90 | 0) & 1) * 8), sc = 2, ck = 'thanks_hero' + ((progress.shop && progress.shop.pal) || '') + f.sx; let c = FLIP_CACHE.get(ck);
+  if (!c) { c = mkCanvas(f.w, f.h); c.getContext('2d').drawImage(kanataSheet(), f.sx, 0, f.w, f.h, 0, 0, f.w, f.h); FLIP_CACHE.set(ck, c); }
+  g.imageSmoothingEnabled = false; g.drawImage(c, 0, 0, f.w, f.h, VW / 2 - f.ax * sc, 244 - f.ay * sc + Math.round(Math.sin(stateT * 0.05) * 2), f.w * sc, f.h * sc);
+  const tsec = Math.floor(progress.time / 60);
+  drawText('TIME ' + Math.floor(tsec / 60) + ':' + String(tsec % 60).padStart(2, '0') + '   MAP ' + mapPercent() + '%   COIN ' + progress.coins, VW / 2, 252, 'b', 1, 'c');
+  if (stateT > 90 && (stateT >> 5) & 1) drawTextShadow('TAP TO TITLE', VW / 2, 270, 'w', 1, 'c');
+  blit();
+  const a = Math.min(1, stateT / 40);
+  drawHiText('THANK YOU', VW / 2, 22, 28, '#fff4c0', '#2a1648', 'center', a);
+  drawHiText('FOR PLAYING!', VW / 2, 56, 24, '#bfe0ff', '#1a0e28', 'center', a);
+  drawHiText('ROCKSIDE外伝 清掃員カナタ  v' + GAME_VERSION, VW / 2, 90, 9, '#e8dcff', null, 'center', a);
 }
 function renderPlayBase() { g.fillStyle = '#000'; g.fillRect(0, 0, VW, VH); g.drawImage(room.canvas, clamp(Math.round(cam.x), 0, room.W - VW), clamp(Math.round(cam.y), 0, room.H - VH), VW, VH, 0, 0, VW, VH); drawDoorSeal(); }
 const TITLE_MENU = [{ x: 108, y: 246, w: 76, h: 18 }, { x: 200, y: 246, w: 76, h: 18 }];
@@ -531,7 +556,7 @@ function renderTitle() {
   g.drawImage(IMG.title_bg, 0, 0);
   // hero x2 on the hill
   const f = heroFrame(((stateT / 120 | 0) & 1) * 8 + ((stateT % 240) > 228 ? 1 : 0)), sc = 2;
-  const ck = 'title_hero' + f.sx; let c = FLIP_CACHE.get(ck); if (!c) { c = mkCanvas(f.w, f.h); c.getContext('2d').drawImage(IMG.kanata, f.sx, 0, f.w, f.h, 0, 0, f.w, f.h); FLIP_CACHE.set(ck, c); }
+  const ck = 'title_hero' + ((progress.shop && progress.shop.pal) || '') + f.sx; let c = FLIP_CACHE.get(ck); if (!c) { c = mkCanvas(f.w, f.h); c.getContext('2d').drawImage(kanataSheet(), f.sx, 0, f.w, f.h, 0, 0, f.w, f.h); FLIP_CACHE.set(ck, c); }
   const bob = Math.round(Math.sin(stateT * 0.04) * 2);
   g.drawImage(c, 0, 0, f.w, f.h, 300 - f.ax * sc, 236 - f.ay * sc + bob, f.w * sc, f.h * sc);
   for (let i = 0; i < 3; i++) { const a = stateT * 0.03 + i * 2.1; g.globalAlpha = 0.8; g.drawImage(IMG.wisp, Math.round(300 + Math.cos(a) * 52 - 7), Math.round(160 + Math.sin(a) * 14 + bob)); g.globalAlpha = 1; }
@@ -554,7 +579,7 @@ function renderClear() {
   g.fillStyle = 'rgba(6,4,16,' + 0.82 * k + ')'; g.fillRect(0, 0, VW, VH);
   if (clearT > 40) {
     const tsec = Math.floor(progress.time / 60);
-    const secrets = ROOM_DEFS.filter(d => d.secret), found = secrets.filter(roomSeen).length;
+    const secrets = ROOM_DEFS.filter(d => d.secret), found = secrets.filter(roomVisited).length;
     const rows = [['TIME', Math.floor(tsec / 60) + ':' + String(tsec % 60).padStart(2, '0')], ['COINS', String(progress.coins)], ['MAP', mapPercent() + '%'], ['GHOSTS', String(progress.captures)], ['BOSSES', progress.bosses.size + '/' + BOSS_TOTAL], ['SECRET ROOMS', found + '/' + secrets.length]];
     rows.forEach((r, i) => { if (clearT > 60 + i * 12) { drawText(r[0], 112, 104 + i * 13, 'b', 1); drawText(r[1], 272, 104 + i * 13, 'w', 1, 'r'); } });
     if (clearT > 240 && (clearT >> 5) & 1) drawTextShadow('TAP TO TITLE', VW / 2, 252, 'w', 1, 'c');
@@ -578,7 +603,7 @@ function blit() {
 let msgShown = '';
 function updateMsgPanel() {
   let html;
-  if (state === 'play' || state === 'map' || state === 'warp') {
+  if (state === 'play' || state === 'map' || state === 'warp' || state === 'shop') {
     if (tipBox.t > 0) html = '<span class="tip">' + tipBox.text + '</span>';
     else { const a = AREAS[room.def.area] || AREAS.east; html = '<span class="area" style="color:' + '#c8c0f0' + '">' + a.jp + '</span><span class="room">' + room.def.jp + '</span>'; }
   } else html = '<span class="area">ROCKSIDE外伝 清掃員カナタ</span><span class="room">v' + GAME_VERSION + '</span>';
@@ -591,14 +616,18 @@ function render() {
   else if (state === 'play') renderPlay();
   else if (state === 'map') renderMap();
   else if (state === 'warp') renderWarpMenu();
+  else if (state === 'shop') renderShop();
   else if (state === 'clear') renderClear();
+  else if (state === 'thanks') renderThanks();
 }
 function screenTap(gx, gy) {
   if (state === 'title' && assetsReady() && loadSave()) {
     for (let i = 0; i < TITLE_MENU.length; i++) { const m = TITLE_MENU[i]; if (gx >= m.x && gx < m.x + m.w && gy >= m.y && gy < m.y + m.h) { titleSel = i; inp.startPressed = true; return true; } }
   }
+  if (state === 'map') { const T = MAP_TEA_BTN; if (gx >= T.x && gx < T.x + T.w && gy >= T.y - 3 && gy < T.y + T.h + 3) { inp.spitPressed = true; return true; } }
   if (state === 'map') { const B = MAP_ENTRY_BTN; if (gx >= B.x && gx < B.x + B.w && gy >= B.y - 3 && gy < B.y + B.h + 3) inp.vacPressed = true; else inp.mapPressed = true; return true; }
   if (state === 'warp') return warpTap(gx, gy);
+  if (state === 'shop') return shopTap(gx, gy);
   return false;
 }
 
@@ -619,7 +648,7 @@ window.GAIDEN = { boxHitsSolid, returnToEntry, CONFIG, P, cam, layout, stats, pr
   get state() { return state; }, get stateT() { return stateT; }, get room() { return room; }, get boss() { return boss; }, get frame() { return frame; }, get tipBox() { return tipBox; },
   get music() { return Music; }, nozzle, inCone, loadRoom, placePlayer, startNewGame, continueGame, enterGame, eraseSave, saveGame, loadSave, mapPercent, setState, snapCamera, buildRoomGrid, roomOpenings,
   spawnItem, makeGhost, startTug, STORY, velAppear, startEnding, storySay, checkBossGates, storyFit, VEL_LINES, get banner() { return banner; }, floats, foes: () => ents.filter(e => FOE_SIZE[e.type]), hasAbil, openGate, gainAbility, AREAS, ROOM_BY_ID, TOTAL_CELLS, makeFoe, BOSS_DEFS, entrySafety, openWarpMenu, warpTo,
-  get debugBossAtk() { return QS.get('bossatk'); }, _test: { keys, inp, touch, openWarpMenu, onSealBeat, sealsLit, SEAL_BOSSES, SEAL_HOURS, tipNow: () => typeof tipState !== 'undefined' ? tipState : null } };
+  get debugBossAtk() { return QS.get('bossatk'); }, _test: { keys, inp, touch, openWarpMenu, openShop, shopItems, shopBuy, shopState, setPalette, drinkTea, startClear: () => startClear(), onSealBeat, sealsLit, SEAL_BOSSES, SEAL_HOURS, tipNow: () => typeof tipState !== 'undefined' ? tipState : null } };
 </script>
 </body>
 </html>

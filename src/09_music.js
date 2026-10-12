@@ -571,6 +571,7 @@ function musicTick() {
 function musicBossIntro() { return state === 'play' && boss && boss.state === 'intro'; }
 function musicWanted() {
   if (state === 'title' || state === 'loading') return 'title';
+  if (state === 'thanks') return 'afterglow';
   if (state === 'clear') return clearT < 200 ? 'jingle_clear' : 'afterglow';
   if (state !== 'play' && state !== 'map') return null;
   if (P.dead) return 'jingle_gameover';

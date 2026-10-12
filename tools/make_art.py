@@ -414,7 +414,8 @@ GOLD, GOLDH, GOLDL, GOLDD = '#c9a24a', '#f3d98a', '#8a6a2a', '#4a3612'
 exec(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'art_areas.py'), encoding='utf-8').read())
 exec(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'art_v05.py'), encoding='utf-8').read())
 exec(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'art_v051.py'), encoding='utf-8').read())   # v0.5.1 expansion
-exec(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'art_v06.py'), encoding='utf-8').read())   # v0.6 expansion   # v0.5 expansion (add_v05_*)   # v0.4 areas (add_area_* below)
+exec(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'art_v06.py'), encoding='utf-8').read())   # v0.6 expansion
+exec(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'art_v07.py'), encoding='utf-8').read())   # v0.7 shop   # v0.5 expansion (add_v05_*)   # v0.4 areas (add_area_* below)
 def frame_rect(s, x, y, w, h, t=3):
     s.rect(x, y, w, h, GOLDL); s.rect(x + 1, y + 1, w - 2, h - 2, GOLD)
     s.hline(x + 1, x + w - 2, y + 1, GOLDH); s.vline(x + 1, y + 1, y + h - 2, GOLDH)
@@ -1016,7 +1017,7 @@ for k in range(12): a = k / 12 * 6.28; s.px(24 + math.cos(a) * 18, 5 + math.sin(
 s.ellipse(24, 5, 6, 2, '#a8e8ff'); s.outline('#140c28'); P.add('warp_pad', s)
 s = Spr(14, 30); s.rect(6, 8, 2, 22, '#3a2a2a'); s.rect(3, 0, 8, 9, '#2a2a3a'); s.rect(4, 1, 6, 7, '#8ad0ff'); s.rect(5, 2, 4, 5, '#d8f4ff'); s.outline('#0a0a14'); P.add('spiritlamp', s)
 add_area_props(P)
-add_v05_props(P); add_v051_props(P); add_v06_props(P)
+add_v05_props(P); add_v051_props(P); add_v06_props(P); add_v07_props(P)
 P.save()
 
 # =====================================================================

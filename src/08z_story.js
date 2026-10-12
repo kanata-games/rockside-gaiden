@@ -53,7 +53,7 @@ function updateEnding() {
   if (S.t === 300) say('……だれ？', 120);
   if (S.t === 470) { storySay('chronoa', '……ん。……はこんで……', 170); sfx('whoosh'); }
   if (S.t >= 480 && S.t < 900) { S.lift = Math.min(1, S.lift + 0.006); S.cx += (S.vx - 34 - S.cx) * 0.006; }   // carried by something unseen
-  if (S.t === 660) storySay('vel', '主が、お待ちです。……残りの十二人とも、いずれお会いになるでしょう。', 260);
+  if (S.t === 660) storySay('vel', '主が、お待ちです。……残りの十人とも、いずれお会いになるでしょう。', 260);
   if (S.t >= 900) S.alpha = Math.max(0, S.alpha - 0.012);
   if (S.t === 1000) { STORY.scene = null; startClear(); }
 }

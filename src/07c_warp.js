@@ -117,4 +117,4 @@ function drawSpiritTile(c, x, y, col, row) {
   c.fillStyle = 'rgba(168,232,255,0.5)'; c.fillRect(x + ((row * 7) % 12) + 2, y, 1, TS);
 }
 // tank upgrade (大容量タンク): 3 -> 4 slots
-function syncAbilities() { CONFIG.vac.tankMax = hasAbil('tank') ? 4 : 3; }
+function syncAbilities() { const S = progress.shop || {}; CONFIG.vac.tankMax = (hasAbil('tank') ? 4 : 3) + (S.tank ? 1 : 0); CONFIG.eat.max = S.gabu ? 2 : 3; }   // v0.7: shop upgrades

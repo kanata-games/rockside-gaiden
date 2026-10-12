@@ -23,19 +23,19 @@ const hasAbil = k => !!progress.abil[k];
 function saveGame(roomId) {
   progress.saveRoom = roomId;
   const d = { v: 2, coins: progress.coins, maxHP: progress.maxHP, perm: [...progress.perm], visited: [...progress.visited], hasKey: progress.hasKey,
-    bosses: [...progress.bosses], abil: progress.abil, saveRoom: roomId, tips: [...progress.tips], time: progress.time, captures: progress.captures, warps: [...progress.warps] };
+    bosses: [...progress.bosses], abil: progress.abil, saveRoom: roomId, tips: [...progress.tips], time: progress.time, captures: progress.captures, warps: [...progress.warps], shop: progress.shop || null };
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(d)); } catch (_) {}
 }
 function loadSave() { try { const s = localStorage.getItem(SAVE_KEY); return s ? JSON.parse(s) : null; } catch (_) { return null; } }
 function applySave(d) {
   progress.coins = d.coins || 0; progress.maxHP = d.maxHP || CONFIG.maxHP; progress.perm = new Set(d.perm || []); progress.visited = new Set(d.visited || []);
   progress.hasKey = !!d.hasKey; progress.bosses = new Set(d.bosses || (d.bossDone ? ['chandelier'] : [])); progress.abil = Object.assign({}, d.abil || {});
-  progress.saveRoom = ROOM_BY_ID[d.saveRoom] ? d.saveRoom : 'foyer'; progress.tips = new Set(d.tips || []); progress.time = d.time || 0; progress.captures = d.captures || 0; progress.warps = new Set(d.warps || []); syncAbilities();
+  progress.saveRoom = ROOM_BY_ID[d.saveRoom] ? d.saveRoom : 'foyer'; progress.tips = new Set(d.tips || []); progress.time = d.time || 0; progress.captures = d.captures || 0; progress.warps = new Set(d.warps || []); progress.shop = d.shop ? Object.assign({ heart: 0, tank: 0, gabu: 0, tea: 0, maps: [], pals: [], pal: '' }, d.shop) : null; if (typeof FLIP_CACHE !== 'undefined') FLIP_CACHE.clear(); syncAbilities();
   if (progress.bosses.has('chandelier')) progress.perm.add('ballroom:gate:floor'); // v0.1 saves: the floor gives way after the chandelier
 }
 function resetProgress() {
   progress.coins = 0; progress.maxHP = CONFIG.maxHP; progress.perm = new Set(); progress.visited = new Set(); progress.hasKey = false; progress.bosses = new Set(); progress.abil = {};
-  progress.saveRoom = 'foyer'; progress.tips = new Set(); progress.time = 0; progress.captures = 0; progress.warps = new Set(); syncAbilities();
+  progress.saveRoom = 'foyer'; progress.tips = new Set(); progress.time = 0; progress.captures = 0; progress.warps = new Set(); progress.shop = null; if (typeof FLIP_CACHE !== 'undefined') FLIP_CACHE.clear(); syncAbilities();
 }
 function eraseSave() { try { localStorage.removeItem(SAVE_KEY); } catch (_) {} }
 

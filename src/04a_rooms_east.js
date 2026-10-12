@@ -24,7 +24,7 @@ const AREAS = {
 };
 const ROOM_DEFS = [
   { id: 'foyer', jp: '玄関ホール', en: 'GRAND FOYER', area: 'east', theme: 'foyer', cx: 0, cy: 1, cw: 2, ch: 1, dark: 0.42,
-    build(R) { R.box(); R.open('R', 0, 11, 14); R.open('L', 0, 11, 14); R.gate(0, 11, 1, 14, 'wardrobe'); R.plat(5, 11, 11); R.plat(14, 19, 7); R.plat(24, 30, 11); R.plat(34, 41, 7); },
+    build(R) { R.box(); R.open('R', 0, 11, 14); R.open('L', 0, 11, 14); R.gate(0, 11, 1, 14, 'wardrobe'); R.plat(5, 11, 11); R.plat(14, 19, 7); R.plat(24, 30, 11); R.plat(34, 41, 7); R.open('T', 0, 10, 13); R.plat(9, 13, 6); },   // v0.7: hatch up to the cat's shop
     ents: [['start', 5, 15], ['heavy', 1.5, 15, { gate: 'wardrobe', sprite: 'wardrobe' }], ['save', 8, 15], ['bottle', 13, 15], ['chair', 18, 15], ['plate', 26, 11], ['book', 7, 11], ['book', 10, 11], ['coin', 16, 7], ['coin', 17, 7], ['coin', 18, 7],
       ['curtain', 21, 15, { drop: ['coin', 'coin', 'coin'] }], ['dust', 27, 15, { drop: ['coin'] }], ['dust', 38, 15, { drop: ['heart'] }],
       ['vase', 44, 15, { drop: ['coin', 'coin'] }], ['puff', 31, 9], ['coin', 36, 7], ['coin', 38, 7], ['coin', 40, 7]],
@@ -83,4 +83,9 @@ const ROOM_DEFS = [
     build(R) { R.box(); R.open('L', 0, 11, 14); R.plat(2, 5, 11); R.plat(18, 21, 11); R.open('B', 0, 15, 18); R.gate(15, 15, 18, 17, 'floor'); },
     ents: [['boss', 12, 2], ['ability', 5, 15, { abil: 'float', after: 'chandelier' }]],
     decor: [['window_wide', 4, 9.5], ['window_wide', 20, 9.5], ['window', 12, 8.5], ['sconce', 8, 9, { light: 1 }], ['sconce', 16, 9, { light: 1 }], ['rug', 12, 15]] },
+  // v0.7: the ghost cat's shop, up the hatch in the foyer ceiling (reachable from the very start)
+  { id: 'catshop', jp: 'ミャオの屋根裏商店', en: "MYAO'S ATTIC SHOP", area: 'east', theme: 'attic', cx: 0, cy: 0, cw: 1, ch: 1, dark: 0.3,
+    build(R) { R.box(); R.open('B', 0, 10, 13); },
+    ents: [['shopkeeper', 18, 15], ['coin', 4, 15], ['coin', 6, 15]],
+    decor: [['sconce', 6, 9, { light: 1 }], ['sconce', 20, 8, { light: 1 }], ['crate', 2, 15], ['cobweb', 1, 2, { top: 1 }]] },
 ];

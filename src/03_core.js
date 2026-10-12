@@ -179,8 +179,8 @@ function heroFrame(i) { const m = META.kanata; return { sx: i * m.frameWidth, w:
 function drawHero(i, feetX, feetY, flip, white, alpha) {
   const f = heroFrame(i); if (alpha !== undefined) g.globalAlpha = alpha;
   const x = Math.round(feetX - (flip ? f.w - 1 - f.ax : f.ax)), y = Math.round(feetY - f.ay);
-  const ck = 'hero' + i + (flip ? 'F' : '') + (white ? 'W' : ''); let c = FLIP_CACHE.get(ck);
-  if (!c) { c = mkCanvas(f.w, f.h); const cg = c.getContext('2d'); if (flip) { cg.translate(f.w, 0); cg.scale(-1, 1); } cg.drawImage(IMG.kanata, f.sx, 0, f.w, f.h, 0, 0, f.w, f.h);
+  const ck = 'hero' + ((progress.shop && progress.shop.pal) || '') + i + (flip ? 'F' : '') + (white ? 'W' : ''); let c = FLIP_CACHE.get(ck);
+  if (!c) { c = mkCanvas(f.w, f.h); const cg = c.getContext('2d'); if (flip) { cg.translate(f.w, 0); cg.scale(-1, 1); } cg.drawImage(kanataSheet(), f.sx, 0, f.w, f.h, 0, 0, f.w, f.h);
     if (white) { cg.setTransform(1, 0, 0, 1, 0, 0); cg.globalCompositeOperation = 'source-atop'; cg.fillStyle = 'rgba(255,255,255,0.85)'; cg.fillRect(0, 0, f.w, f.h); } FLIP_CACHE.set(ck, c); }
   g.drawImage(c, x, y); g.globalAlpha = 1;
 }

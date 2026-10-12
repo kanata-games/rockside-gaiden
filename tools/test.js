@@ -120,7 +120,7 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       ok('fewer rats and bat swarms (<= 15 rats, <= 6 swarms)', crit.rats <= 15 && crit.bats <= 6, crit);
       ok('a warp room in every area', ['east', 'laundry', 'garden', 'clock', 'crypt', 'bath', 'wine', 'armory', 'servants', 'lake'].every(a => crit.warps.includes(a)), crit.warps);
       ok('title has no PROTOTYPE', !(await E(page, () => document.documentElement.innerHTML.includes('PROTOTYPE'))));
-      ok('version 0.6.1', await E(page, () => (typeof GAME_VERSION !== 'undefined' && GAME_VERSION === '0.6.1') || GAIDEN.CONFIG.version === '0.6.1'));
+      ok('version 0.7.0', await E(page, () => (typeof GAME_VERSION !== 'undefined' && GAME_VERSION === '0.7.0') || GAIDEN.CONFIG.version === '0.7.0'));
       await ctx.close(); }
 
     // ---- world reachability / ability gating (static check over the stitched tile grid)
@@ -228,6 +228,37 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       await waitFor(page, () => GAIDEN.boss && GAIDEN.boss.state !== 'sleep' && GAIDEN.boss.state !== 'intro', 30000); await E(page, () => { GAIDEN._test.keys.right = false; });
       const got = await waitFor(page, () => GAIDEN.boss && GAIDEN.boss.state === 'fallen' && !!GAIDEN.boss.core, 40000);
       ok('v0.6: galecock storm topples it and exposes the storm core', !!got);
+      await ctx.close(); }
+    // ---- v0.7: coin shop, palettes, tea, bought maps, saved purchases; THANK YOU screen; Vel's count
+    { const { ctx, page } = await open(browser, '?room=catshop&x=4&y=15');
+      await waitFor(page, () => GAIDEN.state === 'play', 5000);
+      ok('v0.7: the cat shop sits right above the foyer (start area)', await E(page, () => GAIDEN.ROOM_BY_ID.catshop.area === 'east' && GAIDEN.ROOM_BY_ID.catshop.cx === 0 && GAIDEN.ROOM_BY_ID.catshop.cy === 0));
+      await E(page, () => { GAIDEN._test.openShop(); }); await sleep(200);
+      ok('v0.7: stepping up to the counter opens the shop', await E(page, () => GAIDEN.state === 'shop'));
+      const r = await E(page, () => { const T = GAIDEN._test, P = GAIDEN.progress, L = () => T.shopItems(), find = id => L().find(i => i.id === id);
+        P.coins = 0; const poor = !T.shopBuy(find('heart'));
+        P.coins = 2000; const hp0 = P.maxHP; T.shopBuy(find('heart')); T.shopBuy(find('heart')); T.shopBuy(find('heart')); const soldOut = find('heart').sold && P.maxHP === hp0 + 6;
+        const tank0 = GAIDEN.CONFIG.vac.tankMax; T.shopBuy(find('tank')); const tankUp = GAIDEN.CONFIG.vac.tankMax === tank0 + 1;
+        T.shopBuy(find('gabu')); const gabu = GAIDEN.CONFIG.eat.max === 2;
+        for (let i = 0; i < 4; i++) T.shopBuy(find('tea')); const tea = T.shopState().tea === 3;
+        T.shopBuy(find('map')); const map = T.shopState().maps.length === 1;
+        T.shopBuy(find('pal_sakura')); const pal = T.shopState().pal === 'sakura';
+        const total = [40, 60, 80, 120, 90, 8 * 15, 30 * 3].reduce((a, b) => a + b, 0);
+        const saved = JSON.parse(localStorage.getItem('gaiden_save_v1') || '{}').shop;
+        return { poor, soldOut, tankUp, gabu, tea, map, pal, total, savedOk: !!saved && saved.heart === 3 && saved.pal === 'sakura', coins: P.coins }; });
+      ok('v0.7: shop items work (heart x3 stock, tank, gabu, tea cap 3, area map, palette)', r.poor && r.soldOut && r.tankUp && r.gabu && r.tea && r.map && r.pal, r);
+      ok('v0.7: purchases are saved', r.savedOk, r);
+      ok('v0.7: buying everything costs ~600 coins (a full exploration)', r.total >= 550 && r.total <= 650, r);
+      await E(page, () => { GAIDEN.setState ? 0 : 0; GAIDEN._test.inp.vacPressed = true; }); await sleep(200);
+      await E(page, () => { GAIDEN.P.hp = 2; }); await page.keyboard.press('Tab'); await sleep(300);
+      await E(page, () => { GAIDEN._test.drinkTea(); });
+      ok('v0.7: herbal tea from the map heals fully', await E(page, () => GAIDEN.P.hp === GAIDEN.progress.maxHP && GAIDEN._test.shopState().tea === 2));
+      await ctx.close(); }
+    { const { ctx, page } = await open(browser, '?room=foyer&x=5&y=15');
+      await waitFor(page, () => GAIDEN.state === 'play', 5000);
+      ok('v0.7: Vel counts ten others (13 dolls - Kanata - Vel - Chronoa)', await page.evaluate(() => { const src = [...document.scripts].map(s => s.textContent).join(''); return src.includes('残りの十人') && !src.includes('残りの十二人'); }));
+      await E(page, () => GAIDEN._test.startClear()); await E(page, () => { window.__speed = 8; }); await sleep(1500); await E(page, () => { window.__speed = 1; GAIDEN._test.inp.jumpPressed = true; }); await sleep(300);
+      ok('v0.7: clear -> THANK YOU FOR PLAYING screen', await waitFor(page, () => GAIDEN.state === 'thanks', 3000));
       await ctx.close(); }
     // ---- v0.6.1: twelve clock-face seals
     { const seals = ['rose', 'organ', 'marionette', 'orrery', 'tarant', 'knight', 'bellboard', 'angler', 'paintgolem', 'galecock', 'boxjack'];

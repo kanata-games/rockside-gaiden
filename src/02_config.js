@@ -1,5 +1,5 @@
 // Version label (title screen + footer). Bump on every release.
-const GAME_VERSION = '0.6.1';
+const GAME_VERSION = '0.7.0';
 // v0.6: the clock heart is sealed six times: the clock itself, the theater & observatory, and the three highest/strangest domains
 // v0.6.1: twelve seals like a clock face, hour = index + 1 (chandelier, golem and serpent are left out)
 const SEAL_BOSSES = ['rose', 'organ', 'marionette', 'orrery', 'tarant', 'knight', 'bellboard', 'angler', 'paintgolem', 'galecock', 'boxjack', 'clock'];

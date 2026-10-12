@@ -17,6 +17,7 @@ function spawnRoomEntities() {
       case 'bats': for (let k = 0; k < (opt.n || 2); k++) ents.push(makeFoe('bat', x + (k - 0.5) * 18, y + (k & 1) * 6, opt.foe)); break;
       case 'rat': case 'gargoyle': case 'puppet': case 'skeleton': case 'cursedbook': case 'skullwisp': case 'crab': ents.push(makeFoe(type, x, y, opt.foe)); break;
       case 'warp': ents.push(makeWarp(x, y, opt, id)); break;
+      case 'shopkeeper': ents.push(makeShopkeeper(x, y)); break;   // v0.7
       case 'sheet': ents.push(makeGhost('sheet', x, y)); break;
       case 'lever': ents.push(makeLever(x, y, opt, id)); break;
       case 'heavy': ents.push(makeHeavy(x, y, opt, id)); break;
@@ -231,6 +232,7 @@ function updateEnts() {
     else if (e.type === 'ability') updateAbility(e);
     else if (e.type === 'hint') updateHint(e);
     else if (e.type === 'warp') updateWarp(e);
+    else if (e.type === 'shopkeeper') updateShopkeeper(e);
     else updateInteractables(e);
   }
   for (let i = ents.length - 1; i >= 0; i--) if (ents[i].dead && ents[i] !== P.tug) ents.splice(i, 1);
