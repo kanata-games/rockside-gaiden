@@ -38,7 +38,7 @@ BOSS_DEFS.angler = { jp: '灯り鮟鱇 ランタンアングラー', en: 'LANTER
         const warn = bossP('biteWarn'), dash = 22, n = b.rage ? 2 : 1;
         if (b.t === 1) { b.face = Math.sign(pcx() - b.x) || b.face; b.bites = n; b.bx0 = b.x; b.pose = 'bite'; sfx('warn'); tip('abite', '大きな口をあけた！ 前の赤いところから離れて、しぶきの波はジャンプ！'); }
         if (b.t < warn) { if (b.t % 8 === 0) sfx('warn'); break; }
-        if (b.t === warn) { b.bx1 = clamp(b.x + b.face * C.biteDist, 50, room.W - 50); sfx('whoosh'); }
+        if (b.t === warn) { b.bx1 = clamp(b.x + b.face * C.biteDist, 76, room.W - 76); sfx('whoosh'); }   // the lunge stops short of the wall: hugging the wall is always safe
         if (b.t < warn + dash) { const k = (b.t - warn) / dash; b.x = b.bx0 + (b.bx1 - b.bx0) * k;
           if (overlapBox(b.x + (b.face > 0 ? 10 : -52), FLOOR_Y - 50, b.x + (b.face > 0 ? 52 : -10), FLOOR_Y)) hurtPlayer(C.biteDamage, b.x, 'bite'); break; }
         if (b.t === warn + dash) { b.pose = 'idle'; sfx('thud'); cam.shake = 5; ebullets.push({ kind: 'wave', x: b.x + b.face * 50 - 8, y: FLOOR_Y - 14, w: 16, h: 14, vx: b.face * C.waveSpeed, vy: 0, dmg: C.waveDamage, life: 200 }); }
@@ -46,26 +46,25 @@ BOSS_DEFS.angler = { jp: '灯り鮟鱇 ランタンアングラー', en: 'LANTER
         if (b.t >= warn + dash + 30) { b.state = 'idle'; b.t = 0; } break; }
       case 'dive': {
         const warn = bossP('diveWarn'), sinkT = 20;
-        if (b.t === 1) { b.pose = 'dive'; sfx('splash'); tip('adive', 'ランタンアングラーが水にもぐった！ 赤い印から飛び出してくる… 印から離れて！'); }
+        if (b.t === 1) { b.pose = 'dive'; sfx('splash'); tip('adive', 'ランタンアングラーが水にもぐった！ 赤い印から飛び出してくる… 印から離れて！ '); }
         if (b.t < sinkT) { b.sink = 58 * (b.t / sinkT); break; }
         if (b.t === sinkT) { b.marks = [clamp(px, 50, room.W - 50)]; b.markR = 52; }
         if (b.t < sinkT + warn) { b.x += clamp(b.marks[0] - b.x, -3, 3); if (b.t % 8 === 0) sfx('warn'); break; }
         if (b.t === sinkT + warn) { b.x = b.marks[0]; b.marks = []; b.pose = 'bite'; b.sink = 0; sfx('boom'); cam.shake = 9; hitStop = 3;
-          if (overlapBox(b.x - 40, FLOOR_Y - 80, b.x + 40, FLOOR_Y)) hurtPlayer(C.diveDamage, b.x, 'dive');
-          for (const d of [-1, 1]) ebullets.push({ kind: 'wave', x: b.x + d * 44 - 8, y: FLOOR_Y - 14, w: 16, h: 14, vx: d * C.waveSpeed, vy: 0, dmg: C.waveDamage, life: 200 });
+          if (overlapBox(b.x - 36, FLOOR_Y - 80, b.x + 36, FLOOR_Y)) hurtPlayer(C.diveDamage, b.x, 'dive');
           for (let i = 0; i < 18; i++) parts.push({ x: b.x + rnd(-30, 30), y: FLOOR_Y - 6, vx: rnd(-2, 2), vy: rnd(-4, -1), life: 30, col: i & 1 ? '#a0e8ff' : '#4a9aa0', size: 2, grav: 1 }); }
         if (b.t === sinkT + warn + 24) b.pose = b.rage ? 'rage' : 'idle';
         if (b.t >= sinkT + warn + 50) { b.markR = 22; b.state = 'idle'; b.t = 0; } break; }
       case 'lure': {
         const tr = C.lureTrack, lk = bossP('lureLock');
-        if (b.t === 1) { b.lure = { x: b.x + b.face * 40 }; b.markR = 40; sfx('warn'); tip('alure', 'ちょうちんの光が追ってくる！ 点滅したら止まる… 光の下から逃げて！'); }
+        if (b.t === 1) { b.lure = { x: b.x + b.face * 40 }; b.markR = 58; sfx('warn'); tip('alure', 'ちょうちんの光が追ってくる！ 点滅したら止まる… 光の下から逃げて！'); }
         if (b.t < tr) b.lure.x += clamp(pcx() - b.lure.x, -1.6, 1.6);
         b.lure.x = clamp(b.lure.x, 50, room.W - 50);
         if (b.t < tr + lk) { b.marks = [b.lure.x]; if (b.t % 8 === 0) sfx('warn'); break; }
         if (b.t === tr + lk) { b.face = Math.sign(b.lure.x - b.x) || b.face; b.lx0 = b.x; b.pose = 'bite'; sfx('whoosh'); }
         if (b.t < tr + lk + 12) { b.x = b.lx0 + (b.lure.x - b.lx0) * ((b.t - tr - lk) / 12); break; }
         if (b.t === tr + lk + 12) { b.x = b.lure.x; b.marks = []; sfx('crash'); cam.shake = 11; hitStop = 4;
-          if (overlapBox(b.x - 44, FLOOR_Y - 60, b.x + 44, FLOOR_Y)) hurtPlayer(C.snapDamage, b.x, 'snap');
+          if (overlapBox(b.x - 40, FLOOR_Y - 60, b.x + 40, FLOOR_Y)) hurtPlayer(C.snapDamage, b.x, 'snap');
           for (let i = 0; i < 18; i++) parts.push({ x: b.x + rnd(-30, 30), y: FLOOR_Y - 4, vx: rnd(-2.5, 2.5), vy: rnd(-3, -0.5), life: 26, col: i & 1 ? '#7affc0' : '#5a6a6a', size: 2, grav: 1 }); }
         if (b.t === tr + lk + 30) { b.state = 'stuck'; b.t = 0; b.pose = 'stun'; b.markR = 22; b.winLen = bossP('stun'); b.lure = null; sfx('pop');
           b.coreSide = Math.sign(pcx() - b.x) || 1; if (b.x + b.coreSide * 56 < 30 || b.x + b.coreSide * 56 > room.W - 30) b.coreSide = -b.coreSide;
@@ -82,7 +81,7 @@ BOSS_DEFS.angler = { jp: '灯り鮟鱇 ランタンアングラー', en: 'LANTER
     const C = CONFIG.angler, x = Math.round(b.x - cam.x), y = Math.round(FLOOR_Y - cam.y), top = Math.round(2 * TS - cam.y);
     if (b.state === 'bubbles') for (const m of b.marks) drawFloorMark(m, Math.min(1, (b.t - b.mT) / bossP('bubWarn')), 'rgba(255,210,90,0.9)');
     if (b.state === 'dive' && b.marks.length) drawFloorMark(b.marks[0], Math.min(1, (b.t - 20) / bossP('diveWarn')), 'rgba(255,60,60,0.85)');
-    if (b.state === 'bite' && b.t < bossP('biteWarn')) { const x0 = x + b.face * 10, x1 = x + b.face * (C.biteDist + 52); g.fillStyle = (frame & 4) ? 'rgba(255,60,60,0.22)' : 'rgba(255,60,60,0.12)'; g.fillRect(Math.min(x0, x1), y - 50, Math.abs(x1 - x0), 50); }
+    if (b.state === 'bite' && b.t < bossP('biteWarn')) { const x0 = x + b.face * 10, x1 = Math.round(clamp(b.x + b.face * C.biteDist, 76, room.W - 76) - cam.x) + b.face * 52; g.fillStyle = (frame & 4) ? 'rgba(255,60,60,0.22)' : 'rgba(255,60,60,0.12)'; g.fillRect(Math.min(x0, x1), y - 50, Math.abs(x1 - x0), 50); }
     if (b.state === 'lure' && b.lure) { const lock = b.t >= C.lureTrack, lx = Math.round(b.lure.x - cam.x);
       g.globalCompositeOperation = 'lighter'; g.fillStyle = lock ? ((frame & 2) ? 'rgba(255,120,120,0.30)' : 'rgba(255,250,180,0.30)') : 'rgba(255,250,180,0.14)';
       g.fillRect(lx - 40, top, 80, y - top); g.globalCompositeOperation = 'source-over';

@@ -47,13 +47,16 @@ BOSS_DEFS.bellboard = { jp: '呼び鈴盤 リンガリング', en: 'RINGALING, T
         if (b.t >= warn + (n - 1) * 50 + 90) { b.state = 'idle'; b.t = 0; } break; }
       case 'rope': {
         const warn = bossP('ropeWarn');
-        if (b.t === 1) { b.marks = [clamp(px, 30, room.W - 30)]; b.markR = 22; sfx('warn'); tip('brope', '赤い柱の中に、呼び鈴のひもが落ちてくる！ 柱から出て、鈴の輪はジャンプ'); }
+        if (b.t === 1) { b.marks = [clamp(px, 30, room.W - 30)]; b.markR = 22; sfx('warn'); tip('brope', '赤い柱の中に、呼び鈴のひもが落ちてくる！ 柱の外へ逃げて'); }
         if (b.t < warn) { b.x += clamp(b.marks[0] - b.x, -2, 2); if (b.t % 8 === 0) sfx('warn'); break; }
         if (b.t === warn) { const mx = b.marks[0]; sfx('thud'); cam.shake = 6; hitStop = 2;
-          ebullets.push({ kind: 'ropecol', x: mx - 11, y: 2 * TS, w: 22, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: C.ropeDamage, life: 20, static: 1 });
-          for (const d of [-1, 1]) ebullets.push({ kind: 'wave', spr: 'chimering', x: mx + d * 20 - 9, y: FLOOR_Y - 14, w: 18, h: 14, vx: d * C.waveSpeed, vy: 0, dmg: C.waveDamage, life: 200 }); }
-        if (b.t === warn + 20) b.marks = [];
-        if (b.t >= warn + 70) { b.markR = 20; b.state = 'idle'; b.t = 0; } break; }
+          ebullets.push({ kind: 'ropecol', x: mx - 11, y: 2 * TS, w: 22, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: C.ropeDamage, life: 20, static: 1 }); }
+        if (b.rage && b.t === warn + 24) { b.marks = [clamp(px, 30, room.W - 30)]; b.rope2 = 1; }   // rage: a second rope where Kanata is now
+        if (b.rope2 && b.t === warn + 24 + bossP('ropeWarn')) { const mx = b.marks[0]; sfx('thud'); cam.shake = 6; b.rope2 = 0;
+          ebullets.push({ kind: 'ropecol', x: mx - 11, y: 2 * TS, w: 22, h: FLOOR_Y - 2 * TS, vx: 0, vy: 0, g: 0, dmg: C.ropeDamage, life: 20, static: 1 }); }
+        if (b.t === warn + 20 && !b.rage) b.marks = [];
+        if (b.rage && b.t === warn + 24 + bossP('ropeWarn') + 20) b.marks = [];
+        if (b.t >= warn + (b.rage ? 24 + bossP('ropeWarn') : 0) + 60) { b.markR = 20; b.state = 'idle'; b.t = 0; } break; }
       case 'toll': {
         const tr = C.tollTrack, lk = bossP('tollLock'), fall = 12;
         if (b.t === 1) { b.markR = 50; sfx('warn'); tip('btoll', 'リンガリングが天井をすべって追ってくる！ 点滅したら落ちてくる… 真下から逃げて！'); }
@@ -77,7 +80,7 @@ BOSS_DEFS.bellboard = { jp: '呼び鈴盤 リンガリング', en: 'RINGALING, T
   draw(b, lights) {
     const x = Math.round(b.x - cam.x), y = Math.round(b.hy - cam.y), top = 2 * TS - cam.y;
     if (b.state === 'peal') for (const m of b.marks) drawFloorMark(m, Math.min(1, (b.t - b.mT) / bossP('bellWarn')), 'rgba(255,210,90,0.9)');
-    if (b.state === 'rope' && b.marks.length) { const mx = Math.round(b.marks[0] - cam.x), k = Math.min(1, b.t / bossP('ropeWarn'));
+    if (b.state === 'rope' && b.marks.length) { const mx = Math.round(b.marks[0] - cam.x), k = Math.min(1, (b.t > bossP('ropeWarn') + 20 ? b.t - bossP('ropeWarn') - 24 : b.t) / bossP('ropeWarn'));
       g.fillStyle = (frame & 4) ? 'rgba(255,60,60,' + (0.12 + 0.14 * k) + ')' : 'rgba(255,60,60,' + (0.08 + 0.1 * k) + ')'; g.fillRect(mx - 12, Math.round(top), 24, Math.round(FLOOR_Y - cam.y) - Math.round(top));
       drawFloorMark(b.marks[0], k, 'rgba(255,60,60,0.85)'); }
     if (b.state === 'toll' && b.marks.length) { const lock = b.t >= CONFIG.bellboard.tollTrack; drawFloorMark(b.marks[0], lock ? 1 : 0.5, lock && (frame & 2) ? 'rgba(255,240,240,0.95)' : 'rgba(255,60,60,0.9)');

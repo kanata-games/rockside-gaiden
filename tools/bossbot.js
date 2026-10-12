@@ -35,7 +35,7 @@ window.__bot = function () {
   if (kind === 'knight' && b.state === 'slash' && b.pose === 'raise') danger.push([b.x + b.face * 47, 40]);
   if (kind === 'tarant' && (b.state === 'drop' || b.state === 'plunge') && b.hy > 120) danger.push([b.x, 38]);
   if (kind === 'bellboard' && b.state === 'toll' && b.hy > 110) danger.push([b.x, 56]);   // v0.5.1
-  if (kind === 'angler' && b.state === 'bite') { const reach = CONFIG.angler.biteDist + 52; danger.push([b.x + b.face * reach / 2, reach / 2 + 14]); }
+  if (kind === 'angler' && b.state === 'bite') { const end = (b.bx1 !== undefined && b.t >= CONFIG.angler.biteWarn ? b.bx1 : Math.max(76, Math.min(G.room.W - 76, b.x + b.face * CONFIG.angler.biteDist))) + b.face * 52; danger.push([(b.x + end) / 2, Math.abs(end - b.x) / 2 + 12]); }
   if (kind === 'angler' && b.state === 'lure' && b.t >= CONFIG.angler.lureTrack) danger.push([b.x + (b.lure ? (b.lure.x - b.x) / 2 : 0), Math.abs(b.lure ? b.lure.x - b.x : 0) / 2 + 50]);
   if (kind === 'angler' && b.pose !== 'dive' && b.state !== 'stuck') danger.push([b.x, 50]);
   if (kind === 'chronoa' && b.state === 'rewind' && b.orbs) for (const o of b.orbs) if (o.q || b.t < 60) danger.push([o.tx + (b.orbO ? (b.orbO.x - o.tx) * 0.2 : 0), 26]);
