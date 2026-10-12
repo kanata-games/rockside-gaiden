@@ -21,6 +21,8 @@ const ATTACKS = {
   orrery: ['dome', 'float,turbo,djump,phase', ['meteor', 'comet', 'orbit', 'supernova']],
   tarant: ['winethrone', 'float,turbo,djump,phase', ['corks', 'spill', 'drop', 'plunge']],
   knight: ['tiltyard', 'float,turbo,djump,phase,keyring', ['halberds', 'slash', 'leap', 'greatsword']],
+  bellboard: ['bellhall', 'float,turbo,djump,phase,keyring', ['peal', 'chime', 'rope', 'toll']],   // v0.5.1
+  angler: ['abyss', 'float,turbo,djump,phase,keyring,lantern', ['bubbles', 'bite', 'dive', 'lure']],
   chronoa: ['clockheart', 'float,turbo,djump,phase,tank', ['hands', 'pendulum', 'rewind', 'slow', 'beam']],
 };
 module.exports.ATTACKS = ATTACKS;

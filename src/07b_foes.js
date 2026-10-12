@@ -8,7 +8,7 @@
 //  Positions: x = centre, y = bottom (feet), like every non-ghost entity.
 // =====================================================================
 const FOE_SIZE = { bat: [14, 10], rat: [18, 10], gargoyle: [26, 26], puppet: [16, 30], skeleton: [18, 40], cursedbook: [16, 14], skullwisp: [16, 18], crab: [20, 12] };
-const SKIN_JP = { dancer: '踊り子人形', maskbat: '仮面コウモリ', starwisp: '星くず火', chart: '呪いの星図', corkbat: 'コルクコウモリ', grapewisp: 'ぶどう火', squire: '見習い鎧', griffin: '石のグリフォン' };
+const SKIN_JP = { dancer: '踊り子人形', maskbat: '仮面コウモリ', starwisp: '星くず火', chart: '呪いの星図', corkbat: 'コルクコウモリ', grapewisp: 'ぶどう火', squire: '見習い鎧', griffin: '石のグリフォン', dustmaid: 'はたき女中', bellbat: '呼び鈴コウモリ', lakewisp: 'ちょうちん魚', blindcrab: 'めくらガニ' };
 const FOE_JP = { bat: 'コウモリ', rat: 'ネズミ', gargoyle: 'ガーゴイル', puppet: 'あやつり人形', skeleton: '骸骨の給仕', cursedbook: '呪いの本', skullwisp: 'どくろ火', crab: 'おふろガニ' };
 const EDIBLE = { rat: 1, bat: 1, crab: 1 };  // tiny critters: the mimic vacuum eats them
 function makeFoe(kind, x, y, opt) {

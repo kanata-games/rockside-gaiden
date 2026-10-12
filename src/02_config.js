@@ -152,4 +152,11 @@ const CONFIG = {
   knight: { hp: 225, idle: 40, idleRage: 30, halberds: 3, halberdsRage: 4, halbWarn: 40, halbWarnRage: 34, halbDamage: 1, slashWarn: 40, slashWarnRage: 34, slashDamage: 2,
     waveSpeed: 2.8, waveDamage: 1, leapWarn: 40, leapWarnRage: 36, leapAir: 40, leapDamage: 2, gleamTrack: 56, gleamLock: 30, gleamLockRage: 27, gswordDamage: 2,
     stun: 145, stunRage: 125, coreCap: 30, specialEvery: 3 },
+  // ---- v0.5.1: one notch harder again
+  // 呼び鈴盤 リンガリング RINGALING (servants' quarters)
+  bellboard: { hp: 235, idle: 40, idleRage: 30, bells: 4, bellsRage: 5, bellWarn: 42, bellWarnRage: 36, bellDamage: 1, chimeWarn: 40, chimeWarnRage: 34, waveSpeed: 2.8, waveDamage: 1,
+    ropeWarn: 42, ropeWarnRage: 36, ropeDamage: 2, tollTrack: 56, tollLock: 30, tollLockRage: 27, tollDamage: 2, stun: 145, stunRage: 125, coreCap: 30, specialEvery: 3 },
+  // 灯り鮟鱇 ランタンアングラー LANTERN ANGLER (underground lake)
+  angler: { hp: 250, idle: 38, idleRage: 28, bubbles: 3, bubblesRage: 4, bubWarn: 40, bubWarnRage: 34, bubDamage: 1, biteWarn: 40, biteWarnRage: 34, biteDamage: 2, biteDist: 120,
+    waveSpeed: 2.8, waveDamage: 1, diveWarn: 42, diveWarnRage: 36, diveDamage: 2, lureTrack: 56, lureLock: 30, lureLockRage: 27, snapDamage: 2, stun: 140, stunRage: 120, coreCap: 30, specialEvery: 3 },
 };

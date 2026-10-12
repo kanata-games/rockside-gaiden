@@ -16,5 +16,7 @@ ROOM_DEFS.push(
   warpRoom('warp_theater', 'theater', 'theater', 'w', 1, 0, 'R', [['masks', 4, 9]]),
   warpRoom('warp_stars', 'stars', 'observatory', 'k', 12, -2, 'L', [['starchart', 20, 8]]),
   warpRoom('warp_wine', 'wine', 'casks', 'r', 0, 2, 'R', [['cask_big', 5, 15]]),            // v0.5
+  warpRoom('warp_servants', 'servants', 'servants', 'v', -7, 4, 'R', [['broom', 4, 15]]),   // v0.5.1
+  warpRoom('warp_lake', 'lake', 'lake', 'l', -7, 6, 'R', [['glowmoss', 4, 15]]),
   warpRoom('warp_armory', 'armory', 'armory', 'a', 17, -1, 'L', [['weaponrack', 19, 15]]),
 );

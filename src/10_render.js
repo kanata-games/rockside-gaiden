@@ -87,7 +87,7 @@ function drawLighting(extra) {
   const d = room.def.dark; if (!d) return;
   lc.globalCompositeOperation = 'source-over'; lc.clearRect(0, 0, VW, VH); lc.fillStyle = 'rgba(6,4,18,' + d + ')'; lc.fillRect(0, 0, VW, VH);
   lc.globalCompositeOperation = 'destination-out';
-  const all = room.lights.concat(extra);
+  const all = room.lights.concat(extra, hasAbil('lantern') && !P.dead ? [{ x: pcx(), y: pcy(), r: 96, s: 0.85, warm: 1 }] : []);   // v0.5.1 カンテラ: Grim carries a lantern
   for (const L of all) {
     const x = L.x - cam.x, y = L.y - cam.y, r = L.r * (L.flick ? 1 : (1 + Math.sin(frame * 0.11 + L.x) * 0.04));
     if (x < -r || x > VW + r || y < -r || y > VH + r) continue;
@@ -258,7 +258,7 @@ function foeSprite(e) {
   }
 }
 // v0.4 area skins: same behaviour, new look (dancer = puppet, maskbat = bat, starwisp = skullwisp, chart = cursedbook)
-const FOE_SKIN_BASE = { dancer: 'puppet', maskbat: 'bat', starwisp: 'skullwisp', chart: 'cbook', corkbat: 'bat', grapewisp: 'skullwisp', squire: 'skel', griffin: 'garg' };   // v0.5 +4
+const FOE_SKIN_BASE = { dancer: 'puppet', maskbat: 'bat', starwisp: 'skullwisp', chart: 'cbook', corkbat: 'bat', grapewisp: 'skullwisp', squire: 'skel', griffin: 'garg', dustmaid: 'puppet', bellbat: 'bat', lakewisp: 'skullwisp', blindcrab: 'crab' };   // v0.5 +4
 function foeSkin(e, k) { const base = e.skin && FOE_SKIN_BASE[e.skin]; return base && k.startsWith(base) ? e.skin + k.slice(base.length) : k; }
 function drawFoe(e, x, y) {
   const k = foeSkin(e, foeSprite(e)), r = rectOf('enemies', k), fl = e.type === 'gargoyle' ? pcx() < e.x : e.face < 0;
@@ -303,6 +303,9 @@ function drawEBullet(b) {
   if (b.spr) { spr('boss', b.spr, x, y, b.vx < 0); return; }   // v0.5: generic sprite bullets (behaviour from kind)
   if (b.kind === 'corkshot') { g.save(); g.translate(Math.round(x + 6), Math.round(y + 7)); g.rotate(b.life * 0.3); const r = rectOf('boss', 'corkshot'); g.drawImage(IMG.boss, r.x, r.y, r.w, r.h, -6, -7, r.w, r.h); g.restore(); return; }
   if (b.kind === 'halberd') { const k = Math.min(1, (22 - b.life) / 4), yy = Math.round(y + (b.h - 64) * k); g.fillStyle = 'rgba(220,230,255,0.25)'; g.fillRect(Math.round(x + 2), Math.round(y), 8, yy - Math.round(y)); spr('boss', 'halberd', x, yy); return; }
+  if (b.kind === 'ropecol') { const k = Math.min(1, (20 - b.life) / 3), yy = Math.round(y + (b.h - 16) * k); g.fillStyle = '#c8a870'; g.fillRect(Math.round(x + 10), Math.round(y), 3, yy - Math.round(y)); g.fillStyle = 'rgba(255,240,200,0.25)'; g.fillRect(Math.round(x + 2), Math.round(y), b.w - 4, yy - Math.round(y)); spr('boss', 'clapper', Math.round(x - 3), yy); return; }   // v0.5.1
+  if (b.kind === 'bubcol') { const k = Math.min(1, (22 - b.life) / 4), h = Math.round(b.h * k), y0 = Math.round(y + b.h - h); g.fillStyle = 'rgba(140,220,255,0.22)'; g.fillRect(Math.round(x + 2), y0, b.w - 4, h);
+    for (let i = 0; i < h; i += 14) spr('boss', 'bubble', Math.round(x + 4 + Math.sin((i + frame) * 0.3) * 3), y0 + i); return; }
   if (b.kind === 'gsword') { spr('boss', 'greatsword', Math.round(x + 8), Math.round(y)); return; }
   if (b.kind === 'plate') { spr('items', 'plate', x, y); if (b.spin & 4) { g.fillStyle = '#ffffff'; g.fillRect(Math.round(x + 2), Math.round(y + 1), 3, 1); } }
   // v0.4 area bosses

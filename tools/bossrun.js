@@ -4,7 +4,8 @@ const { chromium } = require('playwright'); const path = require('path');
 const SERVE = require('./serve.js'); const BOT = require('./bossbot.js'); const ROOT = path.resolve(__dirname, '..');
 const BOSSES = { chandelier: ['ballroom', ''], golem: ['washroom', 'float,turbo'], rose: ['rosebed', 'float,turbo,djump'], clock: ['clockroom', 'float,turbo,djump,phase'], organ: ['choir', 'float,turbo,djump'], serpent: ['yubune', 'float,turbo,djump,phase'],
   marionette: ['stage', 'float,turbo,djump,phase'], orrery: ['dome', 'float,turbo,djump,phase'], chronoa: ['clockheart', 'float,turbo,djump,phase,tank'],
-  tarant: ['winethrone', 'float,turbo,djump,phase'], knight: ['tiltyard', 'float,turbo,djump,phase,keyring'] };
+  tarant: ['winethrone', 'float,turbo,djump,phase'], knight: ['tiltyard', 'float,turbo,djump,phase,keyring'],
+  bellboard: ['bellhall', 'float,turbo,djump,phase,keyring'], angler: ['abyss', 'float,turbo,djump,phase,keyring,lantern'] };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 async function fight(browser, url, kind, god) {
   const [roomId, abil] = BOSSES[kind];

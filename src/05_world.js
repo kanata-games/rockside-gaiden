@@ -16,6 +16,7 @@ const ABIL_INFO = {
   phase: { jp: '霊体化', en: 'PHASE', col: '#e0b8ff', text: '半分ゴーストの力が目覚めた！ 青白い「霊の結界」をすり抜けられるようになった' },
   tank:  { jp: '大容量タンク', en: 'BIG TANK', col: '#9affc8', text: '掃除機のタンクが大きくなった！ 物を 4 つまでためておける' },
   keyring: { jp: '鍵束', en: 'KEY RING', col: '#ffd84a', text: '屋敷じゅうの錠前に合う「鍵束」を手に入れた！ 金色の錠前がかかった扉を開けられる' },
+  lantern: { jp: 'カンテラ', en: 'LANTERN', col: '#ffc070', text: '呼び鈴盤の中から古いカンテラが出てきた！ グリムの口にさげると、まわりが明るくなり「黒い霧」が晴れる' },
   cling: { jp: 'グリム吸着', en: 'GRIM GRIP', col: '#a8d8ff', text: '相棒の掃除機グリムが壁に吸いつけるようになった！ 空中で壁に向かって押すと張りつき、JUMP で壁をけって登れる' },
 };
 const hasAbil = k => !!progress.abil[k];

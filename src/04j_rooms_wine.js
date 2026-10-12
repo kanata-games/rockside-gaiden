@@ -37,11 +37,12 @@ ROOM_DEFS.push(
     decor: [['table', 12, 15], ['chair', 9, 15], ['chair', 15, 15, { flip: 1 }], ['candelabra', 12, 13, { light: 1 }], ['winerack', 3, 15], ['winerack', 21, 15], ['grapevine', 12, 2, { top: 1 }]] },
 
   { id: 'bottling', jp: '瓶詰めの縦穴', en: 'BOTTLING SHAFT', area: 'wine', theme: 'vintage', tiles: 'r', cx: -1, cy: 3, cw: 1, ch: 2, dark: 0.62,
-    build(R) { R.box(); R.open('R', 0, 11, 14); R.open('R', 1, 11, 14); R.plat(15, 22, 15);
+    build(R) { R.box(); R.open('R', 0, 11, 14); R.open('R', 1, 11, 14); R.open('L', 1, 11, 14); R.gate(0, 29, 0, 32, 'ring_servants'); R.plat(15, 22, 15);   // v0.5.1: padlocked door to the servants' quarters
+     
       R.plat(12, 17, 29); R.plat(4, 9, 25); R.plat(11, 16, 21); R.plat(4, 9, 18); R.plat(7, 12, 11); R.plat(2, 5, 7); },
     ents: [['heartbig', 3.5, 6], ['bats', 12, 24, { foe: { skin: 'corkbat' }, n: 2 }], ['skullwisp', 8, 14, { foe: { skin: 'grapewisp' } }], ['cork', 14, 29], ['bottle', 6, 25],
-      ['coin', 8, 11], ['coin', 10, 11], ['coin', 13, 21], ['coin', 15, 21], ['dust', 18, 33, { drop: ['coin', 'heart'] }]],
-    decor: [['winerack', 4, 33], ['winerack', 20, 15], ['caskstack', 18, 33], ['sconce', 12, 9, { light: 1 }], ['sconce', 6, 22, { light: 1 }], ['sconce', 18, 27, { light: 1 }], ['cobweb', 1, 2, { top: 1 }]] },
+      ['coin', 8, 11], ['coin', 10, 11], ['coin', 13, 21], ['coin', 15, 21], ['dust', 18, 33, { drop: ['coin', 'heart'] }], ['hint', 4, 33, { need: 'keyring', text: '金色の錠前… 向こうから、ちりんちりんと呼び鈴の音' }]],
+    decor: [['winerack', 8, 33], ['winerack', 20, 15], ['caskstack', 18, 33], ['sconce', 12, 9, { light: 1 }], ['sconce', 6, 22, { light: 1 }], ['sconce', 18, 27, { light: 1 }], ['cobweb', 1, 2, { top: 1 }]] },
 
   { id: 'winethrone', jp: '大樽の玉座', en: 'THRONE OF THE GRAND CASK', area: 'wine', theme: 'casks', tiles: 'r', cx: 0, cy: 4, cw: 1, ch: 1, dark: 0.42, boss: 'tarant',
     build(R) { R.box(); R.open('L', 0, 11, 14); R.plat(2, 5, 11); R.plat(18, 21, 11); },
