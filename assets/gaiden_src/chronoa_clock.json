@@ -1,0 +1,52 @@
+{
+ "image": "chronoa_clock.png",
+ "frameWidth": 48,
+ "frameHeight": 48,
+ "facing": "front（左右どちら向きでも使える。反転しても可）",
+ "anchor": "中心。時計の本体は x 5-42, y 2-46",
+ "cx": 24,
+ "cy": 24,
+ "character": "クロノアのミミック：目のついた大きな時計の文字盤（金のとげ飾り・鎖・ローマ数字・緑の目）",
+ "scale": "0.128（原画の時計の高さ 367px → 47px）。クロノア本体（chronoa.png）の背後の時計とほぼ同じ大きさ",
+ "animations": {
+  "open": {
+   "frames": [
+    0
+   ],
+   "note": "目を開いている（通常）"
+  },
+  "blink": {
+   "frames": [
+    1
+   ],
+   "note": "半目（まばたき・油断。目を閉じた弱点タイミングにも）"
+  },
+  "charge": {
+   "frames": [
+    2
+   ],
+   "note": "にらんで力を溜める（目のまわりに緑の光）。ビームの直前に 0→2 と切り替える"
+  },
+  "cracked": {
+   "frames": [
+    3
+   ],
+   "note": "ひびが入って目を閉じる（撃破）。小さな破片が下に落ちる"
+  },
+  "idleLoop": "0,0,0,1 を 4fps で回すとまばたき"
+ },
+ "spawn": {
+  "eye": {
+   "frames": [
+    0,
+    1,
+    2
+   ],
+   "x": 23,
+   "y": 26,
+   "note": "目の中心（ビームの発生点・弱点）。目の大きさは約13x9px。左右反転したら x → 47-x"
+  }
+ },
+ "colors": 24,
+ "source": "work/gaiden/clock_mimic_raw.jpg → work/gaiden/gaiden_sheet.py work/gaiden/chronoa_clock_spec.json → work/gaiden/chronoa_clock_post.py（光の中の透けた穴を埋める）"
+}

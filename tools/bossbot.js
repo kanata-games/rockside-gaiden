@@ -60,6 +60,10 @@ window.__bot = function () {
   // ---- decide -------------------------------------------------------
   const near = danger.find(([x, r]) => Math.abs(x - pcx) < r);
   if (P.tug) { vac = true; move = P.tug.x > pcx ? -1 : 1; if (P.tug.boss) S.coreTugs++; }
+  else if (kind === 'chronoa' && b.state === 'beam' && !b.core) {   // v0.4.2 flat beam: get behind her during the lock, else jump it
+    const tr = G.CONFIG.chronoa.beamTrack, behind = b.cx - b.face * 44;
+    if (behind > L && behind < R && b.t < tr + 30) go(behind, 4);
+    else if (Math.sign(pcx - b.cx) === b.face) { const fire = tr + (b.lockT || 40); if (b.t >= fire - 12 && b.t < fire + 24) { if (P.onGround && b.t < fire - 6) jump = true; holdJump = true; } } }
   else if ((kind === 'clock' || kind === 'chronoa') && b.state === 'pendulum') { go(pcx < 192 ? L : R, 4); }      // wait at a wall for the swing
   else if (b.core && b.core.state === 'out') {
     const c = b.core; S.cw = 1; let side = pcx < c.x ? -1 : 1, tx = c.x + side * 62; if (tx < L || tx > R) tx = c.x - side * 62;

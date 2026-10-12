@@ -120,7 +120,7 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       ok('fewer rats and bat swarms (<= 15 rats, <= 6 swarms)', crit.rats <= 15 && crit.bats <= 6, crit);
       ok('a warp room in every area', ['east', 'laundry', 'garden', 'clock', 'crypt', 'bath'].every(a => crit.warps.includes(a)), crit.warps);
       ok('title has no PROTOTYPE', !(await E(page, () => document.documentElement.innerHTML.includes('PROTOTYPE'))));
-      ok('version 0.4.1', await E(page, () => (typeof GAME_VERSION !== 'undefined' && GAME_VERSION === '0.4.1') || GAIDEN.CONFIG.version === '0.4.1'));
+      ok('version 0.4.2', await E(page, () => (typeof GAME_VERSION !== 'undefined' && GAME_VERSION === '0.4.2') || GAIDEN.CONFIG.version === '0.4.2'));
       await ctx.close(); }
 
     // ---- world reachability / ability gating (static check over the stitched tile grid)
@@ -147,7 +147,7 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       await E(page, () => GAIDEN.gainAbility({ abil: 'phase', x: 100, y: 240 })); await sleep(300);
       const g1 = await E(page, () => { const R = GAIDEN.room; return R.grid[11 * R.cols]; });
       ok('spirit barrier closed without phase, open after the organ\'s gift', g0 !== 0 && g1 === 0, { g0, g1 }); await ctx.close(); }
-    // ---- v0.4.1: every Vel / Chronoa dialogue line fits the portrait box on a 390px phone (<= 3 lines, inside the right edge)
+    // ---- v0.4.2: every Vel / Chronoa dialogue line fits the portrait box on a 390px phone (<= 3 lines, inside the right edge)
     //      and the room-name banner waits while a dialogue is showing
     { const fs = require('fs'); const src = fs.readdirSync(path.join(ROOT, 'src')).filter(f => f.endsWith('.js')).map(f => fs.readFileSync(path.join(ROOT, 'src', f), 'utf8')).join('\n');
       const texts = [...src.matchAll(/storySay\('(?:vel|chronoa)', '([^']+)'/g)].map(m => m[1]);
@@ -156,12 +156,12 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       const all = texts.concat(await E(page, () => Object.values(GAIDEN.VEL_LINES)));
       const fit = await E(page, T => T.map(t => ({ t, ...GAIDEN.storyFit(t) })), all);
       const badFit = fit.filter(f => f.lines > 3 || f.w > f.limit || f.x0 + f.w > f.boxRight || f.bad);
-      ok('v0.4.1: all ' + fit.length + ' Vel/Chronoa lines fit the dialogue box at 390px (<= 3 lines, no overflow, no wrapped line starting with 。/…)', fit.length >= 12 && !badFit.length, badFit.slice(0, 3));
+      ok('v0.4.2: all ' + fit.length + ' Vel/Chronoa lines fit the dialogue box at 390px (<= 3 lines, no overflow, no wrapped line starting with 。/…)', fit.length >= 12 && !badFit.length, badFit.slice(0, 3));
       await waitFor(page, () => GAIDEN.STORY.box && GAIDEN.STORY.box.who === 'vel', 4000); await sleep(600);
       const b0 = await E(page, () => GAIDEN.banner.t);
       await E(page, () => { GAIDEN.STORY.box = null; GAIDEN.STORY.queue.length = 0; }); await sleep(600);
       const b1 = await E(page, () => GAIDEN.banner.t);
-      ok('v0.4.1: the room banner is held while Vel speaks, then plays', b0 >= 168 && b1 < b0, { b0, b1 }); await ctx.close(); }
+      ok('v0.4.2: the room banner is held while Vel speaks, then plays', b0 >= 168 && b1 < b0, { b0, b1 }); await ctx.close(); }
     // ---- v0.4: the two new areas are behind spirit barriers (theater: gallery ceiling, observatory: gear shaft) + skinned foes
     { const { ctx, page } = await open(browser, '?room=gallery&x=36&y=11&abil=float,turbo,djump');
       await waitFor(page, () => GAIDEN.state === 'play', 5000);

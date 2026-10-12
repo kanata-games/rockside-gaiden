@@ -138,7 +138,7 @@ function rectLine(x, y, w, h, col) { g.fillStyle = col; g.fillRect(x, y, w, 1); 
 //  Assets: PNG atlases in assets/ (+ rect maps inlined at build time as EMBEDDED_META)
 //  Every sprite is looked up by name, so an artist can redraw an atlas freely as long as the names stay.
 // ---------------------------------------------------------------------
-const ASSET_FILES = ['kanata', 'wisp', 'tiles', 'bg', 'props', 'items', 'enemies', 'boss', 'chars', 'title_bg'];
+const ASSET_FILES = ['kanata', 'wisp', 'tiles', 'bg', 'props', 'items', 'enemies', 'boss', 'chars', 'gaiden', 'title_bg'];
 const IMG = {}; let assetsLoaded = 0, assetsFailed = [];
 const META = (typeof EMBEDDED_META !== 'undefined') ? EMBEDDED_META : {};
 for (const n of ASSET_FILES) {
@@ -165,6 +165,14 @@ function sprWhite(atlas, key, x, y, flip, col) {
   if (!f) { f = mkCanvas(r.w, r.h); const fg = f.getContext('2d'); if (flip) { fg.translate(r.w, 0); fg.scale(-1, 1); }
     fg.drawImage(IMG[atlas], r.x, r.y, r.w, r.h, 0, 0, r.w, r.h); fg.setTransform(1, 0, 0, 1, 0, 0); fg.globalCompositeOperation = 'source-in'; fg.fillStyle = col || '#fff'; fg.fillRect(0, 0, r.w, r.h); WHITE_CACHE.set(ck, f); }
   g.drawImage(f, Math.round(x), Math.round(y));
+}
+// v0.4.2: backlight + 1px rim so dark characters read against dark rooms (soft additive glow behind, tinted outline at ~50%)
+function drawRimSprite(atlas, key, x, y, flip, col, k) {
+  const r = rectOf(atlas, key); k = k === undefined ? 1 : k; const a0 = g.globalAlpha;
+  g.save(); g.globalCompositeOperation = 'lighter'; const gr = g.createRadialGradient(x + r.w / 2, y + r.h * 0.55, 2, x + r.w / 2, y + r.h * 0.55, r.w * 0.45);
+  gr.addColorStop(0, col + '30'); gr.addColorStop(1, col + '00'); g.fillStyle = gr; g.globalAlpha = a0 * k; g.fillRect(x, y, r.w, r.h); g.restore();
+  g.globalAlpha = a0 * 0.5 * k; for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1]]) sprWhite(atlas, key, x + dx, y + dy, flip, col);
+  g.globalAlpha = a0; spr(atlas, key, x, y, flip);
 }
 // hero frames: assets/kanata.png is one row of equal frames; kanata.json gives the feet anchor
 function heroFrame(i) { const m = META.kanata; return { sx: i * m.frameWidth, w: m.frameWidth, h: m.frameHeight, ax: m.anchorX, ay: m.anchorY }; }

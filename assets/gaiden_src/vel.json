@@ -1,0 +1,93 @@
+{
+ "image": "vel.png",
+ "frameWidth": 64,
+ "frameHeight": 80,
+ "facing": "right",
+ "anchor": "足元＝各フレームの下端（足の最下段ピクセル y=79）",
+ "cx": 32,
+ "feetY": 79,
+ "character": "ヴェル（主人の秘書、戦わないNPC）。片目を隠す長い黒髪・黒いスーツ・ネクタイ・十字架のアクセサリー・落ち着いた物腰。人の姿のみ（触手なし）",
+ "alignment": "全フレームで体の中心（足元の中心）が x=32。共通スケール 0.28、あご〜足は縦 0.68。カナタ（kanata-gaiden の kanata.png、待機の高さ 68px）と頭の大きさをそろえた（全身 約72px、クロノアより少し背が高い）。cxF 不要",
+ "hair": "原画（vel_raw2.jpg）は両目が見えているので、向かって左の目（本人の右目）を髪の房で隠すように原画の上に描き足してから縮小した（vel_raw1.jpg の髪型に合わせた）。見えている目は灰色の目を手で打った",
+ "animations": {
+  "idle": {
+   "frames": [
+    0,
+    0,
+    0,
+    1
+   ],
+   "fps": 3,
+   "loop": true,
+   "note": "0 手を前で重ねて立つ / 1 まばたき"
+  },
+  "walk": {
+   "frames": [
+    2,
+    3
+   ],
+   "fps": 4,
+   "loop": true,
+   "note": "2 歩き / 3 歩き2の上半身を1px上げた揺れ（足は同じ）"
+  },
+  "bow": {
+   "frames": [
+    4
+   ],
+   "loop": false,
+   "note": "おじぎ（目を閉じる）"
+  },
+  "turn": {
+   "frames": [
+    5
+   ],
+   "loop": false,
+   "note": "肩越しに振り返る（体は左＝奥を向き、顔だけこちら）"
+  },
+  "leave": {
+   "frames": [
+    6
+   ],
+   "loop": true,
+   "note": "後ろ姿で去っていく。1フレームなので上下1px揺らしながら移動"
+  }
+ },
+ "order": [
+  "0 idle",
+  "1 idle_blink",
+  "2 walk",
+  "3 walk_bob",
+  "4 bow",
+  "5 turn",
+  "6 leave"
+ ],
+ "eyes": {
+  "0": [
+   42,
+   31
+  ],
+  "2": [
+   42,
+   32
+  ],
+  "5": [
+   44,
+   32
+  ],
+  "note": "見えている方の目（灰色の虹彩の右下ピクセル）。もう片方は髪で隠れている"
+ },
+ "portrait": {
+  "image": "vel_portrait.png",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "frames": 1,
+  "note": "会話用のバストアップ（6番目のポーズから）。スケール 0.235、肩より下は枠の下端で切れている（下端は接している）。kanata-gaiden の chars.json の portrait_vel は 48×48 なので、そこに入れるなら 0.75 倍（48px）で描くか枠を 64 に広げる",
+  "eye": [
+   45,
+   34
+  ]
+ },
+ "face": "vel_face.png（24×24）",
+ "colors": 26,
+ "source": "work/gaiden/vel_raw2.jpg → work/gaiden/vel_spec_gen.py（髪の房の描き足しを含む spec を作る）→ work/gaiden/gaiden_sheet.py vel_spec.json / vel_portrait_spec.json → work/gaiden/vel_post.py"
+}
