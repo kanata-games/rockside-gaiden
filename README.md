@@ -1,4 +1,4 @@
-# ROCKSIDE外伝 – 清掃員カナタ 〜幽霊屋敷のおそうじ〜 (v0.4.3)
+# ROCKSIDE外伝 – 清掃員カナタ 〜幽霊屋敷のおそうじ〜 (v0.5.0)
 
 A small SotN-style exploration game with a Luigi's-Mansion vacuum. It is a spin-off of ROCKSIDE.
 Play it here: https://kanata-games.github.io/rockside-gaiden/ (the page has noindex).
@@ -77,6 +77,11 @@ Other features:
 - Secret rooms (4).
 - Map screen with completion %, plus a mini-map.
 - Max-HP hearts.
+
+## v0.5.0 – expansion phase A
+- New area **古酒の大貯蔵庫** (wine cellar, behind a spirit barrier east of the warp hub): 6 rooms + warp. Boss **樽蜘蛛 バレルタラント**: falling corks, wine waves, thread drop, then a plunge that gets it stuck. Its core pops out to vacuum. Reward: **鍵束** (opens ring gates).
+- New area **騎士の武具庫** (armory, through the ring gate in the ossuary): 6 rooms + warp. Boss **空っぽの騎士団長 アイアンホロウ**: halberd rain, slash wave, leap, then a greatsword drop. He kneels, his helmet pops off, and his core is exposed. Reward: **グリム吸着** (wall cling + wall jump).
+- New foes (corkbat, grapewisp, squire, stone griffin), tilesets, backgrounds and music for both areas, plus two new Vel lines.
 
 ## v0.4.3 – softlock fix
 - Fixed a wedge on the top-left ledge of the theater lobby: ledges now need full headroom (lobby, wings and pump room ledges moved), and one-way ledges without room for Kanata can't be landed on.
