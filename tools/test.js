@@ -120,7 +120,7 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       ok('fewer rats and bat swarms (<= 15 rats, <= 6 swarms)', crit.rats <= 15 && crit.bats <= 6, crit);
       ok('a warp room in every area', ['east', 'laundry', 'garden', 'clock', 'crypt', 'bath', 'wine', 'armory', 'servants', 'lake'].every(a => crit.warps.includes(a)), crit.warps);
       ok('title has no PROTOTYPE', !(await E(page, () => document.documentElement.innerHTML.includes('PROTOTYPE'))));
-      ok('version 0.5.1', await E(page, () => (typeof GAME_VERSION !== 'undefined' && GAME_VERSION === '0.5.1') || GAIDEN.CONFIG.version === '0.5.1'));
+      ok('version 0.5.2', await E(page, () => (typeof GAME_VERSION !== 'undefined' && GAME_VERSION === '0.5.2') || GAIDEN.CONFIG.version === '0.5.2'));
       await ctx.close(); }
 
     // ---- world reachability / ability gating (static check over the stitched tile grid)
@@ -215,6 +215,20 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       ok('v0.5: グリム吸着 wall-jumps climb the watchtower shaft', cl.room === 'watchtower' && cl.minY < 120, cl);
       await ctx.close(); }
 
+    // ---- v0.6: rooftop spires up through the belfry hatch; the galecock topples into its core after the storm
+    { const { ctx, page } = await open(browser, '?room=belfry&x=4&y=15&abil=float,turbo,djump,phase');
+      await waitFor(page, () => GAIDEN.state === 'play', 5000);
+      ok('v0.6: belfry has a roof hatch up to the spires', await E(page, () => { const R = GAIDEN.room; return R.grid[0 * R.cols + 10] === 0 && R.grid[1 * R.cols + 11] === 0; }));
+      ok('v0.6: spires area has music, warp room, boss', await E(page, () => GAIDEN.AREAS.spires.music === 'spires' && !!GAIDEN.ROOM_BY_ID.warp_spires && GAIDEN.ROOM_BY_ID.weathertop.boss === 'galecock'));
+      await E(page, () => { GAIDEN.loadRoom('roofwalk', { start: true }); GAIDEN.placePlayer(3 * 16, 15 * 16, 1); }); await sleep(300);
+      ok('v0.6: roof foes wear their own skins (crow / vanegarg)', await E(page, () => GAIDEN.foes().some(e => e.skin === 'crow') && GAIDEN.foes().some(e => e.skin === 'vanegarg')));
+      await ctx.close(); }
+    { const { ctx, page } = await open(browser, '?room=weathertop&x=2&y=16&god=1&abil=float,turbo,djump,phase,cling&bossatk=storm');
+      await waitFor(page, () => GAIDEN.state === 'play', 5000); await E(page, () => { window.__speed = 4; GAIDEN._test.keys.right = true; });
+      await waitFor(page, () => GAIDEN.boss && GAIDEN.boss.state !== 'sleep' && GAIDEN.boss.state !== 'intro', 30000); await E(page, () => { GAIDEN._test.keys.right = false; });
+      const got = await waitFor(page, () => GAIDEN.boss && GAIDEN.boss.state === 'fallen' && !!GAIDEN.boss.core, 40000);
+      ok('v0.6: galecock storm topples it and exposes the storm core', !!got);
+      await ctx.close(); }
     // ---- v0.5.1: servants' quarters behind a ring gate in the bottling shaft, the lake behind black fog (カンテラ)
     { const { ctx, page } = await open(browser, '?room=bottling&x=3&y=33&abil=float,turbo,djump,phase');
       await waitFor(page, () => GAIDEN.state === 'play', 5000);
