@@ -49,7 +49,7 @@ Normal enemies and ghosts appear together in the same rooms.
 | 霊体化 PHASE | after the organ boss (chapel choir) | Walk through pale-blue spirit barriers: the clock-tower gearshaft (→ clock tower, and on its right → the observatory), the gallery ceiling hole (→ puppet theater), the reliquary secret and the well down to the grand bath. |
 | 大容量タンク BIG TANK | after the serpent boss (grand bath) | The TANK holds 4 objects. |
 
-## Areas (8 areas, plus a warp room in each)
+## Areas (15 areas as of v0.6, plus a warp room in each; the list below covers the original 8)
 Each area has its own tiles, background and music.
 
 | area | rooms | boss |
@@ -77,6 +77,15 @@ Other features:
 - Secret rooms (4).
 - Map screen with completion %, plus a mini-map.
 - Max-HP hearts.
+
+## v0.6.0 – expansion phase C (15 areas)
+- **尖塔の屋根 ROOFTOP SPIRES** (6 rooms + warp): up through a hatch in the belfry ceiling. The roofs are open, but the needle spire needs グリム吸着 (wall-cling). Boss **風見鶏 ゲイルコック**: iron feathers on gold marks, gust rings, a red-marked swoop; a storm cloud follows Kanata, locks and strikes, the lightning rod pulls the bolt into the weathercock and it topples, exposing its core.
+- **絵の中の世界 THE PAINTED WORLD** (6 rooms + warp): a padlocked gilt frame in the auditorium ceiling (鍵束). Boss **絵の具ゴーレム パレットン**: paint blobs on gold marks, paint strokes that roll out and back, red-marked paint columns; it leaps out of the picture, its shadow follows, locks, it crashes and melts, leaving its palette core bare.
+- **おもちゃ箱の子供部屋 THE TOY NURSERY** (6 rooms + warp): blacked-out stairs under the phantom kitchen (カンテラ). Boss **びっくり箱 ボックスジャック**: falling toy blocks, a red-marked hop, rolling wind-up blocks; the crank winds, the jester head follows Kanata, locks, pops down and the overstretched spring flops: wind-up core.
+- Extra rooms: theater +2 (楽屋, 大道具の倉庫), observatory +2 (彗星の回廊, 星の井戸).
+- The clock heart now holds **six seals**: clock, marionette, orrery, galecock, paletton, boxjack.
+- Boss HP curve rises gently: … bellboard 180 → galecock 215 → paletton 225 → angler 230 → boxjack 235 → clock 240 → Chronoa 260.
+- New foe skins: crow, iron vane-gargoyle, ink bat, brush dancer, tin soldier, wind-up mouse.
 
 ## v0.5.0 – expansion phase A
 - New area **古酒の大貯蔵庫** (wine cellar, behind a spirit barrier east of the warp hub): 6 rooms + warp. Boss **樽蜘蛛 バレルタラント**: falling corks, wine waves, thread drop, then a plunge that gets it stuck. Its core pops out to vacuum. Reward: **鍵束** (opens ring gates).

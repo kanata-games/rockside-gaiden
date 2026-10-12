@@ -46,8 +46,10 @@ function warpTo(id) {
 }
 // warp menu layout (buffer px): destination buttons in a row under a map
 function warpButtons() {
-  const n = warpMenu.list.length, bw = Math.min(60, Math.floor((VW - 20) / Math.max(1, n)) - 4), tot = n * (bw + 4) - 4, x0 = Math.round((VW - tot) / 2);
-  return warpMenu.list.map((d, i) => ({ d, x: x0 + i * (bw + 4), y: 206, w: bw, h: 34 }));
+  // v0.6: 15 warp rooms -> two rows of up to 8
+  const n = warpMenu.list.length, per = n > 8 ? Math.ceil(n / 2) : n, rows = Math.ceil(n / Math.max(1, per)), bw = Math.min(60, Math.floor((VW - 20) / Math.max(1, per)) - 4);
+  return warpMenu.list.map((d, i) => { const r = Math.floor(i / per), inRow = Math.min(per, n - r * per), tot = inRow * (bw + 4) - 4, x0 = Math.round((VW - tot) / 2);
+    return { d, x: x0 + (i % per) * (bw + 4), y: rows > 1 ? 182 + r * 37 : 206, w: bw, h: 34 }; });
 }
 function warpTap(gx, gy) {
   for (const [i, b] of warpButtons().entries()) if (gx >= b.x && gx < b.x + b.w && gy >= b.y && gy < b.y + b.h) {
@@ -69,11 +71,11 @@ function renderWarpMenu() {
     g.fillStyle = AREAS[b.d.area].col; g.fillRect(b.x + 3, b.y + 3, b.w - 6, 4);
     if (here) drawText('HERE', b.x + b.w / 2, b.y + b.h - 9, 'b', 1, 'c');
   }
-  drawText('< >: SELECT   JUMP: WARP   VAC: BACK', VW / 2, VH - 22, 'b', 1, 'c');
+  drawText('< >: SELECT   JUMP: WARP   VAC: BACK', VW / 2, VH - 12, 'b', 1, 'c');
   blit();
   drawHiText('ワープの間 ― 行き先をえらぶ', VW / 2, 10, 11, '#e8dcff', '#1a0e28');
   for (const b of warpButtons()) drawHiText((AREAS[b.d.area].short || AREAS[b.d.area].jp), b.x + b.w / 2, b.y + 11, 6.5, '#ffffff', null);
-  if (sel) drawHiText(sel.id === room.id ? '（いまいる場所）' : AREAS[sel.area].jp + ' の ' + sel.jp + ' へワープ', VW / 2, 250, 8, sel.id === room.id ? '#a8a0d8' : '#fff4c0', '#1a0e28');
+  if (sel) drawHiText(sel.id === room.id ? '（いまいる場所）' : AREAS[sel.area].jp + ' の ' + sel.jp + ' へワープ', VW / 2, warpMenu.list.length > 8 ? 257 : 250, 8, sel.id === room.id ? '#a8a0d8' : '#fff4c0', '#1a0e28');
 }
 
 // ---- ability barriers (v0.3 spirit; v0.5 key-ring locks, darkness) -----------------

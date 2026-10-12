@@ -493,12 +493,12 @@ function renderPlay() {
   if (abilityGet.t > 0) { const a = Math.min(1, abilityGet.t / 20, (300 - abilityGet.t) / 15), I = ABIL_INFO[abilityGet.abil]; drawHiText('NEW POWER', VW / 2, 96, 8, '#ffffff', '#140a20', 'center', a); drawHiText(I.jp, VW / 2, 110, 18, I.col, '#140a20', 'center', a); }
   if (P.dead && P.deadT > 40) drawHiText('やられちゃった…', VW / 2, VH / 2 - 10, 16, '#ffd0e0', '#200818', 'center', Math.min(1, (P.deadT - 40) / 20));
 }
-const MAP_ENTRY_BTN = { x: VW / 2 - 78, y: VH - 36, w: 156, h: 17 };   // v0.4.3 escape hatch
-function mapLayout() { const cw = Math.min(20, Math.floor(368 / WORLD.cols)); return { cw, chh: Math.min(14, Math.round(cw * 0.75)) }; }
+const MAP_ENTRY_BTN = { x: VW / 2 - 78, y: VH - 30, w: 156, h: 16 };   // v0.4.3 escape hatch
+function mapLayout() { const cw = Math.min(20, Math.floor(368 / WORLD.cols)); return { cw, chh: Math.min(14, Math.round(cw * 0.75), Math.floor(144 / WORLD.rows)) }; }   // v0.6: the taller 15-area map still leaves room for the legend
 function renderMap() {
   renderPlayBase();
   g.fillStyle = 'rgba(6,4,16,0.92)'; g.fillRect(0, 0, VW, VH);
-  const { cw, chh } = mapLayout(), mw = WORLD.cols * cw, mh = WORLD.rows * chh, ox = Math.round((VW - mw) / 2), oy = 50;
+  const { cw, chh } = mapLayout(), mw = WORLD.cols * cw, mh = WORLD.rows * chh, ox = Math.round((VW - mw) / 2), oy = 32;
   g.fillStyle = 'rgba(30,24,60,0.5)'; g.fillRect(ox - 4, oy - 4, mw + 8, mh + 8); rectLine(ox - 5, oy - 5, mw + 10, mh + 10, '#4e4876');
   drawMapGrid(ox, oy, cw, chh, false);
   const by = oy + mh + 10;
@@ -615,7 +615,7 @@ window.GAIDEN = { boxHitsSolid, returnToEntry, CONFIG, P, cam, layout, stats, pr
   get state() { return state; }, get stateT() { return stateT; }, get room() { return room; }, get boss() { return boss; }, get frame() { return frame; }, get tipBox() { return tipBox; },
   get music() { return Music; }, nozzle, inCone, loadRoom, placePlayer, startNewGame, continueGame, enterGame, eraseSave, saveGame, loadSave, mapPercent, setState, snapCamera, buildRoomGrid, roomOpenings,
   spawnItem, makeGhost, startTug, STORY, velAppear, startEnding, storySay, checkBossGates, storyFit, VEL_LINES, get banner() { return banner; }, floats, foes: () => ents.filter(e => FOE_SIZE[e.type]), hasAbil, openGate, gainAbility, AREAS, ROOM_BY_ID, TOTAL_CELLS, makeFoe, BOSS_DEFS, entrySafety, openWarpMenu, warpTo,
-  get debugBossAtk() { return QS.get('bossatk'); }, _test: { keys, inp, touch } };
+  get debugBossAtk() { return QS.get('bossatk'); }, _test: { keys, inp, touch, openWarpMenu } };
 </script>
 </body>
 </html>
