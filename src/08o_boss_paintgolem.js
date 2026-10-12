@@ -75,7 +75,7 @@ BOSS_DEFS.paintgolem = { jp: '絵の具ゴーレム パレットン', en: 'PALET
     }
   },
   dying(b) { b.pose = 'melt'; b.marks = []; b.shadow = null; b.jy = 0; },
-  onDefeat(b) { bossReward(b, b.x); say('……描きかけでも、きれいな色だったよ。……おやすみ', 220); },
+  onDefeat(b) { bossReward(b, b.x); sealTip('sealPaint'); say('……描きかけでも、きれいな色だったよ。……おやすみ', 220); },
   draw(b, lights) {
     const C = CONFIG.paintgolem, x = Math.round(b.x - cam.x), y = Math.round(FLOOR_Y - cam.y), top = Math.round(2 * TS - cam.y);
     if (b.state === 'splat') for (const m of b.marks) drawFloorMark(m, Math.min(1, (b.t - b.mT) / bossP('splatWarn')), 'rgba(255,210,90,0.9)');

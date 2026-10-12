@@ -77,7 +77,7 @@ BOSS_DEFS.marionette = { jp: '人形座長 ストリングス', en: 'MAESTRO STR
   },
   dying(b) { b.pose = 'slump'; b.marks = []; b.spot = null; b.jy = 0; b.flyers = null; },
   onDefeat(b) { bossReward(b, b.x); say('……糸、ぜんぶほどけた。……おつかれさま、座長さん', 220);
-    tip('sealTheater', '時計塔の封印がひとつ解けた！（' + ['clock', 'marionette', 'orrery'].filter(k => progress.bosses.has(k)).length + ' / 3）', true);
+    sealTip('sealTheater');
     checkBossGates(); velAppear('marionette', b.x > 192 ? 60 : 324, FLOOR_Y); },
   draw(b, lights) {
     const C = CONFIG.marionette, x = Math.round(b.x - cam.x), y = Math.round(FLOOR_Y - cam.y);

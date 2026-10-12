@@ -71,7 +71,7 @@ BOSS_DEFS.galecock = { jp: '風見鶏 ゲイルコック', en: 'GALECOCK, THE WE
     if (b.flashT > 0) b.flashT--;
   },
   dying(b) { b.pose = 'fall'; b.marks = []; b.cloud = null; b.jy = 0; },
-  onDefeat(b) { bossReward(b, b.x); say('……もう、どっちを向いてもいいんだよ。……風、止んだね', 220); },
+  onDefeat(b) { bossReward(b, b.x); sealTip('sealSpires'); say('……もう、どっちを向いてもいいんだよ。……風、止んだね', 220); },
   draw(b, lights) {
     const C = CONFIG.galecock, x = Math.round(b.x - cam.x), y = Math.round(FLOOR_Y - cam.y), top = Math.round(2 * TS - cam.y);
     if (b.flashT > 0) { g.fillStyle = 'rgba(220,230,255,' + (b.flashT / 30) + ')'; g.fillRect(0, 0, VW, VH); }

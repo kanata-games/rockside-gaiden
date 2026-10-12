@@ -20,7 +20,7 @@ ROOM_DEFS.push(
     decor: [['stagecurtain', 4, 15], ['masks', 15, 11], ['dollshelf', 10, 15], ['footlight', 14, 15, { light: 1 }], ['sconce', 20, 9, { light: 1 }], ['cobweb', 22.75, 2, { top: 1, flip: 1 }]] },
 
   { id: 'audience', jp: '観客席', en: 'AUDITORIUM', area: 'theater', theme: 'theater', tiles: 'w', cx: 1, cy: -1, cw: 3, ch: 1, dark: 0.5,
-    build(R) { R.box(); R.open('B', 1, 8, 11); R.open('R', 0, 11, 14); R.open('T', 0, 8, 11); R.gate(8, 0, 11, 1, 'ring_paint'); R.plat(8, 11, 6);   // v0.6: padlocked gilt frame up into the painting
+    build(R) { R.box(); R.open('B', 1, 8, 11); R.open('R', 0, 11, 14); R.open('T', 0, 8, 11); R.gate(8, 0, 11, 1, 'ring_paint'); R.open('L', 0, 11, 14); R.plat(8, 11, 6);   // v0.6: padlocked gilt frame up into the painting
       R.plat(4, 12, 12); R.plat(14, 22, 10); R.plat(38, 46, 12); R.plat(50, 58, 10); R.plat(60, 68, 12); R.plat(26, 30, 7); R.plat(43, 48, 6); },
     ents: [['puppet', 10, 15, { foe: { skin: 'dancer' } }], ['puppet', 44, 15, { foe: { skin: 'dancer' } }], ['puppet', 62, 15, { foe: { skin: 'dancer' } }],
       ['bats', 54, 4, { foe: { skin: 'maskbat' }, n: 3 }], ['chair', 6, 12], ['chair', 18, 10], ['chair', 52, 10], ['plate', 40, 12], ['book', 64, 12],
@@ -34,4 +34,16 @@ ROOM_DEFS.push(
     ents: [['boss', 16, 15]],
     decor: [['stagecurtain', 2, 15], ['stagecurtain', 22, 15, { flip: 1 }], ['footlight', 6, 15, { light: 1 }], ['footlight', 10, 15, { light: 1 }], ['footlight', 14, 15, { light: 1 }], ['footlight', 18, 15, { light: 1 }],
       ['masks', 12, 5]] },
+
+  // ---- v0.6: the theater gets its backstage
+  { id: 'greenroom', jp: '楽屋', en: 'GREEN ROOM', area: 'theater', theme: 'theater', tiles: 'w', cx: 0, cy: -1, cw: 1, ch: 1, dark: 0.5,
+    build(R) { R.box(); R.open('R', 0, 11, 14); R.open('L', 0, 11, 14); R.plat(4, 9, 11); R.plat(13, 18, 8); },
+    ents: [['puppet', 12, 15, { foe: { skin: 'dancer' } }], ['coin', 14, 8], ['coin', 16, 8], ['heart', 6, 11],
+      ['hint', 18, 15, { text: '鏡台に、小さな衣装がいっぱい… 人形たちの楽屋だったのかな' }]],
+    decor: [['masks', 6, 9], ['sconce', 12, 6, { light: 1 }]] },
+  { id: 'propstore', jp: '大道具の倉庫', en: 'PROP STORE', area: 'theater', theme: 'stage', tiles: 'w', cx: -2, cy: -1, cw: 2, ch: 1, dark: 0.55,
+    build(R) { R.box(); R.open('R', 0, 11, 14); R.plat(6, 12, 11); R.plat(16, 22, 7); R.plat(28, 34, 10); R.plat(38, 44, 6); R.solid(24, 13, 26, 14); },
+    ents: [['bats', 20, 3, { foe: { skin: 'maskbat' }, n: 2 }], ['puppet', 34, 15, { foe: { skin: 'dancer' } }], ['coin', 17, 7], ['coin', 19, 7], ['coin', 21, 7], ['coin', 39, 6], ['coin', 41, 6], ['coin', 43, 6],
+      ['bottle', 30, 10], ['dust', 8, 15, { drop: ['coin', 'heart'] }], ['dust', 44, 15, { drop: ['coin', 'coin'] }]],
+    decor: [['masks', 10, 9], ['masks', 36, 8], ['sconce', 24, 6, { light: 1 }]] },
 );

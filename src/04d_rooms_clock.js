@@ -48,7 +48,7 @@ ROOM_DEFS.push(
 
   { id: 'clockroom', jp: '大時計の間', en: 'GREAT CLOCK CHAMBER', area: 'clock', theme: 'tower', tiles: 'w', cx: 7, cy: -4, cw: 1, ch: 1, dark: 0.36, boss: 'clock',
     // v0.4: the sealed door behind the clock leads up to the clock heart (Chronoa)
-    bossGate: { gate: 'heart', need: ['clock', 'marionette', 'orrery'] },
+    bossGate: { gate: 'heart', need: SEAL_BOSSES },   // v0.6: six seals (was 3)
     build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.gate(23, 11, 23, 14, 'heart'); R.plat(2, 5, 11); R.plat(18, 21, 11); },
     ents: [['boss', 12, 15], ['hint', 21, 15, { text: '扉に三つの封印：時計・糸・星。……三つとも解けば、上へ行ける' }]],
     decor: [['round_window', 4, 6], ['round_window', 20, 6], ['sconce', 3, 9, { light: 1 }], ['sconce', 21, 9, { light: 1 }], ['gear_med', 12, 4]] },

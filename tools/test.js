@@ -116,11 +116,11 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       ok('all rooms load (' + ids.length + ')', ids.length >= 30, areas);
       ok('3 new areas with 6-10 rooms each', ['laundry', 'garden', 'clock'].every(a => areas[a] >= 6 && areas[a] <= 10), areas);
       ok('v0.3 areas: crypt + bath with 6+ rooms each', areas.crypt >= 6 && areas.bath >= 6, areas);
-      const crit = await E(page, () => { let rats = 0, bats = 0; for (const d of GAIDEN.ROOM_DEFS) for (const e of d.ents || []) { if (e[0] === 'rat') rats++; if (e[0] === 'bats' && !(e[3] && e[3].foe && e[3].foe.skin)) bats++; } return { rats, bats, warps: GAIDEN.ROOM_DEFS.filter(d => d.warp).map(d => d.area) }; });
+      const crit = await E(page, () => { let rats = 0, bats = 0; for (const d of GAIDEN.ROOM_DEFS) for (const e of d.ents || []) { if (e[0] === 'rat' && !(e[3] && e[3].foe && e[3].foe.skin)) rats++; if (e[0] === 'bats' && !(e[3] && e[3].foe && e[3].foe.skin)) bats++; } return { rats, bats, warps: GAIDEN.ROOM_DEFS.filter(d => d.warp).map(d => d.area) }; });
       ok('fewer rats and bat swarms (<= 15 rats, <= 6 swarms)', crit.rats <= 15 && crit.bats <= 6, crit);
       ok('a warp room in every area', ['east', 'laundry', 'garden', 'clock', 'crypt', 'bath', 'wine', 'armory', 'servants', 'lake'].every(a => crit.warps.includes(a)), crit.warps);
       ok('title has no PROTOTYPE', !(await E(page, () => document.documentElement.innerHTML.includes('PROTOTYPE'))));
-      ok('version 0.5.2', await E(page, () => (typeof GAME_VERSION !== 'undefined' && GAME_VERSION === '0.5.2') || GAIDEN.CONFIG.version === '0.5.2'));
+      ok('version 0.6.0', await E(page, () => (typeof GAME_VERSION !== 'undefined' && GAME_VERSION === '0.6.0') || GAIDEN.CONFIG.version === '0.6.0'));
       await ctx.close(); }
 
     // ---- world reachability / ability gating (static check over the stitched tile grid)
@@ -228,6 +228,25 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       await waitFor(page, () => GAIDEN.boss && GAIDEN.boss.state !== 'sleep' && GAIDEN.boss.state !== 'intro', 30000); await E(page, () => { GAIDEN._test.keys.right = false; });
       const got = await waitFor(page, () => GAIDEN.boss && GAIDEN.boss.state === 'fallen' && !!GAIDEN.boss.core, 40000);
       ok('v0.6: galecock storm topples it and exposes the storm core', !!got);
+      await ctx.close(); }
+    // ---- v0.6: the painted world behind a padlocked frame, the nursery behind black fog; six clock seals
+    { const { ctx, page } = await open(browser, '?room=audience&x=3&y=15&abil=float,turbo,djump,phase');
+      await waitFor(page, () => GAIDEN.state === 'play', 5000);
+      const p0 = await E(page, () => GAIDEN.room.grid[0 * GAIDEN.room.cols + 9]);
+      await E(page, () => { GAIDEN.gainAbility({ abil: 'keyring', x: 100, y: 240 }); }); await sleep(300);
+      const p1 = await E(page, () => GAIDEN.room.grid[0 * GAIDEN.room.cols + 9]);
+      await E(page, () => { GAIDEN.loadRoom('kitchen', { start: true }); GAIDEN.placePlayer(3 * 16, 15 * 16, 1); }); await sleep(300);
+      const n0 = await E(page, () => GAIDEN.room.grid[16 * GAIDEN.room.cols + 51]);
+      await E(page, () => { GAIDEN.gainAbility({ abil: 'lantern', x: 100, y: 240 }); }); await sleep(300);
+      const n1 = await E(page, () => GAIDEN.room.grid[16 * GAIDEN.room.cols + 51]);
+      ok('v0.6: the painting needs 鍵束, the nursery stairs need カンテラ', p0 !== 0 && p1 === 0 && n0 !== 0 && n1 === 0, { p0, p1, n0, n1 });
+      ok('v0.6: painted world + nursery have music, warp rooms and bosses', await E(page, () => GAIDEN.AREAS.painted.music === 'painted' && GAIDEN.AREAS.nursery.music === 'nursery' && !!GAIDEN.ROOM_BY_ID.warp_paint && !!GAIDEN.ROOM_BY_ID.warp_toys
+        && GAIDEN.ROOM_BY_ID.paintthrone.boss === 'paintgolem' && GAIDEN.ROOM_BY_ID.jackroom.boss === 'boxjack'));
+      ok('v0.6: 15 areas, the clock heart needs six seals', await E(page, () => Object.keys(GAIDEN.AREAS).length >= 15 && GAIDEN.ROOM_BY_ID.clockroom.bossGate.need.length === 6));
+      await E(page, () => { GAIDEN.loadRoom('playroom', { start: true }); GAIDEN.placePlayer(3 * 16, 15 * 16, 1); }); await sleep(300);
+      ok('v0.6: nursery foes wear their own skins (tinsoldier / toymouse)', await E(page, () => GAIDEN.foes().some(e => e.skin === 'tinsoldier') && GAIDEN.foes().some(e => e.skin === 'toymouse')));
+      await E(page, () => { GAIDEN.loadRoom('skyline', { start: true }); GAIDEN.placePlayer(88 * 16, 11 * 16, -1); }); await sleep(300);
+      ok('v0.6: painted foes wear their own skins (inkbat / brushdancer)', await E(page, () => GAIDEN.foes().some(e => e.skin === 'inkbat') && GAIDEN.foes().some(e => e.skin === 'brushdancer')));
       await ctx.close(); }
     // ---- v0.5.1: servants' quarters behind a ring gate in the bottling shaft, the lake behind black fog (カンテラ)
     { const { ctx, page } = await open(browser, '?room=bottling&x=3&y=33&abil=float,turbo,djump,phase');
@@ -342,11 +361,11 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       ok('clock hands: the marked stab actually comes down from the ceiling', await waitFor(page, () => GAIDEN.ebullets.some(q => q.kind === 'hand' && q.h > 150), 20000)); await ctx.close(); }
 
     // ---- bosses 2-4, played by the bot (god mode; balance runs without god mode: tools/bossrun.js)
-    for (const [kind, roomId, abil] of [['golem', 'washroom', 'float,turbo'], ['rose', 'rosebed', 'float,turbo,djump'], ['organ', 'choir', 'float,turbo,djump'], ['serpent', 'yubune', 'float,turbo,djump,phase'], ['marionette', 'stage', 'float,turbo,djump,phase'], ['orrery', 'dome', 'float,turbo,djump,phase'], ['tarant', 'winethrone', 'float,turbo,djump,phase'], ['knight', 'tiltyard', 'float,turbo,djump,phase,keyring'], ['bellboard', 'bellhall', 'float,turbo,djump,phase,keyring'], ['angler', 'abyss', 'float,turbo,djump,phase,keyring,lantern'], ['clock', 'clockroom', 'float,turbo,djump,phase'], ['chronoa', 'clockheart', 'float,turbo,djump,phase,tank']]) {
+    for (const [kind, roomId, abil] of [['golem', 'washroom', 'float,turbo'], ['rose', 'rosebed', 'float,turbo,djump'], ['organ', 'choir', 'float,turbo,djump'], ['serpent', 'yubune', 'float,turbo,djump,phase'], ['marionette', 'stage', 'float,turbo,djump,phase'], ['orrery', 'dome', 'float,turbo,djump,phase'], ['tarant', 'winethrone', 'float,turbo,djump,phase'], ['knight', 'tiltyard', 'float,turbo,djump,phase,keyring'], ['bellboard', 'bellhall', 'float,turbo,djump,phase,keyring'], ['angler', 'abyss', 'float,turbo,djump,phase,keyring,lantern'], ['galecock', 'weathertop', 'float,turbo,djump,phase,keyring,cling'], ['paintgolem', 'paintthrone', 'float,turbo,djump,phase,keyring'], ['boxjack', 'jackroom', 'float,turbo,djump,phase,keyring,lantern'], ['clock', 'clockroom', 'float,turbo,djump,phase'], ['chronoa', 'clockheart', 'float,turbo,djump,phase,tank']]) {
       const { ctx, page } = await open(browser, `?room=${roomId}&x=2&y=16&god=1&abil=${abil}`);
       await waitFor(page, () => GAIDEN.state === 'play', 5000);
       await E(page, BOT); await E(page, () => { window.__speed = 8; });
-      if (kind === 'clock') { ok('v0.4: the seal door stays shut while the theater / observatory seals remain', await E(page, () => { const P = GAIDEN.progress; P.bosses.add('clock'); GAIDEN.checkBossGates(); const shut = !P.perm.has('clockroom:gate:heart') && GAIDEN.room.grid[12 * GAIDEN.room.cols + 23] !== 0; P.bosses.delete('clock'); P.bosses.add('marionette'); P.bosses.add('orrery'); return shut; })); }
+      if (kind === 'clock') { ok('v0.4: the seal door stays shut while the theater / observatory seals remain', await E(page, () => { const P = GAIDEN.progress; P.bosses.add('clock'); GAIDEN.checkBossGates(); const shut = !P.perm.has('clockroom:gate:heart') && GAIDEN.room.grid[12 * GAIDEN.room.cols + 23] !== 0; P.bosses.delete('clock'); for (const k of ['marionette', 'orrery', 'galecock', 'paintgolem', 'boxjack']) P.bosses.add(k); return shut; })); }
       ok(`boss ${kind}: intro`, await waitFor(page, () => GAIDEN.boss && GAIDEN.boss.state !== 'sleep', 6000));
       ok(`boss ${kind}: weak point -> core tug-of-war`, await waitFor(page, () => GAIDEN.P.tug && GAIDEN.P.tug.boss, 60000));
       ok(`boss ${kind}: defeated`, await waitFor(page, k => GAIDEN.progress.bosses.has(k), 150000, kind));

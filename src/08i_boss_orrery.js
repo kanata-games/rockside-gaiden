@@ -70,7 +70,7 @@ BOSS_DEFS.orrery = { jp: '星喰いの天球儀 アストラ', en: 'ASTRA, THE S
   },
   dying(b) { b.marks = []; b.rays = null; b.lane = null; },
   onDefeat(b) { bossReward(b, b.x); say('……星、みんな空にかえった。……きれい', 220);
-    tip('sealStars', '時計塔の封印がひとつ解けた！（' + ['clock', 'marionette', 'orrery'].filter(k => progress.bosses.has(k)).length + ' / 3）', true);
+    sealTip('sealStars');
     checkBossGates(); velAppear('orrery', pcx() < 192 ? 330 : 54, FLOOR_Y); },
   draw(b, lights) {
     const x = Math.round(b.x - cam.x), y = Math.round(b.y - cam.y);

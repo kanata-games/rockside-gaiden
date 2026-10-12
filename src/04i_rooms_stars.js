@@ -29,4 +29,15 @@ ROOM_DEFS.push(
     build(R) { R.box(); R.open('L', 0, 11, 14); R.plat(2, 5, 11); R.plat(18, 21, 11); },
     ents: [['boss', 12, 15]],
     decor: [['telescope', 3, 15], ['telescope', 21, 15, { flip: 1 }], ['spiritlamp', 8, 15, { light: 1 }], ['spiritlamp', 16, 15, { light: 1 }]] },
+
+  // ---- v0.6: two more rooms east of the dome
+  { id: 'comethall', jp: '彗星の回廊', en: 'COMET GALLERY', area: 'stars', theme: 'observatory', tiles: 'k', cx: 13, cy: -2, cw: 2, ch: 1, dark: 0.55,
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('T', 0, 9, 12); R.plat(8, 13, 7); R.plat(16, 22, 11); R.plat(26, 32, 8); R.plat(36, 42, 11); },
+    ents: [['skullwisp', 20, 6, { foe: { skin: 'starwisp' } }], ['cursedbook', 34, 5, { foe: { skin: 'chart' } }], ['coin', 27, 8], ['coin', 29, 8], ['coin', 31, 8], ['heart', 40, 11],
+      ['hint', 24, 15, { text: '天井の穴から、星がこぼれてくる… 上にもう一部屋ありそう' }]],
+    decor: [['starchart', 22, 6], ['starchart', 40, 6]] },
+  { id: 'starwell', jp: '星の井戸', en: 'STAR WELL', area: 'stars', theme: 'stars', tiles: 'k', cx: 13, cy: -4, cw: 1, ch: 2, dark: 0.6,
+    build(R) { R.box(); R.open('B', 0, 9, 12); R.plat(13, 18, 30); R.plat(4, 9, 26); R.plat(13, 18, 22); R.plat(4, 9, 18); R.plat(13, 18, 14); R.plat(4, 9, 10); R.plat(13, 18, 6); },
+    ents: [['heartbig', 15.5, 4], ['skullwisp', 8, 20, { foe: { skin: 'starwisp' } }], ['skullwisp', 16, 10, { foe: { skin: 'starwisp' } }], ['coin', 5, 26], ['coin', 7, 26], ['coin', 5, 18], ['coin', 7, 18], ['gear', 6, 10]],
+    decor: [['starchart', 10, 14]] },
 );

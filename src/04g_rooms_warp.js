@@ -14,7 +14,7 @@ ROOM_DEFS.push(
   warpRoom('warp_crypt', 'crypt', 'crypt', 'k', 13, 1, 'L', [['urn', 20, 15]]),
   warpRoom('warp_bath', 'bath', 'bath', 'b', 11, 3, 'R', [['duckprop', 4, 15]]),
   warpRoom('warp_theater', 'theater', 'theater', 'w', 1, 0, 'R', [['masks', 4, 9]]),
-  warpRoom('warp_stars', 'stars', 'observatory', 'k', 12, -2, 'L', [['starchart', 20, 8]]),
+  warpRoom('warp_stars', 'stars', 'observatory', 'k', 12, -2, 'L', [['starchart', 20, 8]], R => { R.open('R', 0, 11, 14); }),   // v0.6: + door east to the comet hall
   warpRoom('warp_wine', 'wine', 'casks', 'r', 0, 2, 'R', [['cask_big', 5, 15]]),            // v0.5
   warpRoom('warp_servants', 'servants', 'servants', 'v', -7, 4, 'R', [['broom', 4, 15]]),   // v0.5.1
   warpRoom('warp_lake', 'lake', 'lake', 'l', -7, 6, 'R', [['glowmoss', 4, 15]]),

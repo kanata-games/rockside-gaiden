@@ -71,7 +71,7 @@ BOSS_DEFS.boxjack = { jp: 'びっくり箱 ボックスジャック', en: 'BOXJA
     }
   },
   dying(b) { b.pose = 'dizzy'; b.marks = []; b.head = null; b.jy = 0; },
-  onDefeat(b) { bossReward(b, b.x); say('……びっくりした。……でも、ちゃんと遊んでもらえたね', 220); },
+  onDefeat(b) { bossReward(b, b.x); sealTip('sealToys'); say('……びっくりした。……でも、ちゃんと遊んでもらえたね', 220); },
   draw(b, lights) {
     const C = CONFIG.boxjack, x = Math.round(b.x - cam.x), y = Math.round(FLOOR_Y - cam.y), top = Math.round(2 * TS - cam.y);
     if (b.state === 'blocks') for (const m of b.marks) drawFloorMark(m, Math.min(1, (b.t - b.mT) / bossP('blockWarn')), 'rgba(255,210,90,0.9)');

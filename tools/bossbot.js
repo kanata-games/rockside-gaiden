@@ -36,7 +36,7 @@ window.__bot = function () {
   if (kind === 'tarant' && (b.state === 'drop' || b.state === 'plunge') && b.hy > 120) danger.push([b.x, 38]);
   if (kind === 'bellboard' && b.state === 'toll' && b.hy > 110) danger.push([b.x, 56]);   // v0.5.1
   if (kind === 'boxjack' && b.state === 'hop' && b.jy > 20) danger.push([b.x, 40]);
-  if (kind === 'paintgolem' && b.state === 'leap' && b.shadow) danger.push([b.shadow.x, 46]);
+  if (kind === 'paintgolem' && b.state === 'leap' && b.shadow && b.t >= 30 + CONFIG.paintgolem.shadowTrack) danger.push([b.shadow.x, 50]);
   if (kind === 'galecock' && b.state === 'swoop' && b.jy > 20) danger.push([b.x, 40]);   // v0.6
   if (kind === 'galecock' && b.pose !== 'fall' && b.state !== 'fallen') danger.push([b.x, 34]);
   if (kind === 'angler' && b.state === 'bite') { const end = (b.bx1 !== undefined && b.t >= CONFIG.angler.biteWarn ? b.bx1 : Math.max(76, Math.min(G.room.W - 76, b.x + b.face * CONFIG.angler.biteDist))) + b.face * 52; danger.push([(b.x + end) / 2, Math.abs(end - b.x) / 2 + 12]); }
