@@ -1,4 +1,4 @@
-# ROCKSIDE外伝 – 清掃員カナタ 〜幽霊屋敷のおそうじ〜 (v0.4.1)
+# ROCKSIDE外伝 – 清掃員カナタ 〜幽霊屋敷のおそうじ〜 (v0.4.2)
 
 A small SotN-style exploration game with a Luigi's-Mansion vacuum. It is a spin-off of ROCKSIDE.
 Play it here: https://kanata-games.github.io/rockside-gaiden/ (the page has noindex).
@@ -77,6 +77,9 @@ Other features:
 - Secret rooms (4).
 - Map screen with completion %, plus a mini-map.
 - Max-HP hearts.
+
+## v0.4.2 – final art
+Chronoa (10-frame sheet + clock mimic), Vel (7 frames: walk in, bow, turn, leave) and 64px portraits from `assets/gaiden_src/`, packed 1:1 into `assets/gaiden.png` by `tools/import_gaiden_art.py`. Chronoa's watch, glyph orbs and eye beam spawn from the art's marked points; soft rim light keeps both readable in dark rooms.
 
 ## Dev
 ```
