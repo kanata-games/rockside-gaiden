@@ -69,7 +69,7 @@ function updateBoss() {
     if (D.dying) D.dying(b);
     if (b.t % 6 === 0) { const h = D.hitBox(b); parts.push({ x: rnd(h.x0, h.x1), y: rnd(h.y0, h.y1), vx: rnd(-2, 2), vy: rnd(-2, 1), life: 34, col: D.cols[b.t % D.cols.length], size: 3, glow: 1, grav: 1 }); sfx('tink'); }
     if (b.t === 90) { sfx('crash'); cam.shake = 14; const h = D.hitBox(b); for (let i = 0; i < 40; i++) parts.push({ x: rnd(h.x0, h.x1), y: rnd(h.y0, h.y1), vx: rnd(-3, 3), vy: rnd(-4, 0), life: 50, col: D.cols[i % D.cols.length], size: 2, grav: 1 }); }
-    if (b.t >= 200) { b.state = 'done'; progress.bosses.add(b.kind); stats.bossesBeaten = (stats.bossesBeaten || 0) + 1; setGate(false); D.onDefeat(b); }
+    if (b.t >= 200) { b.state = 'done'; progress.bosses.add(b.kind); stats.bossesBeaten = (stats.bossesBeaten || 0) + 1; setGate(false); D.onDefeat(b); onSealBeat(b.kind); }
     return;
   }
   if (b.state === 'done') return;

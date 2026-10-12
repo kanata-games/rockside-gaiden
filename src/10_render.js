@@ -390,7 +390,8 @@ function drawMapGrid(ox, oy, cw, chh, mini, win) {
     rectLine(x0, y0, w, h, cur ? '#e0f0ff' : '#a8b8e8');
     if (!mini) {
       if (rd.ents.some(e => e[0] === 'save')) { g.fillStyle = '#8ad0ff'; g.fillRect(x0 + 2, y0 + 2, 3, 3); }
-      if (rd.boss) drawText(progress.bosses.has(rd.boss) ? 'X' : 'B', x0 + w - 7, y0 + 2, progress.bosses.has(rd.boss) ? 'b' : 'r', 1);
+      if (rd.boss && SEAL_HOURS[rd.boss]) { const hs = String(SEAL_HOURS[rd.boss]); drawText(hs, x0 + w - 2 - hs.length * 5, y0 + 2, progress.bosses.has(rd.boss) ? 'y' : 'r', 1); }   // v0.6.1: seal hour
+      else if (rd.boss) drawText(progress.bosses.has(rd.boss) ? 'X' : 'B', x0 + w - 7, y0 + 2, progress.bosses.has(rd.boss) ? 'b' : 'r', 1);
       if (rd.warp && progress.warps.has(rd.id)) { g.fillStyle = (frame >> 4) & 1 ? '#c8a0ff' : '#8a6ad8'; g.fillRect(x0 + 1, y0 + 1, w - 2, h - 2); drawText('W', x0 + w / 2, y0 + h / 2 - 3, 'w', 1, 'c'); }
       if (rd.ents.some(e => e[0] === 'ability' && !hasAbil(e[3].abil))) { g.fillStyle = (frame >> 3) & 1 ? '#ffffff' : '#ffe080'; g.fillRect(x0 + w / 2 - 1, y0 + h / 2 - 1, 3, 3); }
     }
@@ -455,11 +456,13 @@ function renderPlay() {
   const savedCam = { x: cam.x, y: cam.y }; cam.x = cx; cam.y = cy;
   g.fillStyle = '#000'; g.fillRect(0, 0, VW, VH);
   g.drawImage(room.canvas, clamp(cx, 0, room.W - VW), clamp(cy, 0, room.H - VH), VW, VH, clamp(cx, 0, room.W - VW) - cx, clamp(cy, 0, room.H - VH) - cy, VW, VH);
+  drawDoorSeal();   // v0.6.1
   for (const f of room.flames) { const x = f.x - cx - 3, y = f.y - cy - 8; if (x > -8 && x < VW && y > -10 && y < VH) spr('props', 'flame' + (((frame >> 2) + f.k) & 3), x, y); }
   for (const e of ents) if (!e.ghost && !e.dead) drawEnt(e);
   for (const it of items) if (!it.dead) drawItem(it);
   drawFloats();
   const lights = [{ x: pcx(), y: pcy(), r: 84, s: 0.9 }];
+  if (room.id === 'clockroom') lights.push({ x: 23 * TS - 34, y: 9 * TS, r: sealsDone() ? 80 : 56, warm: 1 });
   for (const e of ents) { if (e.type === 'save') lights.push({ x: e.x, y: e.y - 26, r: 70, blue: 1 }); if (e.type === 'firewisp') lights.push({ x: e.x, y: e.y, r: 40, warm: 1 }); if (e.ghost && e.type !== 'firewisp') lights.push({ x: e.x, y: e.y, r: 34, s: 0.5 }); }
   for (const b of ebullets) if (b.kind === 'firepatch' || b.kind === 'candle') lights.push({ x: b.x + b.w / 2, y: b.y, r: 36, warm: 1 });
   if (P.vacOn) { const n = nozzle(); lights.push({ x: n.x + P.face * 30, y: n.y, r: 60, blue: 1, s: 0.8 }); }
@@ -479,7 +482,7 @@ function renderPlay() {
   if (P.spitHold > 4 && hasAbil('float') && P.tank.length) { const n = nozzle(), k = Math.min(1, P.spitHold / CONFIG.float.holdFrames); g.fillStyle = canFloat() ? '#8fe8ff' : '#6a6a8a';
     for (let i = 0; i < 16 * k; i++) { const an = -Math.PI / 2 + i / 16 * Math.PI * 2; g.fillRect(Math.round(n.x - cam.x + Math.cos(an) * 9), Math.round(n.y - cam.y - 12 + Math.sin(an) * 9), 1, 1); } }
   cam.x = savedCam.x; cam.y = savedCam.y;
-  drawHUD(); drawStoryBox();
+  drawHUD(); drawSealPopup(); drawStoryBox();
   if (fadeT > 0) { g.fillStyle = 'rgba(0,0,0,' + (fadeT / 14) + ')'; g.fillRect(0, 0, VW, VH); }
   if (P.dead) { const k = Math.min(1, P.deadT / 60); g.fillStyle = 'rgba(10,4,20,' + k * 0.6 + ')'; g.fillRect(0, 0, VW, VH); }
   blit();
@@ -514,14 +517,15 @@ function renderMap() {
   AR.forEach((k, i) => { g.fillStyle = AREAS[k].col; g.fillRect(lgX(i), lgY(i), 7, 7); rectLine(lgX(i), lgY(i), 7, 7, '#a8b8e8'); });
   const EB = MAP_ENTRY_BTN; g.fillStyle = '#2a1e48'; g.fillRect(EB.x, EB.y, EB.w, EB.h); rectLine(EB.x, EB.y, EB.w, EB.h, '#c8a0ff');
   drawText('TAP / MAP: BACK', VW / 2, VH - 10, 'b', 1, 'c');
+  drawSealDial(VW - 20, 17, 13);   // v0.6.1: the seal dial
   blit();
   drawHiText('部屋の入口に戻る（VAC / ↓）', VW / 2, EB.y + 4, 8, '#f0e0ff', '#140a20', 'center');
   drawHiText((AREAS[room.def.area] || AREAS.east).jp + '　' + room.def.jp, VW / 2, 12, 10, '#fff4e0', '#1a0e28');
   AB.forEach((k, i) => drawHiText(hasAbil(k) ? ABIL_INFO[k].jp : '？？？', abX(i) + 13, abY(i) - 1, 6.5, hasAbil(k) ? ABIL_INFO[k].col : '#5a5488', null, 'left'));
   AR.forEach((k, i) => drawHiText(AREAS[k].short, lgX(i) + 10, lgY(i) - 1, 6, '#c8c0f0', null, 'left'));
-  drawHiText('■セーブ  B＝ボス  W＝ワープの間  ・光＝新しい力  黄色＝とびら' + (progress.hasKey ? '  舞踏会場の鍵あり' : ''), VW / 2, lgY0 + Math.ceil(AR.length / 5) * 10 + 2, 6.5, '#a8a0d8', null);
+  drawHiText('■セーブ  数字＝封印の時刻  B＝ボス  W＝ワープの間  ・光＝新しい力  黄色＝とびら' + (progress.hasKey ? '  舞踏会場の鍵あり' : ''), VW / 2, lgY0 + Math.ceil(AR.length / 5) * 10 + 2, 6.5, '#a8a0d8', null);
 }
-function renderPlayBase() { g.fillStyle = '#000'; g.fillRect(0, 0, VW, VH); g.drawImage(room.canvas, clamp(Math.round(cam.x), 0, room.W - VW), clamp(Math.round(cam.y), 0, room.H - VH), VW, VH, 0, 0, VW, VH); }
+function renderPlayBase() { g.fillStyle = '#000'; g.fillRect(0, 0, VW, VH); g.drawImage(room.canvas, clamp(Math.round(cam.x), 0, room.W - VW), clamp(Math.round(cam.y), 0, room.H - VH), VW, VH, 0, 0, VW, VH); drawDoorSeal(); }
 const TITLE_MENU = [{ x: 108, y: 246, w: 76, h: 18 }, { x: 200, y: 246, w: 76, h: 18 }];
 function renderTitle() {
   g.drawImage(IMG.title_bg, 0, 0);
@@ -615,7 +619,7 @@ window.GAIDEN = { boxHitsSolid, returnToEntry, CONFIG, P, cam, layout, stats, pr
   get state() { return state; }, get stateT() { return stateT; }, get room() { return room; }, get boss() { return boss; }, get frame() { return frame; }, get tipBox() { return tipBox; },
   get music() { return Music; }, nozzle, inCone, loadRoom, placePlayer, startNewGame, continueGame, enterGame, eraseSave, saveGame, loadSave, mapPercent, setState, snapCamera, buildRoomGrid, roomOpenings,
   spawnItem, makeGhost, startTug, STORY, velAppear, startEnding, storySay, checkBossGates, storyFit, VEL_LINES, get banner() { return banner; }, floats, foes: () => ents.filter(e => FOE_SIZE[e.type]), hasAbil, openGate, gainAbility, AREAS, ROOM_BY_ID, TOTAL_CELLS, makeFoe, BOSS_DEFS, entrySafety, openWarpMenu, warpTo,
-  get debugBossAtk() { return QS.get('bossatk'); }, _test: { keys, inp, touch, openWarpMenu } };
+  get debugBossAtk() { return QS.get('bossatk'); }, _test: { keys, inp, touch, openWarpMenu, onSealBeat, sealsLit, SEAL_BOSSES, SEAL_HOURS, tipNow: () => typeof tipState !== 'undefined' ? tipState : null } };
 </script>
 </body>
 </html>

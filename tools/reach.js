@@ -102,7 +102,10 @@ const CC = 24, CR = 18;
   console.log('unreached cells:', missCells.length ? missCells.join(' ') : 'none');
   console.log('unreached pickups:', missEnts.length ? missEnts.join(' ') : 'none');
   // gating sanity: which areas are reachable with NO abilities?
-  const problems = missCells.length + missEnts.length + unbeaten.length + trapRooms.length + lowLedges.length;
+  // v0.6.1: every seal door must open in the unlock simulation, i.e. all of its bosses are beatable without going through it
+  const badSeals = defs.filter(d => d.bossGate && !(S.open.has(d.id + ':' + d.bossGate.gate) && d.bossGate.need.every(k => S.beat.has(k))));
+  for (const d of defs) if (d.bossGate) console.log('seal ' + d.id + ':' + d.bossGate.gate + ' needs ' + d.bossGate.need.length + ' bosses (' + d.bossGate.need.join(',') + ') -> ' + (badSeals.includes(d) ? 'NEVER OPENS' : 'opens'));
+  const problems = missCells.length + missEnts.length + unbeaten.length + trapRooms.length + lowLedges.length + badSeals.length;
   console.log(problems ? 'REACH: PROBLEMS (' + problems + ')' : 'REACH: OK — every cell, pickup and boss reachable');
   process.exit(problems ? 1 : 0);
 })();

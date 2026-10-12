@@ -18,6 +18,7 @@ const VEL_LINES = {
   chronoa: '……私の後ろには、立たないことをお勧めします。',
   wine:    '古いものほど、主はお喜びになります。……人形も、お酒も。',
   armory:  '中身がなくても、忠誠は残るものです。',
+  twelve:  '……十二時です。あの方は、遅刻がお嫌いですよ。',   // v0.6.1: all twelve seals lit
 };
 function storySay(who, text, frames) { const it = { who, text, t: frames || 260, T: frames || 260 }; if (STORY.box) STORY.queue.push(it); else STORY.box = it; }
 // Vel appears once per save for each key, near (x, feet y), says her line, and fades out
@@ -28,6 +29,7 @@ function velAppear(key, x, y) {
 }
 function storyRoomEnter(def) {
   STORY.vel = null;
+  if (def.id === 'clockroom' && sealsDone() && !progress.perm.has('vel:twelve')) { setTimeout0(() => velAppear('twelve', 64, FLOOR_Y)); return; }   // v0.6.1
   if (def.vel) setTimeout0(() => velAppear(def.vel, def.velAt ? def.velAt[0] * TS : P.x + P.face * 90, def.velAt ? def.velAt[1] * TS : FLOOR_Y));
 }
 function setTimeout0(fn) { STORY.pending = fn; }   // run on the next update (after the room finished loading)
@@ -35,6 +37,7 @@ function updateStory() {
   if (STORY.pending) { const f = STORY.pending; STORY.pending = null; f(); }
   if (STORY.box && --STORY.box.t <= 0) STORY.box = STORY.queue.shift() || null;
   if (STORY.vel && ++STORY.vel.t > STORY.vel.life) STORY.vel = null;
+  updateSeals();
   if (STORY.scene) updateEnding();
 }
 // ---- the true ending ---------------------------------------------------
