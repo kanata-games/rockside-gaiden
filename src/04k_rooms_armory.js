@@ -25,8 +25,8 @@ ROOM_DEFS.push(
       ['banner', 60, 2, { top: 1 }], ['stainedglass', 26, 9], ['stainedglass', 50, 9], ['sconce', 4, 8, { light: 1 }], ['sconce', 32, 8, { light: 1 }], ['sconce', 68, 10, { light: 1 }]] },
 
   { id: 'barracks', jp: '従者の詰め所', en: 'SQUIRES\' BARRACKS', area: 'armory', theme: 'armory', tiles: 'a', cx: 15, cy: 0, cw: 1, ch: 1, dark: 0.5,
-    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.open('B', 0, 8, 11); R.plat(2, 6, 11); R.plat(14, 19, 9); R.plat(17, 22, 5); },
-    ents: [['skeleton', 16, 15, { foe: { skin: 'squire' } }], ['pan', 4, 11], ['coin', 18, 5], ['coin', 20, 5], ['heart', 16, 9], ['chair', 20, 15]],
+    build(R) { R.box(); R.open('L', 0, 11, 14); R.open('R', 0, 11, 14); R.open('B', 0, 8, 11); R.plat(2, 6, 11); R.plat(14, 19, 9); R.plat(17, 22, 6); },
+    ents: [['skeleton', 16, 15, { foe: { skin: 'squire' } }], ['pan', 4, 11], ['coin', 18, 6], ['coin', 20, 6], ['heart', 16, 9], ['chair', 20, 15]],
     decor: [['trunk', 3, 15], ['table', 18, 15], ['weaponrack', 13, 15], ['banner', 6, 2, { top: 1 }], ['sconce', 10, 8, { light: 1 }]] },
 
   { id: 'smithy', jp: '鍛冶場', en: 'THE SMITHY', area: 'armory', theme: 'armory', tiles: 'a', cx: 14, cy: 1, cw: 2, ch: 1, dark: 0.48,
