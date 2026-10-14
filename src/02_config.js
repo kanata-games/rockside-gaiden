@@ -1,11 +1,11 @@
 // Version label (title screen + footer). Bump on every release.
-const GAME_VERSION = '0.7.0';
+const GAME_VERSION = '0.7.1';
 // v0.6: the clock heart is sealed six times: the clock itself, the theater & observatory, and the three highest/strangest domains
 // v0.6.1: twelve seals like a clock face, hour = index + 1 (chandelier, golem and serpent are left out)
 const SEAL_BOSSES = ['rose', 'organ', 'marionette', 'orrery', 'tarant', 'knight', 'bellboard', 'angler', 'paintgolem', 'galecock', 'boxjack', 'clock'];
 function sealTip(id) { }   // v0.6.1: replaced by onSealBeat (08y_seals.js)
 // =====================================================================
-//  ROCKSIDE外伝 清掃員カナタ  -  haunted-mansion exploration + vacuum action (prototype)
+//  清掃員カナタ ～ミミックと呪いの館～  -  haunted-mansion exploration + vacuum action (prototype)
 //  All gameplay tuning lives in CONFIG. Units: pixels and frames @60Hz.
 // =====================================================================
 const CONFIG = {

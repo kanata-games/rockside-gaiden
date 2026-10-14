@@ -305,7 +305,7 @@ window.addEventListener('keyup', e => { const k = KEYMAP[e.code]; if (k) { keys[
 
 const msgEl = document.getElementById('msg');
 const pad = document.getElementById('pad'), muteBtn = document.getElementById('mute'), hintEl = document.getElementById('hint'), mapBtn = document.getElementById('bMap');
-hintEl.textContent = 'ROCKSIDE GAIDEN  v' + GAME_VERSION;
+hintEl.textContent = '清掃員カナタ ～ミミックと呪いの館～  v' + GAME_VERSION;
 const BTN = { left: document.getElementById('bL'), right: document.getElementById('bR'), jump: document.getElementById('bJ'), vac: document.getElementById('bV'), spit: document.getElementById('bS') };
 const BTN_ON = { left: false, right: false, jump: false, vac: false, spit: false };
 const ptrs = new Map();

@@ -548,7 +548,7 @@ function renderThanks() {
   const a = Math.min(1, stateT / 40);
   drawHiText('THANK YOU', VW / 2, 22, 28, '#fff4c0', '#2a1648', 'center', a);
   drawHiText('FOR PLAYING!', VW / 2, 56, 24, '#bfe0ff', '#1a0e28', 'center', a);
-  drawHiText('ROCKSIDE外伝 清掃員カナタ  v' + GAME_VERSION, VW / 2, 90, 9, '#e8dcff', null, 'center', a);
+  drawHiText('清掃員カナタ ～ミミックと呪いの館～  v' + GAME_VERSION, VW / 2, 90, 9, '#e8dcff', null, 'center', a);
 }
 function renderPlayBase() { g.fillStyle = '#000'; g.fillRect(0, 0, VW, VH); g.drawImage(room.canvas, clamp(Math.round(cam.x), 0, room.W - VW), clamp(Math.round(cam.y), 0, room.H - VH), VW, VH, 0, 0, VW, VH); drawDoorSeal(); }
 const TITLE_MENU = [{ x: 108, y: 246, w: 76, h: 18 }, { x: 200, y: 246, w: 76, h: 18 }];
@@ -561,16 +561,15 @@ function renderTitle() {
   g.drawImage(c, 0, 0, f.w, f.h, 300 - f.ax * sc, 236 - f.ay * sc + bob, f.w * sc, f.h * sc);
   for (let i = 0; i < 3; i++) { const a = stateT * 0.03 + i * 2.1; g.globalAlpha = 0.8; g.drawImage(IMG.wisp, Math.round(300 + Math.cos(a) * 52 - 7), Math.round(160 + Math.sin(a) * 14 + bob)); g.globalAlpha = 1; }
   // logo
-  drawTextShadow('ROCKSIDE', 26, 30, 'c', 2);
-  drawTextShadow('GAIDEN', 26, 46, 'p', 1);
+  drawTextShadow('KANATA', 26, 30, 'c', 2);
+  drawTextShadow('THE CURSED MANSION', 26, 46, 'p', 1);
   const hasSave = assetsReady() && !!loadSave();
   if (hasSave) { TITLE_MENU.forEach((m, i) => { const on = i === titleSel; g.fillStyle = on ? 'rgba(90,76,192,0.85)' : 'rgba(20,16,40,0.8)'; g.fillRect(m.x, m.y, m.w, m.h); rectLine(m.x, m.y, m.w, m.h, on ? '#e0d8ff' : '#5a5488'); }); }
   else drawTextShadow('TAP / PRESS ENTER', VW / 2 - 50, 254, ((stateT >> 5) & 1) ? 'w' : 'b', 1, 'c');
   drawText('v' + GAME_VERSION, 6, VH - 9, 'd', 1);
   blit();
   drawHiText('清掃員カナタ', 104, 62, 30, '#f4f0ff', '#2a1648');
-  drawHiText('〜幽霊屋敷のおそうじ〜', 104, 102, 10, '#bfe0ff', '#1a0e28');
-  drawHiText('ROCKSIDE 外伝', 104, 120, 8, '#ff9ad8', '#1a0e28');
+  drawHiText('～ミミックと呪いの館～', 104, 102, 11, '#bfe0ff', '#1a0e28');
   if (hasSave) { drawHiText('つづきから', TITLE_MENU[0].x + TITLE_MENU[0].w / 2, TITLE_MENU[0].y + 4, 8, '#ffffff'); drawHiText('はじめから', TITLE_MENU[1].x + TITLE_MENU[1].w / 2, TITLE_MENU[1].y + 4, 8, '#ffffff'); }
 }
 function renderClear() {
@@ -606,7 +605,7 @@ function updateMsgPanel() {
   if (state === 'play' || state === 'map' || state === 'warp' || state === 'shop') {
     if (tipBox.t > 0) html = '<span class="tip">' + tipBox.text + '</span>';
     else { const a = AREAS[room.def.area] || AREAS.east; html = '<span class="area" style="color:' + '#c8c0f0' + '">' + a.jp + '</span><span class="room">' + room.def.jp + '</span>'; }
-  } else html = '<span class="area">ROCKSIDE外伝 清掃員カナタ</span><span class="room">v' + GAME_VERSION + '</span>';
+  } else html = '<span class="area">清掃員カナタ ～ミミックと呪いの館～</span><span class="room">v' + GAME_VERSION + '</span>';
   if (html !== msgShown) { msgShown = html; msgEl.innerHTML = html; }
 }
 function render() {

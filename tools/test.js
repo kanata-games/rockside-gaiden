@@ -120,7 +120,7 @@ const shot = async (page, name) => { if (WANT_SHOTS) await page.screenshot({ pat
       ok('fewer rats and bat swarms (<= 15 rats, <= 6 swarms)', crit.rats <= 15 && crit.bats <= 6, crit);
       ok('a warp room in every area', ['east', 'laundry', 'garden', 'clock', 'crypt', 'bath', 'wine', 'armory', 'servants', 'lake'].every(a => crit.warps.includes(a)), crit.warps);
       ok('title has no PROTOTYPE', !(await E(page, () => document.documentElement.innerHTML.includes('PROTOTYPE'))));
-      ok('version 0.7.0', await E(page, () => (typeof GAME_VERSION !== 'undefined' && GAME_VERSION === '0.7.0') || GAIDEN.CONFIG.version === '0.7.0'));
+      ok('version 0.7.1', await E(page, () => (typeof GAME_VERSION !== 'undefined' && GAME_VERSION === '0.7.1') || GAIDEN.CONFIG.version === '0.7.1'));
       await ctx.close(); }
 
     // ---- world reachability / ability gating (static check over the stitched tile grid)

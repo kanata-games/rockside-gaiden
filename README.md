@@ -1,6 +1,6 @@
-# ROCKSIDE外伝 – 清掃員カナタ 〜幽霊屋敷のおそうじ〜 (v0.5.0)
+# 清掃員カナタ ～ミミックと呪いの館～ (v0.7.1)
 
-A small SotN-style exploration game with a Luigi's-Mansion vacuum. It is a spin-off of ROCKSIDE.
+A small SotN-style exploration game with a Luigi's-Mansion vacuum.
 Play it here: https://kanata-games.github.io/rockside-gaiden/ (the page has noindex).
 
 ## Controls
